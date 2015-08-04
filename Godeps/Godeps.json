@@ -5,6 +5,14 @@
 		{
 			"ImportPath": "github.com/alternaDev/geomodel",
 			"Rev": "5db9ed2a99fadcccc259089ee7e98a3a774bd69a"
+		},
+		{
+			"ImportPath": "github.com/gorilla/context",
+			"Rev": "215affda49addc4c8ef7e2534915df2c8c35c6cd"
+		},
+		{
+			"ImportPath": "github.com/gorilla/mux",
+			"Rev": "f15e0c49460fd49eebe2bcc8486b05d1bef68d3a"
 		}
 	]
 }
