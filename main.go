@@ -31,11 +31,11 @@ func listen(port string) {
 }
 
 func main() {
-    port := os.Getenv("PORT")
+  port := os.Getenv("PORT")
 
-    if port == "" {
-      log.Fatal("$PORT must be set")
-    }
+  if port == "" {
+    log.Fatal("$PORT must be set")
+  }
 
-    listen(port)
+  listen(port)
 }
