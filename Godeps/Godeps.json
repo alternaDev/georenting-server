@@ -1,5 +1,10 @@
 {
 	"ImportPath": "github.com/alternaDev/georenting-server",
 	"GoVersion": "go1.4.2",
-	"Deps": []
+	"Deps": [
+		{
+			"ImportPath": "github.com/alternaDev/geomodel",
+			"Rev": "5db9ed2a99fadcccc259089ee7e98a3a774bd69a"
+		}
+	]
 }

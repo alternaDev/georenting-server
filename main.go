@@ -5,10 +5,11 @@ import (
     "net/http"
     "os"
     "log"
+    "github.com/alternaDev/geomodel"
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
-    fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
+    fmt.Fprintf(w, "Hi there, I love %s! %f", r.URL.Path[1:], geomodel.Distance(0, 0, 1, 1))
 }
 
 func main() {
@@ -20,4 +21,5 @@ func main() {
 
     http.HandleFunc("/", handler)
     http.ListenAndServe(":" + port, nil)
+
 }
