@@ -19,7 +19,7 @@ func initDB(url string) (gorm.DB, error) {
 		return db, err
 	}
 
-	db.AutoMigrate(&User{})
+	db.AutoMigrate(&User{}, &Fence{})
 
 	return db, nil
 }
