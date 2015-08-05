@@ -2,8 +2,6 @@ package models
 
 import "github.com/jinzhu/gorm"
 
-type User struct {
+type Fence struct {
 	gorm.Model
-	GoogleID string
-	Fences   []Fence
 }

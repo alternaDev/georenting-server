@@ -17,6 +17,19 @@
 		{
 			"ImportPath": "github.com/gorilla/mux",
 			"Rev": "f15e0c49460fd49eebe2bcc8486b05d1bef68d3a"
+		},
+		{
+			"ImportPath": "github.com/jinzhu/gorm",
+			"Rev": "d21eed4b6623ab76f67977fc1f151a43a1541480"
+		},
+		{
+			"ImportPath": "github.com/lib/pq",
+			"Comment": "go1.0-cutoff-59-gb269bd0",
+			"Rev": "b269bd035a727d6c1081f76e7a239a1b00674c40"
+		},
+		{
+			"ImportPath": "github.com/qor/inflection",
+			"Rev": "45321e63b98c756df17369c027c1df89298e1288"
 		}
 	]
 }
