@@ -5,14 +5,21 @@ import (
 	"os"
 
 	"github.com/jinzhu/gorm"
-	_ "github.com/lib/pq" // Required for Postgres Databases
+	_ "github.com/lib/pq"           // Required for Postgres Databases
+	_ "github.com/mattn/go-sqlite3" // Required for SQLite Databases
 )
 
 // DB provides the ability to access the Database.
 var DB, err = initDB(os.Getenv("DATABASE_URL"))
 
 func initDB(url string) (gorm.DB, error) {
-	db, err := gorm.Open("postgres", url)
+	var dbType = os.Getenv("DATABASE_TYPE")
+
+	if dbType == "" {
+		dbType = "postgres"
+	}
+
+	db, err := gorm.Open(dbType, url)
 
 	if err != nil {
 		log.Fatalf("Error while connecting to DB: %s", err)
