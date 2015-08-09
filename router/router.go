@@ -10,6 +10,6 @@ func SetupRouter() *mux.Router {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/{name}", c.IndexHandler)
-
+	r.HandleFunc("/users/auth", c.AuthHandler).Methods("POST")
 	return r
 }
