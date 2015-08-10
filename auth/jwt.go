@@ -3,6 +3,7 @@ package auth
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"strconv"
 	"time"
 
@@ -43,6 +44,7 @@ func GenerateJWTToken(user models.User) (string, error) {
 
 // ValidateJWTToken validates a JWT token and returns the user from the DB
 // TODO: Implement Logout via Redis and a blacklist
+// TODO: Implement checking of token expiry
 func ValidateJWTToken(input string) (models.User, error) {
 	var user models.User
 
@@ -69,4 +71,15 @@ func ValidateJWTToken(input string) (models.User, error) {
 
 	}
 	return models.User{}, errors.New("The given token is invalid.")
+}
+
+// ValidateSession validates a session in a HTTP Request
+func ValidateSession(r *http.Request) (models.User, error) {
+	token := r.Header.Get("Authorization")
+
+	if token == "" {
+		return models.User{}, errors.New("Auth token missing.")
+	}
+
+	return ValidateJWTToken(token)
 }
