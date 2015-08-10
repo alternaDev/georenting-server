@@ -13,6 +13,18 @@ import (
 // GenerateJWTToken generates a JWT token for a given UserID and signs it with
 // the given private key. The token will be valid for 3 days.
 func GenerateJWTToken(user models.User) (string, error) {
+
+	if user.PrivateKey == "" {
+		privateKey, err := GenerateNewPrivateKey()
+
+		if err != nil {
+			return "", err
+		}
+
+		user.PrivateKey = PrivateKeyToString(privateKey)
+		models.DB.Save(&user)
+	}
+
 	privateKey, err := StringToPrivateKey(user.PrivateKey)
 
 	if err != nil {
@@ -47,7 +59,9 @@ func ValidateJWTToken(input string) (models.User, error) {
 
 		models.DB.First(&user, userID)
 
-		return StringToPrivateKey(user.PrivateKey)
+		privateKey, err := StringToPrivateKey(user.PrivateKey)
+
+		return privateKey.PublicKey, err
 	})
 
 	if err == nil && token.Valid {
