@@ -3,11 +3,16 @@ package google
 import (
 	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"net/http"
+	"strings"
+
+	"github.com/alternaDev/georenting-server/models"
 )
 
 const (
-	googleVerifyURL = "https://www.googleapis.com/oauth2/v2/userinfo"
+	googleVerifyURL   = "https://www.googleapis.com/oauth2/v2/userinfo"
+	googleGCMGroupURL = "https://android.googleapis.com/gcm/notification"
 )
 
 // User represents the data for a given Google User
@@ -20,6 +25,17 @@ type User struct {
 	AvatarURL     string `json:"picture"`
 	Gender        string `json:"gender"`
 	Locale        string `json:"locale"`
+}
+
+type gcmGroupRequest struct {
+	Operation           string   `json:"operation"`
+	NotificationKey     string   `json:"notification_key"`
+	NotificationKeyName string   `json:"notification_key_name"`
+	RegistrationIDs     []string `json:"registration_ids"`
+}
+
+type gcmGroupResponse struct {
+	NotificationKey string `json:"notification_key"`
 }
 
 // VerifyToken verifies a given Google OAuth2 Token
@@ -53,4 +69,31 @@ func VerifyToken(token string) (User, error) {
 	}
 
 	return user, err
+}
+
+// CreateDeviceGroup creates a new Device group on Google Cloud Messaging
+func CreateDeviceGroup(firstID string, user models.User) (models.User, error) {
+	body := gcmGroupRequest{
+		Operation:           "create",
+		NotificationKeyName: "GeoRenting-" + user.Name,
+		RegistrationIDs:     []string{firstID},
+	}
+
+	bytes, err := json.Marshal(body)
+
+	resp, err := http.Post(googleGCMGroupURL, "application/json", strings.NewReader(string(bytes)))
+	defer resp.Body.Close()
+
+	if err != nil {
+		return user, err
+	}
+
+	respBody, err := ioutil.ReadAll(resp.Body)
+
+	var response gcmGroupResponse
+	json.Unmarshal(respBody, &response)
+
+	user.GCMNotificationID = response.NotificationKey
+
+	return user, nil
 }
