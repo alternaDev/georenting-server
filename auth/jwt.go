@@ -44,15 +44,28 @@ func GenerateJWTToken(user models.User) (string, error) {
 
 // ValidateJWTToken validates a JWT token and returns the user from the DB
 // TODO: Implement Logout via Redis and a blacklist
-// TODO: Implement checking of token expiry
 func ValidateJWTToken(input string) (models.User, error) {
 	var user models.User
 
 	token, err := jwt.Parse(input, func(token *jwt.Token) (interface{}, error) {
+
+		// Check whether the right signing algorithm was used.
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
 
+		// Check the expiration time.
+		expiry, err := strconv.ParseInt(token.Claims["exp"].(string), 10, 64)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if expiry > time.Now().Unix() {
+			return nil, err
+		}
+
+		// Get the user ID
 		userID, err := strconv.ParseInt(token.Claims["user"].(string), 10, 64)
 
 		if err != nil {
