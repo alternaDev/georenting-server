@@ -54,13 +54,6 @@ func ValidateJWTToken(input string) (models.User, error) {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
 
-		// Check the expiration time.
-		expiry := int64(token.Claims["exp"].(float64))
-
-		if expiry > time.Now().Unix() {
-			return nil, errors.New("The token has expired.")
-		}
-
 		// Get the user ID
 		userID, err := strconv.ParseInt(token.Claims["user"].(string), 10, 64)
 
