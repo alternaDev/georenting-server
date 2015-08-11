@@ -77,17 +77,10 @@ func VerifyToken(token string) (User, error) {
 	return user, err
 }
 
-// CreateDeviceGroup creates a new Device group on Google Cloud Messaging
-func CreateDeviceGroup(firstID string, user models.User) (models.User, error) {
+func sendGCMGroupRequest(data gcmGroupRequest) (gcmGroupResponse, error) {
 	httpClient := &http.Client{}
 
-	body := gcmGroupRequest{
-		Operation:           "create",
-		NotificationKeyName: "GeoRenting-" + user.Name,
-		RegistrationIDs:     []string{firstID},
-	}
-
-	bytes, err := json.Marshal(body)
+	bytes, err := json.Marshal(data)
 
 	req, err := http.NewRequest("POST", googleGCMGroupURL, strings.NewReader(string(bytes)))
 	req.Header.Add("Authorization", "key="+googleAPIKey)
@@ -97,13 +90,28 @@ func CreateDeviceGroup(firstID string, user models.User) (models.User, error) {
 	defer resp.Body.Close()
 
 	if err != nil {
-		return user, err
+		return gcmGroupResponse{}, err
 	}
 
 	respBody, err := ioutil.ReadAll(resp.Body)
 
 	var response gcmGroupResponse
 	json.Unmarshal(respBody, &response)
+
+	return response, nil
+}
+
+// CreateDeviceGroup creates a new Device group on Google Cloud Messaging
+func CreateDeviceGroup(firstID string, user models.User) (models.User, error) {
+	response, err := sendGCMGroupRequest(gcmGroupRequest{
+		Operation:           "create",
+		NotificationKeyName: "GeoRenting-" + user.Name,
+		RegistrationIDs:     []string{firstID},
+	})
+
+	if err != nil {
+		return user, err
+	}
 
 	user.GCMNotificationID = response.NotificationKey
 
