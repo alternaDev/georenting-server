@@ -79,7 +79,7 @@ func ValidateJWTToken(input string) (models.User, error) {
 		return user, nil
 
 	}
-	return models.User{}, errors.New("The given token is invalid.")
+	return models.User{}, err
 }
 
 // ValidateSession validates a session in a HTTP Request
