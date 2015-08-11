@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/alternaDev/georenting-server/models"
@@ -56,11 +55,7 @@ func ValidateJWTToken(input string) (models.User, error) {
 		}
 
 		// Get the user ID
-		userID, err := strconv.ParseInt(token.Header["id"].(string), 10, 64)
-
-		if err != nil {
-			return nil, err
-		}
+		userID := token.Header["id"]
 
 		models.DB.First(&user, userID)
 
