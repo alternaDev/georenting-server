@@ -55,14 +55,10 @@ func ValidateJWTToken(input string) (models.User, error) {
 		}
 
 		// Check the expiration time.
-		expiry, err := strconv.ParseInt(token.Claims["exp"].(string), 10, 64)
-
-		if err != nil {
-			return nil, err
-		}
+		expiry := int64(token.Claims["exp"].(float64))
 
 		if expiry > time.Now().Unix() {
-			return nil, err
+			return nil, errors.New("The token has expired.")
 		}
 
 		// Get the user ID
