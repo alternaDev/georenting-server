@@ -2,8 +2,8 @@ package gcm
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 
@@ -23,6 +23,7 @@ type gcmGroupRequest struct {
 
 type gcmGroupResponse struct {
 	NotificationKey string `json:"notification_key"`
+	Error           string `json:"error"`
 }
 
 func sendGCMGroupRequest(data gcmGroupRequest) (gcmGroupResponse, error) {
@@ -44,8 +45,6 @@ func sendGCMGroupRequest(data gcmGroupRequest) (gcmGroupResponse, error) {
 
 	respBody, err := ioutil.ReadAll(resp.Body)
 
-	log.Print(string(respBody))
-
 	var response gcmGroupResponse
 	json.Unmarshal(respBody, &response)
 
@@ -64,7 +63,9 @@ func CreateDeviceGroup(firstID string, user models.User) error {
 		return err
 	}
 
-	log.Printf("Goet response! %s", response)
+	if response.Error != "" {
+		return errors.New(response.Error)
+	}
 
 	user.GCMNotificationID = response.NotificationKey
 	models.DB.Save(&user)
