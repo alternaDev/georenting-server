@@ -44,6 +44,8 @@ func sendGCMGroupRequest(data gcmGroupRequest) (gcmGroupResponse, error) {
 
 	respBody, err := ioutil.ReadAll(resp.Body)
 
+	log.Print(string(respBody))
+
 	var response gcmGroupResponse
 	json.Unmarshal(respBody, &response)
 
