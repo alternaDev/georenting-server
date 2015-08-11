@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 
@@ -53,6 +54,7 @@ func sendGCMGroupRequest(data gcmGroupRequest) (gcmGroupResponse, error) {
 
 // CreateDeviceGroup creates a new Device group on Google Cloud Messaging
 func CreateDeviceGroup(firstID string, user models.User) error {
+	log.Print(firstID)
 	response, err := sendGCMGroupRequest(gcmGroupRequest{
 		Operation:           "create",
 		NotificationKeyName: "GeoRenting-" + user.Name,
@@ -75,7 +77,7 @@ func CreateDeviceGroup(firstID string, user models.User) error {
 
 // AddDeviceToGroup adds a device to a device group.
 func AddDeviceToGroup(deviceID string, user models.User) error {
-	_, err := sendGCMGroupRequest(gcmGroupRequest{
+	response, err := sendGCMGroupRequest(gcmGroupRequest{
 		Operation:           "add",
 		NotificationKeyName: "GeoRenting-" + user.Name,
 		NotificationKey:     user.GCMNotificationID,
@@ -86,12 +88,16 @@ func AddDeviceToGroup(deviceID string, user models.User) error {
 		return err
 	}
 
+	if response.Error != "" {
+		return errors.New(response.Error)
+	}
+
 	return nil
 }
 
 // RemoveDeviceFromGroup removes a device from a group.
 func RemoveDeviceFromGroup(deviceID string, user models.User) error {
-	_, err := sendGCMGroupRequest(gcmGroupRequest{
+	response, err := sendGCMGroupRequest(gcmGroupRequest{
 		Operation:           "remove",
 		NotificationKeyName: "GeoRenting-" + user.Name,
 		NotificationKey:     user.GCMNotificationID,
@@ -100,6 +106,10 @@ func RemoveDeviceFromGroup(deviceID string, user models.User) error {
 
 	if err != nil {
 		return err
+	}
+
+	if response.Error != "" {
+		return errors.New(response.Error)
 	}
 
 	return nil
