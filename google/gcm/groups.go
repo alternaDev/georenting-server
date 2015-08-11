@@ -3,6 +3,7 @@ package gcm
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 
@@ -60,6 +61,8 @@ func CreateDeviceGroup(firstID string, user models.User) error {
 	if err != nil {
 		return err
 	}
+
+	log.Printf("Goet response! %s", response)
 
 	user.GCMNotificationID = response.NotificationKey
 	models.DB.Save(&user)
