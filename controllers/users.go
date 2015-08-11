@@ -38,6 +38,10 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 	models.DB.Where(models.User{GoogleID: googleUser.GoogleID}).FirstOrInit(&user)
 
+	user.Name = googleUser.GivenName
+	user.AvatarURL = googleUser.AvatarURL
+	models.DB.Save(user)
+
 	token, err := auth.GenerateJWTToken(user)
 
 	if err != nil {
