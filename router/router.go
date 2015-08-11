@@ -11,5 +11,7 @@ func SetupRouter() *mux.Router {
 
 	r.HandleFunc("/{name}", c.IndexHandler)
 	r.HandleFunc("/users/auth", c.AuthHandler).Methods("POST")
+	r.HandleFunc("/users/me/gcm", c.GCMAddFunc).Methods("POST")
+
 	return r
 }
