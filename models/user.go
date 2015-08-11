@@ -6,7 +6,7 @@ type User struct {
 	gorm.Model
 	GoogleID          string
 	Fences            []Fence
-	PrivateKey        string
+	PrivateKey        string `sql:"size:4096"`
 	GCMNotificationID string
 	Name              string
 	AvatarURL         string
