@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 
@@ -54,7 +53,6 @@ func sendGCMGroupRequest(data gcmGroupRequest) (gcmGroupResponse, error) {
 
 // CreateDeviceGroup creates a new Device group on Google Cloud Messaging
 func CreateDeviceGroup(firstID string, user models.User) error {
-	log.Print(firstID)
 	response, err := sendGCMGroupRequest(gcmGroupRequest{
 		Operation:           "create",
 		NotificationKeyName: "GeoRenting-" + user.Name,

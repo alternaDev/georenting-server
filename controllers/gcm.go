@@ -12,6 +12,10 @@ type gcmID struct {
 	GCMID string `json:"gcm_id"`
 }
 
+type gcmNotificationKeyResponse struct {
+	NotificationKey string `json:"gcm_notification_key"`
+}
+
 // GCMAddFunc POST /users/me/gcm
 func GCMAddFunc(w http.ResponseWriter, r *http.Request) {
 
@@ -49,4 +53,13 @@ func GCMAddFunc(w http.ResponseWriter, r *http.Request) {
 	}
 
 	gcm.SendToGroup(gcm.NewMessage(map[string]interface{}{"type": "sync"}, user.GCMNotificationID))
+
+	bytes, err := json.Marshal(gcmNotificationKeyResponse{NotificationKey: user.GCMNotificationID})
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(bytes)
 }
