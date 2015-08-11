@@ -52,7 +52,12 @@ func GCMAddFunc(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gcm.SendToGroup(gcm.NewMessage(map[string]interface{}{"type": "sync"}, user.GCMNotificationID))
+	err = gcm.SendToGroup(gcm.NewMessage(map[string]interface{}{"type": "sync"}, user.GCMNotificationID))
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	bytes, err := json.Marshal(gcmNotificationKeyResponse{NotificationKey: user.GCMNotificationID})
 
