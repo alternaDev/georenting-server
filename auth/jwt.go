@@ -61,7 +61,7 @@ func ValidateJWTToken(input string) (models.User, error) {
 
 		privateKey, err := StringToPrivateKey(user.PrivateKey)
 
-		return privateKey.PublicKey, err
+		return privateKey.Public(), err
 	})
 
 	if err == nil && token.Valid {
