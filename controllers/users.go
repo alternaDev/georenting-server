@@ -40,7 +40,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 
 	user.Name = googleUser.GivenName
 	user.AvatarURL = googleUser.AvatarURL
-	models.DB.Save(user)
+	models.DB.Save(&user)
 
 	token, err := auth.GenerateJWTToken(user)
 
