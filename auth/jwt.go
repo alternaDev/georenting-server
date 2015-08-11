@@ -35,6 +35,7 @@ func GenerateJWTToken(user models.User) (string, error) {
 	token := jwt.New(jwt.SigningMethodRS256)
 
 	token.Claims["user"] = user.ID
+	token.Header["id"] = user.ID
 	token.Claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
 
 	tokenString, err := token.SignedString(privateKey)
@@ -55,7 +56,7 @@ func ValidateJWTToken(input string) (models.User, error) {
 		}
 
 		// Get the user ID
-		userID, err := strconv.ParseInt(token.Claims["user"].(string), 10, 64)
+		userID, err := strconv.ParseInt(token.Header["id"].(string), 10, 64)
 
 		if err != nil {
 			return nil, err
