@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/alternaDev/georenting-server/models"
@@ -13,6 +14,11 @@ import (
 const (
 	googleVerifyURL   = "https://www.googleapis.com/oauth2/v2/userinfo"
 	googleGCMGroupURL = "https://android.googleapis.com/gcm/notification"
+)
+
+var (
+	googleAPIKey    = os.Getenv("GOOGLE_API_KEY")
+	googleProjectID = os.Getenv("GOOGLE_PROJECT_ID")
 )
 
 // User represents the data for a given Google User
@@ -73,6 +79,8 @@ func VerifyToken(token string) (User, error) {
 
 // CreateDeviceGroup creates a new Device group on Google Cloud Messaging
 func CreateDeviceGroup(firstID string, user models.User) (models.User, error) {
+	httpClient := &http.Client{}
+
 	body := gcmGroupRequest{
 		Operation:           "create",
 		NotificationKeyName: "GeoRenting-" + user.Name,
@@ -81,7 +89,11 @@ func CreateDeviceGroup(firstID string, user models.User) (models.User, error) {
 
 	bytes, err := json.Marshal(body)
 
-	resp, err := http.Post(googleGCMGroupURL, "application/json", strings.NewReader(string(bytes)))
+	req, err := http.NewRequest("POST", googleGCMGroupURL, strings.NewReader(string(bytes)))
+	req.Header.Add("Authorization", "key="+googleAPIKey)
+	req.Header.Add("project_id", googleProjectID)
+
+	resp, err := httpClient.Do(req)
 	defer resp.Body.Close()
 
 	if err != nil {
