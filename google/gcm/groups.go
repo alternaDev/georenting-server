@@ -62,6 +62,7 @@ func CreateDeviceGroup(firstID string, user models.User) error {
 	}
 
 	user.GCMNotificationID = response.NotificationKey
+	models.DB.Save(&user)
 
 	return nil
 }
