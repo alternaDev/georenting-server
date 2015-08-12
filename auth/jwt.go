@@ -34,7 +34,7 @@ func GenerateJWTToken(user models.User) (string, error) {
 	token := jwt.New(jwt.SigningMethodRS256)
 
 	token.Claims["user"] = user.ID
-	token.Header["id"] = user.ID
+	token.Header["user" = user.ID
 	token.Claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
 
 	tokenString, err := token.SignedString(privateKey)
@@ -55,7 +55,7 @@ func ValidateJWTToken(input string) (models.User, error) {
 		}
 
 		// Get the user ID
-		userID := token.Header["id"]
+		userID := token.Header["user"]
 
 		models.DB.First(&user, userID)
 
@@ -63,6 +63,10 @@ func ValidateJWTToken(input string) (models.User, error) {
 
 		return privateKey.Public(), err
 	})
+
+	if token.Claims["user"] != token.Header["user"] {
+		return models.User{}, errors.New("The token has been tampered with...inside.")
+	}
 
 	if err == nil && token.Valid {
 		return user, nil
