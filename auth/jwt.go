@@ -34,7 +34,7 @@ func GenerateJWTToken(user models.User) (string, error) {
 	token := jwt.New(jwt.SigningMethodRS256)
 
 	token.Claims["user"] = user.ID
-	token.Header["user" = user.ID
+	token.Header["user"] = user.ID
 	token.Claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
 
 	tokenString, err := token.SignedString(privateKey)
