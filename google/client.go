@@ -15,7 +15,7 @@ type User struct {
 	GoogleID      string `json:"id"`
 	Name          string `json:"name"`
 	GivenName     string `json:"given_name"`
-	FamilyName    string `json:"FamilyName"`
+	FamilyName    string `json:"family_name"`
 	GooglePlusURL string `json:"link"`
 	AvatarURL     string `json:"picture"`
 	Gender        string `json:"gender"`
