@@ -8,13 +8,15 @@ import (
 	"gopkg.in/redis.v3"
 )
 
+// RedisInstance is a usable redis instance.
 var RedisInstance = initRedis(os.Getenv("REDIS_URL"))
 
 func initRedis(www string) *redis.Client {
-	redisUrl, _ := url.Parse(www)
-	password, _ := redisUrl.User.Password()
+	redisURL, _ := url.Parse(www)
+	password, _ := redisURL.User.Password()
+
 	client := redis.NewClient(&redis.Options{
-		Addr:     redisUrl.Host,
+		Addr:     redisURL.Host,
 		Password: password,
 		DB:       0,
 	})
