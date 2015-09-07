@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/alternaDev/georenting-server/auth"
@@ -59,4 +60,18 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(bytes)
+}
+
+// LogoutHandler DELETE /user/auth
+func LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	token := r.Header.Get("Authorization")
+
+	err := auth.InvalidateToken(token)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	fmt.Fprintf(w, "{}")
 }
