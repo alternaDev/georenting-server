@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"gopkg.in/redis.v3"
+
 	"github.com/alternaDev/georenting-server/models"
 	"github.com/dgrijalva/jwt-go"
 )
@@ -47,6 +49,10 @@ func GenerateJWTToken(user models.User) (string, error) {
 func ValidateJWTToken(input string) (models.User, error) {
 	var user models.User
 
+	if isInBlacklist(input) {
+		return models.User{}, errors.New("Token is in blacklist.")
+	}
+
 	token, err := jwt.Parse(input, func(token *jwt.Token) (interface{}, error) {
 
 		// Check whether the right signing algorithm was used.
@@ -75,6 +81,50 @@ func ValidateJWTToken(input string) (models.User, error) {
 	return models.User{}, err
 }
 
+func isInBlacklist(tokenString string) bool {
+	_, err := models.RedisInstance.Get(tokenString).Result()
+	if err == redis.Nil {
+		return false
+	}
+	return true
+}
+
+func getRemainingTokenValidity(input string) int {
+	var user models.User
+
+	token, err := jwt.Parse(input, func(token *jwt.Token) (interface{}, error) {
+
+		// Check whether the right signing algorithm was used.
+		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+
+		// Get the user ID
+		userID := token.Header["user"]
+
+		models.DB.First(&user, userID)
+
+		privateKey, err := StringToPrivateKey(user.PrivateKey)
+
+		return privateKey.Public(), err
+	})
+
+	if err != nil {
+		return 3600
+	}
+
+	timestamp := token.Claims["exp"]
+
+	if validity, ok := timestamp.(float64); ok {
+		tm := time.Unix(int64(validity), 0)
+		remainer := tm.Sub(time.Now())
+		if remainer > 0 {
+			return int(remainer.Seconds() + 3600)
+		}
+	}
+	return 3600
+}
+
 // ValidateSession validates a session in a HTTP Request
 func ValidateSession(r *http.Request) (models.User, error) {
 	token := r.Header.Get("Authorization")
@@ -84,4 +134,9 @@ func ValidateSession(r *http.Request) (models.User, error) {
 	}
 
 	return ValidateJWTToken(token)
+}
+
+// InvalidateToken invalidates a given token
+func InvalidateToken(token string) error {
+	return models.RedisInstance.Set(token, token, time.Duration(getRemainingTokenValidity(token))*time.Second).Err()
 }
