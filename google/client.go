@@ -7,19 +7,35 @@ import (
 )
 
 const (
-	googleVerifyURL = "https://www.googleapis.com/oauth2/v2/userinfo"
+	googleVerifyURL = "https://www.googleapis.com/plus/v1/people/me"
 )
 
 // User represents the data for a given Google User
 type User struct {
-	GoogleID      string `json:"id"`
-	Name          string `json:"name"`
-	GivenName     string `json:"given_name"`
-	FamilyName    string `json:"family_name"`
-	GooglePlusURL string `json:"link"`
-	AvatarURL     string `json:"picture"`
-	Gender        string `json:"gender"`
-	Locale        string `json:"locale"`
+	GoogleID      string     `json:"id"`
+	Name          string     `json:"displayName"`
+	GooglePlusURL string     `json:"url"`
+	Avatar        Avatar     `json:"image"`
+	Cover         Cover      `json:"cover"`
+	Gender        string     `json:"gender"`
+	Locale        string     `json:"language"`
+}
+
+// Avatar represents a users avatar
+type Avatar struct {
+	URL string `json:"url"`
+}
+
+// Cover represents a persons cover
+type Cover struct {
+	CoverPhoto CoverPhoto `json:"coverPhoto"`
+}
+
+// CoverPhoto represents a users coverphoto
+type CoverPhoto struct {
+	URL    string `json:"url"`
+	Height int    `json:"height"`
+	Width  int    `json:"width"`
 }
 
 // VerifyToken verifies a given Google OAuth2 Token

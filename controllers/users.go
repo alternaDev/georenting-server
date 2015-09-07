@@ -14,7 +14,8 @@ type authBody struct {
 }
 
 type authResponseBody struct {
-	Token string `json:"token"`
+	Token string      `json:"token"`
+	User  models.User `json:"user"`
 }
 
 // AuthHandler handles POST /users/auth
@@ -38,8 +39,9 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 	models.DB.Where(models.User{GoogleID: googleUser.GoogleID}).FirstOrInit(&user)
 
-	user.Name = googleUser.GivenName
-	user.AvatarURL = googleUser.AvatarURL
+	user.Name = googleUser.Name
+	user.AvatarURL = googleUser.Avatar.URL
+	user.CoverURL = googleUser.Cover.CoverPhoto.URL
 	models.DB.Save(&user)
 
 	token, err := auth.GenerateJWTToken(user)
@@ -49,7 +51,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bytes, err := json.Marshal(authResponseBody{Token: token})
+	bytes, err := json.Marshal(authResponseBody{Token: token, User: user})
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
