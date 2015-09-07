@@ -20,7 +20,5 @@ func initRedis(www string) *redis.Client {
 		DB:       0,
 	})
 
-	pong, err := client.Ping().Result()
-
 	return client
 }
