@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"net/url"
 	"os"
 
@@ -22,8 +21,6 @@ func initRedis(www string) *redis.Client {
 	})
 
 	pong, err := client.Ping().Result()
-
-	fmt.Println(pong, err)
 
 	return client
 }
