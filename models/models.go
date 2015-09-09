@@ -5,8 +5,7 @@ import (
 	"os"
 
 	"github.com/jinzhu/gorm"
-	_ "github.com/lib/pq"           // Required for Postgres Databases
-	_ "github.com/mattn/go-sqlite3" // Required for SQLite Databases
+	_ "github.com/lib/pq" // Required for Postgres Databases
 )
 
 // DB provides the ability to access the Database.
