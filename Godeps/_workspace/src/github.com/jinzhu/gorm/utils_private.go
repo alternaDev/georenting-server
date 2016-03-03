@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"regexp"
 	"runtime"
+	"strings"
 )
 
 func fileWithLineNum() string {
@@ -70,4 +71,28 @@ func convertInterfaceToMap(values interface{}) map[string]interface{} {
 		}
 	}
 	return attrs
+}
+
+func toString(str interface{}) string {
+	if values, ok := str.([]interface{}); ok {
+		var results []string
+		for _, value := range values {
+			results = append(results, toString(value))
+		}
+		return strings.Join(results, "_")
+	} else if bytes, ok := str.([]byte); ok {
+		return string(bytes)
+	} else if reflectValue := reflect.Indirect(reflect.ValueOf(str)); reflectValue.IsValid() {
+		return fmt.Sprintf("%v", reflectValue.Interface())
+	}
+	return ""
+}
+
+func strInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
 }

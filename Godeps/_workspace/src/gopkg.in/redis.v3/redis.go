@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"time"
 )
+
+var Logger = log.New(os.Stderr, "redis: ", log.LstdFlags)
 
 type baseClient struct {
 	connPool pool
@@ -16,24 +19,24 @@ func (c *baseClient) String() string {
 	return fmt.Sprintf("Redis<%s db:%d>", c.opt.Addr, c.opt.DB)
 }
 
-func (c *baseClient) conn() (*conn, error) {
+func (c *baseClient) conn() (*conn, bool, error) {
 	return c.connPool.Get()
 }
 
-func (c *baseClient) putConn(cn *conn, ei error) {
-	var err error
-	if cn.rd.Buffered() > 0 {
-		err = c.connPool.Remove(cn)
-	} else if ei == nil {
-		err = c.connPool.Put(cn)
-	} else if _, ok := ei.(redisError); ok {
-		err = c.connPool.Put(cn)
-	} else {
-		err = c.connPool.Remove(cn)
+func (c *baseClient) putConn(cn *conn, err error) bool {
+	if isBadConn(err) {
+		err = c.connPool.Remove(cn, err)
+		if err != nil {
+			Logger.Printf("pool.Remove failed: %s", err)
+		}
+		return false
 	}
+
+	err = c.connPool.Put(cn)
 	if err != nil {
-		log.Printf("redis: putConn failed: %s", err)
+		Logger.Printf("pool.Put failed: %s", err)
 	}
+	return true
 }
 
 func (c *baseClient) process(cmd Cmder) {
@@ -42,7 +45,7 @@ func (c *baseClient) process(cmd Cmder) {
 			cmd.reset()
 		}
 
-		cn, err := c.conn()
+		cn, _, err := c.conn()
 		if err != nil {
 			cmd.setErr(err)
 			return
@@ -69,7 +72,7 @@ func (c *baseClient) process(cmd Cmder) {
 			return
 		}
 
-		err = cmd.parseReply(cn)
+		err = cmd.readReply(cn)
 		c.putConn(cn, err)
 		if shouldRetry(err) {
 			continue
@@ -80,6 +83,9 @@ func (c *baseClient) process(cmd Cmder) {
 }
 
 // Close closes the client, releasing any open resources.
+//
+// It is rare to Close a Client, as the Client is meant to be
+// long-lived and shared between many goroutines.
 func (c *baseClient) Close() error {
 	return c.connPool.Close()
 }
@@ -122,7 +128,7 @@ type Options struct {
 	PoolSize int
 	// Specifies amount of time client waits for connection if all
 	// connections are busy before returning an error.
-	// Default is 5 seconds.
+	// Default is 1 seconds.
 	PoolTimeout time.Duration
 	// Specifies amount of time after which client closes idle
 	// connections. Should be less than server's timeout.
@@ -173,6 +179,9 @@ func (opt *Options) getIdleTimeout() time.Duration {
 
 //------------------------------------------------------------------------------
 
+// Client is a Redis client representing a pool of zero or more
+// underlying connections. It's safe for concurrent use by multiple
+// goroutines.
 type Client struct {
 	*baseClient
 	commandable
@@ -186,7 +195,13 @@ func newClient(opt *Options, pool pool) *Client {
 	}
 }
 
+// NewClient returns a client to the Redis Server specified by Options.
 func NewClient(opt *Options) *Client {
 	pool := newConnPool(opt)
 	return newClient(opt, pool)
+}
+
+// PoolStats returns connection pool stats
+func (c *Client) PoolStats() *PoolStats {
+	return c.connPool.Stats()
 }

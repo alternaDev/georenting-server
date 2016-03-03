@@ -109,6 +109,21 @@ func ExampleClient_Incr() {
 	// Output: 1 <nil>
 }
 
+func ExampleClient_BLPop() {
+	if err := client.RPush("queue", "message").Err(); err != nil {
+		panic(err)
+	}
+
+	// use `client.BLPop(0, "queue")` for infinite waiting time
+	result, err := client.BLPop(1*time.Second, "queue").Result()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(result[0], result[1])
+	// Output: queue message
+}
+
 func ExampleClient_Scan() {
 	client.FlushDb()
 	for i := 0; i < 33; i++ {
@@ -159,13 +174,16 @@ func ExamplePipeline() {
 	// Output: 1 <nil>
 }
 
-func ExampleMulti() {
+func ExampleClient_Watch() {
+	var incr func(string) error
+
 	// Transactionally increments key using GET and SET commands.
-	incr := func(tx *redis.Multi, key string) error {
-		err := tx.Watch(key).Err()
+	incr = func(key string) error {
+		tx, err := client.Watch(key)
 		if err != nil {
 			return err
 		}
+		defer tx.Close()
 
 		n, err := tx.Get(key).Int64()
 		if err != nil && err != redis.Nil {
@@ -176,27 +194,21 @@ func ExampleMulti() {
 			tx.Set(key, strconv.FormatInt(n+1, 10), 0)
 			return nil
 		})
+		if err == redis.TxFailedErr {
+			return incr(key)
+		}
 		return err
 	}
 
 	var wg sync.WaitGroup
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 100; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 
-			tx := client.Multi()
-			defer tx.Close()
-
-			for {
-				err := incr(tx, "counter3")
-				if err == redis.TxFailedErr {
-					// Retry.
-					continue
-				} else if err != nil {
-					panic(err)
-				}
-				break
+			err := incr("counter3")
+			if err != nil {
+				panic(err)
 			}
 		}()
 	}
@@ -204,7 +216,7 @@ func ExampleMulti() {
 
 	n, err := client.Get("counter3").Int64()
 	fmt.Println(n, err)
-	// Output: 10 <nil>
+	// Output: 100 <nil>
 }
 
 func ExamplePubSub() {
@@ -219,14 +231,32 @@ func ExamplePubSub() {
 		panic(err)
 	}
 
-	for i := 0; i < 4; i++ {
-		msgi, err := pubsub.ReceiveTimeout(100 * time.Millisecond)
+	msg, err := pubsub.ReceiveMessage()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(msg.Channel, msg.Payload)
+	// Output: mychannel hello
+}
+
+func ExamplePubSub_Receive() {
+	pubsub, err := client.Subscribe("mychannel")
+	if err != nil {
+		panic(err)
+	}
+	defer pubsub.Close()
+
+	err = client.Publish("mychannel", "hello").Err()
+	if err != nil {
+		panic(err)
+	}
+
+	for i := 0; i < 2; i++ {
+		// ReceiveTimeout is a low level API. Use ReceiveMessage instead.
+		msgi, err := pubsub.ReceiveTimeout(500 * time.Millisecond)
 		if err != nil {
-			err := pubsub.Ping("")
-			if err != nil {
-				panic(err)
-			}
-			continue
+			panic(err)
 		}
 
 		switch msg := msgi.(type) {
@@ -234,8 +264,6 @@ func ExamplePubSub() {
 			fmt.Println(msg.Kind, msg.Channel)
 		case *redis.Message:
 			fmt.Println(msg.Channel, msg.Payload)
-		case *redis.Pong:
-			fmt.Println(msg)
 		default:
 			panic(fmt.Sprintf("unknown message: %#v", msgi))
 		}
@@ -243,7 +271,6 @@ func ExamplePubSub() {
 
 	// Output: subscribe mychannel
 	// mychannel hello
-	// Pong
 }
 
 func ExampleScript() {

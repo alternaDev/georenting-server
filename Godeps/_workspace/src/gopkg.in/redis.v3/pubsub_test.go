@@ -1,7 +1,9 @@
 package redis_test
 
 import (
+	"io"
 	"net"
+	"sync"
 	"time"
 
 	. "github.com/onsi/ginkgo"
@@ -12,10 +14,12 @@ import (
 
 var _ = Describe("PubSub", func() {
 	var client *redis.Client
+	readTimeout := 3 * time.Second
 
 	BeforeEach(func() {
 		client = redis.NewClient(&redis.Options{
-			Addr: redisAddr,
+			Addr:        redisAddr,
+			ReadTimeout: readTimeout,
 		})
 		Expect(client.FlushDb().Err()).NotTo(HaveOccurred())
 	})
@@ -225,6 +229,125 @@ var _ = Describe("PubSub", func() {
 		Expect(err).NotTo(HaveOccurred())
 		pong := msgi.(*redis.Pong)
 		Expect(pong.Payload).To(Equal("hello"))
+	})
+
+	It("should multi-ReceiveMessage", func() {
+		pubsub, err := client.Subscribe("mychannel")
+		Expect(err).NotTo(HaveOccurred())
+		defer pubsub.Close()
+
+		err = client.Publish("mychannel", "hello").Err()
+		Expect(err).NotTo(HaveOccurred())
+
+		err = client.Publish("mychannel", "world").Err()
+		Expect(err).NotTo(HaveOccurred())
+
+		msg, err := pubsub.ReceiveMessage()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(msg.Channel).To(Equal("mychannel"))
+		Expect(msg.Payload).To(Equal("hello"))
+
+		msg, err = pubsub.ReceiveMessage()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(msg.Channel).To(Equal("mychannel"))
+		Expect(msg.Payload).To(Equal("world"))
+	})
+
+	It("should ReceiveMessage after timeout", func() {
+		pubsub, err := client.Subscribe("mychannel")
+		Expect(err).NotTo(HaveOccurred())
+		defer pubsub.Close()
+
+		done := make(chan bool, 1)
+		go func() {
+			defer GinkgoRecover()
+			defer func() {
+				done <- true
+			}()
+
+			time.Sleep(5*time.Second + 100*time.Millisecond)
+			n, err := client.Publish("mychannel", "hello").Result()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(n).To(Equal(int64(1)))
+		}()
+
+		msg, err := pubsub.ReceiveMessage()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(msg.Channel).To(Equal("mychannel"))
+		Expect(msg.Payload).To(Equal("hello"))
+
+		Eventually(done).Should(Receive())
+	})
+
+	expectReceiveMessageOnError := func(pubsub *redis.PubSub) {
+		cn1, _, err := pubsub.Pool().Get()
+		Expect(err).NotTo(HaveOccurred())
+		cn1.SetNetConn(&badConn{
+			readErr:  io.EOF,
+			writeErr: io.EOF,
+		})
+
+		done := make(chan bool, 1)
+		go func() {
+			defer GinkgoRecover()
+			defer func() {
+				done <- true
+			}()
+
+			time.Sleep(100 * time.Millisecond)
+			err := client.Publish("mychannel", "hello").Err()
+			Expect(err).NotTo(HaveOccurred())
+		}()
+
+		msg, err := pubsub.ReceiveMessage()
+		Expect(err).NotTo(HaveOccurred())
+		Expect(msg.Channel).To(Equal("mychannel"))
+		Expect(msg.Payload).To(Equal("hello"))
+
+		Eventually(done).Should(Receive())
+	}
+
+	It("Subscribe should reconnect on ReceiveMessage error", func() {
+		pubsub, err := client.Subscribe("mychannel")
+		Expect(err).NotTo(HaveOccurred())
+		defer pubsub.Close()
+
+		expectReceiveMessageOnError(pubsub)
+	})
+
+	It("PSubscribe should reconnect on ReceiveMessage error", func() {
+		pubsub, err := client.PSubscribe("mychannel")
+		Expect(err).NotTo(HaveOccurred())
+		defer pubsub.Close()
+
+		expectReceiveMessageOnError(pubsub)
+	})
+
+	It("should return on Close", func() {
+		pubsub, err := client.Subscribe("mychannel")
+		Expect(err).NotTo(HaveOccurred())
+		defer pubsub.Close()
+
+		var wg sync.WaitGroup
+		wg.Add(1)
+		go func() {
+			defer GinkgoRecover()
+
+			wg.Done()
+
+			_, err := pubsub.ReceiveMessage()
+			Expect(err).To(MatchError("redis: client is closed"))
+
+			wg.Done()
+		}()
+
+		wg.Wait()
+		wg.Add(1)
+
+		err = pubsub.Close()
+		Expect(err).NotTo(HaveOccurred())
+
+		wg.Wait()
 	})
 
 })

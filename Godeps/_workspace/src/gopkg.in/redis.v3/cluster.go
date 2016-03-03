@@ -1,14 +1,17 @@
 package redis
 
 import (
-	"log"
 	"math/rand"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"gopkg.in/redis.v3/internal/hashtag"
 )
 
+// ClusterClient is a Redis Cluster client representing a pool of zero
+// or more underlying connections. It's safe for concurrent use by
+// multiple goroutines.
 type ClusterClient struct {
 	commandable
 
@@ -26,12 +29,12 @@ type ClusterClient struct {
 	reloading uint32
 }
 
-// NewClusterClient returns a new Redis Cluster client as described in
+// NewClusterClient returns a Redis Cluster client as described in
 // http://redis.io/topics/cluster-spec.
 func NewClusterClient(opt *ClusterOptions) *ClusterClient {
 	client := &ClusterClient{
 		addrs:   opt.Addrs,
-		slots:   make([][]string, hashSlots),
+		slots:   make([][]string, hashtag.SlotNumber),
 		clients: make(map[string]*Client),
 		opt:     opt,
 	}
@@ -41,16 +44,43 @@ func NewClusterClient(opt *ClusterOptions) *ClusterClient {
 	return client
 }
 
+// Watch creates new transaction and marks the keys to be watched
+// for conditional execution of a transaction.
+func (c *ClusterClient) Watch(keys ...string) (*Multi, error) {
+	addr := c.slotMasterAddr(hashtag.Slot(keys[0]))
+	client, err := c.getClient(addr)
+	if err != nil {
+		return nil, err
+	}
+	return client.Watch(keys...)
+}
+
+// PoolStats returns accumulated connection pool stats.
+func (c *ClusterClient) PoolStats() *PoolStats {
+	acc := PoolStats{}
+	c.clientsMx.RLock()
+	for _, client := range c.clients {
+		m := client.PoolStats()
+		acc.Requests += m.Requests
+		acc.Waits += m.Waits
+		acc.Timeouts += m.Timeouts
+		acc.TotalConns += m.TotalConns
+		acc.FreeConns += m.FreeConns
+	}
+	c.clientsMx.RUnlock()
+	return &acc
+}
+
 // Close closes the cluster client, releasing any open resources.
 //
-// It is rare to Close a Client, as the Client is meant to be
-// long-lived and shared between many goroutines.
+// It is rare to Close a ClusterClient, as the ClusterClient is meant
+// to be long-lived and shared between many goroutines.
 func (c *ClusterClient) Close() error {
 	defer c.clientsMx.Unlock()
 	c.clientsMx.Lock()
 
 	if c.closed {
-		return nil
+		return errClosed
 	}
 	c.closed = true
 	c.resetClients()
@@ -124,7 +154,7 @@ func (c *ClusterClient) randomClient() (client *Client, err error) {
 func (c *ClusterClient) process(cmd Cmder) {
 	var ask bool
 
-	slot := hashSlot(cmd.clusterKey())
+	slot := hashtag.Slot(cmd.clusterKey())
 
 	addr := c.slotMasterAddr(slot)
 	client, err := c.getClient(addr)
@@ -143,6 +173,7 @@ func (c *ClusterClient) process(cmd Cmder) {
 			pipe.Process(NewCmd("ASKING"))
 			pipe.Process(cmd)
 			_, _ = pipe.Exec()
+			pipe.Close()
 			ask = false
 		} else {
 			client.Process(cmd)
@@ -182,14 +213,14 @@ func (c *ClusterClient) process(cmd Cmder) {
 }
 
 // Closes all clients and returns last error if there are any.
-func (c *ClusterClient) resetClients() (err error) {
+func (c *ClusterClient) resetClients() (retErr error) {
 	for addr, client := range c.clients {
-		if e := client.Close(); e != nil {
-			err = e
+		if err := client.Close(); err != nil && retErr == nil {
+			retErr = err
 		}
 		delete(c.clients, addr)
 	}
-	return err
+	return retErr
 }
 
 func (c *ClusterClient) setSlots(slots []ClusterSlotInfo) {
@@ -200,7 +231,7 @@ func (c *ClusterClient) setSlots(slots []ClusterSlotInfo) {
 		seen[addr] = struct{}{}
 	}
 
-	for i := 0; i < hashSlots; i++ {
+	for i := 0; i < hashtag.SlotNumber; i++ {
 		c.slots[i] = c.slots[i][:0]
 	}
 	for _, info := range slots {
@@ -224,13 +255,13 @@ func (c *ClusterClient) reloadSlots() {
 
 	client, err := c.randomClient()
 	if err != nil {
-		log.Printf("redis: randomClient failed: %s", err)
+		Logger.Printf("randomClient failed: %s", err)
 		return
 	}
 
 	slots, err := client.ClusterSlots().Result()
 	if err != nil {
-		log.Printf("redis: ClusterSlots failed: %s", err)
+		Logger.Printf("ClusterSlots failed: %s", err)
 		return
 	}
 	c.setSlots(slots)
@@ -290,6 +321,7 @@ type ClusterOptions struct {
 	ReadTimeout  time.Duration
 	WriteTimeout time.Duration
 
+	// PoolSize applies per cluster node and not for the whole cluster.
 	PoolSize    int
 	PoolTimeout time.Duration
 	IdleTimeout time.Duration
@@ -317,27 +349,4 @@ func (opt *ClusterOptions) clientOptions() *Options {
 		PoolTimeout: opt.PoolTimeout,
 		IdleTimeout: opt.IdleTimeout,
 	}
-}
-
-//------------------------------------------------------------------------------
-
-const hashSlots = 16384
-
-func hashKey(key string) string {
-	if s := strings.IndexByte(key, '{'); s > -1 {
-		if e := strings.IndexByte(key[s+1:], '}'); e > 0 {
-			return key[s+1 : s+e+1]
-		}
-	}
-	return key
-}
-
-// hashSlot returns a consistent slot number between 0 and 16383
-// for any given string key.
-func hashSlot(key string) int {
-	key = hashKey(key)
-	if key == "" {
-		return rand.Intn(hashSlots)
-	}
-	return int(crc16sum(key)) % hashSlots
 }

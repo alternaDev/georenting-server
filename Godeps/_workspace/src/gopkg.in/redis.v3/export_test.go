@@ -6,10 +6,12 @@ func (c *baseClient) Pool() pool {
 	return c.connPool
 }
 
-func (cn *conn) SetNetConn(netcn net.Conn) {
-	cn.netcn = netcn
+func (c *PubSub) Pool() pool {
+	return c.base.connPool
 }
 
-func HashSlot(key string) int {
-	return hashSlot(key)
+var NewConnDialer = newConnDialer
+
+func (cn *conn) SetNetConn(netcn net.Conn) {
+	cn.netcn = netcn
 }

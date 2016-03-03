@@ -3,11 +3,11 @@ package redis
 import (
 	"errors"
 	"fmt"
-	"log"
 	"sync"
 	"time"
 
 	"gopkg.in/redis.v3/internal/consistenthash"
+	"gopkg.in/redis.v3/internal/hashtag"
 )
 
 var (
@@ -92,9 +92,10 @@ func (shard *ringShard) Vote(up bool) bool {
 }
 
 // Ring is a Redis client that uses constistent hashing to distribute
-// keys across multiple Redis servers (shards).
+// keys across multiple Redis servers (shards). It's safe for
+// concurrent use by multiple goroutines.
 //
-// It monitors the state of each shard and removes dead shards from
+// Ring monitors the state of each shard and removes dead shards from
 // the ring. When shard comes online it is added back to the ring. This
 // gives you maximum availability and partition tolerance, but no
 // consistency between different shards or even clients. Each client
@@ -150,7 +151,7 @@ func (ring *Ring) getClient(key string) (*Client, error) {
 		return nil, errClosed
 	}
 
-	name := ring.hash.Get(hashKey(key))
+	name := ring.hash.Get(hashtag.Key(key))
 	if name == "" {
 		ring.mx.RUnlock()
 		return nil, errRingShardsDown
@@ -200,7 +201,7 @@ func (ring *Ring) heartbeat() {
 		for _, shard := range ring.shards {
 			err := shard.Client.Ping().Err()
 			if shard.Vote(err == nil || err == errPoolTimeout) {
-				log.Printf("redis: ring shard state changed: %s", shard)
+				Logger.Printf("ring shard state changed: %s", shard)
 				rebalance = true
 			}
 		}
@@ -215,8 +216,8 @@ func (ring *Ring) heartbeat() {
 
 // Close closes the ring client, releasing any open resources.
 //
-// It is rare to Close a Client, as the Client is meant to be
-// long-lived and shared between many goroutines.
+// It is rare to Close a Ring, as the Ring is meant to be long-lived
+// and shared between many goroutines.
 func (ring *Ring) Close() (retErr error) {
 	defer ring.mx.Unlock()
 	ring.mx.Lock()
@@ -238,7 +239,8 @@ func (ring *Ring) Close() (retErr error) {
 }
 
 // RingPipeline creates a new pipeline which is able to execute commands
-// against multiple shards.
+// against multiple shards. It's NOT safe for concurrent use by
+// multiple goroutines.
 type RingPipeline struct {
 	commandable
 
@@ -295,7 +297,7 @@ func (pipe *RingPipeline) Exec() (cmds []Cmder, retErr error) {
 
 	cmdsMap := make(map[string][]Cmder)
 	for _, cmd := range cmds {
-		name := pipe.ring.hash.Get(hashKey(cmd.clusterKey()))
+		name := pipe.ring.hash.Get(hashtag.Key(cmd.clusterKey()))
 		if name == "" {
 			cmd.setErr(errRingShardsDown)
 			if retErr == nil {
@@ -311,7 +313,7 @@ func (pipe *RingPipeline) Exec() (cmds []Cmder, retErr error) {
 
 		for name, cmds := range cmdsMap {
 			client := pipe.ring.shards[name].Client
-			cn, err := client.conn()
+			cn, _, err := client.conn()
 			if err != nil {
 				setCmdsErr(cmds, err)
 				if retErr == nil {
@@ -342,6 +344,7 @@ func (pipe *RingPipeline) Exec() (cmds []Cmder, retErr error) {
 	return cmds, retErr
 }
 
+// Close closes the pipeline, releasing any open resources.
 func (pipe *RingPipeline) Close() error {
 	pipe.Discard()
 	pipe.closed = true

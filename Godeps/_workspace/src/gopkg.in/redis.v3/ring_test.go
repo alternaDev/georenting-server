@@ -49,14 +49,14 @@ var _ = Describe("Redis ring", func() {
 		Expect(ringShard2.Info().Val()).To(ContainSubstring("keys=43"))
 	})
 
-	It("uses one shard when other shard is down", func() {
+	It("uses single shard when one of the shards is down", func() {
 		// Stop ringShard2.
 		Expect(ringShard2.Close()).NotTo(HaveOccurred())
 
 		// Ring needs 5 * heartbeat time to detect that node is down.
 		// Give it more to be sure.
 		heartbeat := 100 * time.Millisecond
-		time.Sleep(5*heartbeat + heartbeat)
+		time.Sleep(2 * 5 * heartbeat)
 
 		setRingKeys()
 

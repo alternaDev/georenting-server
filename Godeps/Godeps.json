@@ -8,42 +8,42 @@
 		},
 		{
 			"ImportPath": "github.com/dgrijalva/jwt-go",
-			"Comment": "v2.3.0-1-g9fe8afe",
-			"Rev": "9fe8afe96d32468fba230b8b22acea86251f0506"
+			"Comment": "v2.4.0-11-gf219341",
+			"Rev": "f2193411bd642f7db03249fd79d5292c9b34916a"
 		},
 		{
 			"ImportPath": "github.com/gorilla/context",
-			"Rev": "215affda49addc4c8ef7e2534915df2c8c35c6cd"
+			"Rev": "1ea25387ff6f684839d82767c1733ff4d4d15d0a"
 		},
 		{
 			"ImportPath": "github.com/gorilla/handlers",
-			"Rev": "8d15e1138fa414148ca497a280ff7d41046d619d"
+			"Rev": "ee54c7b44cab12289237fb8631314790076e728b"
 		},
 		{
 			"ImportPath": "github.com/gorilla/mux",
-			"Rev": "f15e0c49460fd49eebe2bcc8486b05d1bef68d3a"
+			"Rev": "c9e326e2bdec29039a3761c07bece13133863e1e"
 		},
 		{
 			"ImportPath": "github.com/jinzhu/gorm",
-			"Rev": "d21eed4b6623ab76f67977fc1f151a43a1541480"
+			"Rev": "e1df3994fb585496b9224e25cba1d3c2d0e06460"
+		},
+		{
+			"ImportPath": "github.com/jinzhu/inflection",
+			"Rev": "3272df6c21d04180007eb3349844c89a3856bc25"
 		},
 		{
 			"ImportPath": "github.com/lib/pq",
-			"Comment": "go1.0-cutoff-59-gb269bd0",
-			"Rev": "b269bd035a727d6c1081f76e7a239a1b00674c40"
-		},
-		{
-			"ImportPath": "github.com/qor/inflection",
-			"Rev": "45321e63b98c756df17369c027c1df89298e1288"
+			"Comment": "go1.0-cutoff-82-ge182dc4",
+			"Rev": "e182dc4027e2ded4b19396d638610f2653295f36"
 		},
 		{
 			"ImportPath": "gopkg.in/bsm/ratelimit.v1",
-			"Rev": "bda20d5067a03094fc6762f7ead53027afac5f28"
+			"Rev": "db14e161995a5177acef654cb0dd785e8ee8bc22"
 		},
 		{
 			"ImportPath": "gopkg.in/redis.v3",
-			"Comment": "v3.2.8",
-			"Rev": "1e9f53a8e7fe1a37ee5adb04fd0f9cc04bce378f"
+			"Comment": "v3.3.1",
+			"Rev": "7116858f6796e0e82dd41581e8fe2988dddc1d4c"
 		}
 	]
 }

@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/jinzhu/gorm"
+
 	"reflect"
 	"time"
 )
@@ -26,7 +28,7 @@ type User struct {
 	CreditCard        CreditCard
 	Latitude          float64
 	Languages         []Language `gorm:"many2many:user_languages;"`
-	CompanyID         int64
+	CompanyID         *int
 	Company           Company
 	Role
 	PasswordHash      []byte
@@ -64,7 +66,7 @@ type Address struct {
 }
 
 type Language struct {
-	Id    int
+	gorm.Model
 	Name  string
 	Users []User `gorm:"many2many:user_languages;"`
 }
@@ -154,12 +156,12 @@ type Post struct {
 }
 
 type Category struct {
-	Id   int64
+	gorm.Model
 	Name string
 }
 
 type Comment struct {
-	Id      int64
+	gorm.Model
 	PostId  int64
 	Content string
 	Post    Post
@@ -168,7 +170,8 @@ type Comment struct {
 // Scanner
 type NullValue struct {
 	Id      int64
-	Name    sql.NullString `sql:"not null"`
+	Name    sql.NullString  `sql:"not null"`
+	Gender  *sql.NullString `sql:"not null"`
 	Age     sql.NullInt64
 	Male    sql.NullBool
 	Height  sql.NullFloat64

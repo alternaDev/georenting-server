@@ -1,12 +1,11 @@
 package redis_test
 
 import (
-	"fmt"
+	"errors"
 	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -99,17 +98,14 @@ func TestGinkgoSuite(t *testing.T) {
 
 //------------------------------------------------------------------------------
 
-// Replaces ginkgo's Eventually.
-func waitForSubstring(fn func() string, substr string, timeout time.Duration) error {
-	var s string
-
-	found := make(chan struct{})
+func eventually(fn func() error, timeout time.Duration) (err error) {
+	done := make(chan struct{})
 	var exit int32
 	go func() {
 		for atomic.LoadInt32(&exit) == 0 {
-			s = fn()
-			if strings.Contains(s, substr) {
-				found <- struct{}{}
+			err = fn()
+			if err == nil {
+				close(done)
 				return
 			}
 			time.Sleep(timeout / 100)
@@ -117,12 +113,12 @@ func waitForSubstring(fn func() string, substr string, timeout time.Duration) er
 	}()
 
 	select {
-	case <-found:
+	case <-done:
 		return nil
 	case <-time.After(timeout):
 		atomic.StoreInt32(&exit, 1)
+		return err
 	}
-	return fmt.Errorf("%q does not contain %q", s, substr)
 }
 
 func execCmd(name string, args ...string) (*os.Process, error) {
@@ -134,20 +130,19 @@ func execCmd(name string, args ...string) (*os.Process, error) {
 	return cmd.Process, cmd.Start()
 }
 
-func connectTo(port string) (client *redis.Client, err error) {
-	client = redis.NewClient(&redis.Options{
+func connectTo(port string) (*redis.Client, error) {
+	client := redis.NewClient(&redis.Options{
 		Addr: ":" + port,
 	})
 
-	deadline := time.Now().Add(3 * time.Second)
-	for time.Now().Before(deadline) {
-		if err = client.Ping().Err(); err == nil {
-			return client, nil
-		}
-		time.Sleep(250 * time.Millisecond)
+	err := eventually(func() error {
+		return client.Ping().Err()
+	}, 10*time.Second)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, err
+	return client, nil
 }
 
 type redisProcess struct {
@@ -156,8 +151,22 @@ type redisProcess struct {
 }
 
 func (p *redisProcess) Close() error {
+	if err := p.Kill(); err != nil {
+		return err
+	}
+
+	err := eventually(func() error {
+		if err := p.Client.Ping().Err(); err != nil {
+			return nil
+		}
+		return errors.New("client is not shutdown")
+	}, 10*time.Second)
+	if err != nil {
+		return err
+	}
+
 	p.Client.Close()
-	return p.Kill()
+	return nil
 }
 
 var (
@@ -169,9 +178,11 @@ func redisDir(port string) (string, error) {
 	dir, err := filepath.Abs(filepath.Join(".test", "instances", port))
 	if err != nil {
 		return "", err
-	} else if err = os.RemoveAll(dir); err != nil {
+	}
+	if err := os.RemoveAll(dir); err != nil {
 		return "", err
-	} else if err = os.MkdirAll(dir, 0775); err != nil {
+	}
+	if err := os.MkdirAll(dir, 0775); err != nil {
 		return "", err
 	}
 	return dir, nil
@@ -231,20 +242,37 @@ func startSentinel(port, masterName, masterPort string) (*redisProcess, error) {
 
 //------------------------------------------------------------------------------
 
-type badNetConn struct {
+type badConnError string
+
+func (e badConnError) Error() string   { return string(e) }
+func (e badConnError) Timeout() bool   { return false }
+func (e badConnError) Temporary() bool { return false }
+
+type badConn struct {
 	net.TCPConn
+
+	readDelay, writeDelay time.Duration
+	readErr, writeErr     error
 }
 
-var _ net.Conn = &badNetConn{}
+var _ net.Conn = &badConn{}
 
-func newBadNetConn() net.Conn {
-	return &badNetConn{}
+func (cn *badConn) Read([]byte) (int, error) {
+	if cn.readDelay != 0 {
+		time.Sleep(cn.readDelay)
+	}
+	if cn.readErr != nil {
+		return 0, cn.readErr
+	}
+	return 0, badConnError("bad connection")
 }
 
-func (badNetConn) Read([]byte) (int, error) {
-	return 0, net.UnknownNetworkError("badNetConn")
-}
-
-func (badNetConn) Write([]byte) (int, error) {
-	return 0, net.UnknownNetworkError("badNetConn")
+func (cn *badConn) Write([]byte) (int, error) {
+	if cn.writeDelay != 0 {
+		time.Sleep(cn.writeDelay)
+	}
+	if cn.writeErr != nil {
+		return 0, cn.writeErr
+	}
+	return 0, badConnError("bad connection")
 }

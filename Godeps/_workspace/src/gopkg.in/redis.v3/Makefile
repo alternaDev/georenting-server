@@ -1,9 +1,6 @@
 all: testdeps
-	go test ./... -v=1 -cpu=1,2,4
-	go test ./... -short -race
-
-test: testdeps
-	go test ./... -v=1
+	go test ./... -test.v -test.cpu=1,2,4
+	go test ./... -test.v -test.short -test.race
 
 testdeps: .test/redis/src/redis-server
 
@@ -11,7 +8,7 @@ testdeps: .test/redis/src/redis-server
 
 .test/redis:
 	mkdir -p $@
-	wget -qO- https://github.com/antirez/redis/archive/3.0.3.tar.gz | tar xvz --strip-components=1 -C $@
+	wget -qO- https://github.com/antirez/redis/archive/unstable.tar.gz | tar xvz --strip-components=1 -C $@
 
 .test/redis/src/redis-server: .test/redis
 	cd $< && make all

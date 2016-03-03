@@ -20,10 +20,8 @@ var _ = Describe("Commands", func() {
 
 	BeforeEach(func() {
 		client = redis.NewClient(&redis.Options{
-			Addr:         redisAddr,
-			ReadTimeout:  500 * time.Millisecond,
-			WriteTimeout: 500 * time.Millisecond,
-			PoolTimeout:  30 * time.Second,
+			Addr:        redisAddr,
+			PoolTimeout: 30 * time.Second,
 		})
 	})
 
@@ -81,13 +79,20 @@ var _ = Describe("Commands", func() {
 			err := client.ClientPause(time.Second).Err()
 			Expect(err).NotTo(HaveOccurred())
 
-			Consistently(func() error {
-				return client.Ping().Err()
-			}, "400ms").Should(HaveOccurred()) // pause time - read timeout
+			start := time.Now()
+			err = client.Ping().Err()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(time.Now()).To(BeTemporally("~", start.Add(time.Second), 800*time.Millisecond))
+		})
 
-			Eventually(func() error {
-				return client.Ping().Err()
-			}, "1s").ShouldNot(HaveOccurred())
+		It("should ClientSetName and ClientGetName", func() {
+			isSet, err := client.ClientSetName("theclientname").Result()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(isSet).To(BeTrue())
+
+			val, err := client.ClientGetName().Result()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(val).To(Equal("theclientname"))
 		})
 
 		It("should ConfigGet", func() {
@@ -123,6 +128,13 @@ var _ = Describe("Commands", func() {
 			info := client.Info()
 			Expect(info.Err()).NotTo(HaveOccurred())
 			Expect(info.Val()).NotTo(Equal(""))
+		})
+
+		It("should Info cpu", func() {
+			info := client.Info("cpu")
+			Expect(info.Err()).NotTo(HaveOccurred())
+			Expect(info.Val()).NotTo(Equal(""))
+			Expect(info.Val()).To(ContainSubstring(`used_cpu_sys`))
 		})
 
 		It("should LastSave", func() {
@@ -193,7 +205,7 @@ var _ = Describe("Commands", func() {
 
 			dump := client.Dump("key")
 			Expect(dump.Err()).NotTo(HaveOccurred())
-			Expect(dump.Val()).To(Equal("\x00\x05hello\x06\x00\xf5\x9f\xb7\xf6\x90a\x1c\x99"))
+			Expect(dump.Val()).NotTo(BeEmpty())
 		})
 
 		It("should Exists", func() {
@@ -488,19 +500,58 @@ var _ = Describe("Commands", func() {
 		})
 
 		It("should Sort", func() {
-			lPush := client.LPush("list", "1")
-			Expect(lPush.Err()).NotTo(HaveOccurred())
-			Expect(lPush.Val()).To(Equal(int64(1)))
-			lPush = client.LPush("list", "3")
-			Expect(lPush.Err()).NotTo(HaveOccurred())
-			Expect(lPush.Val()).To(Equal(int64(2)))
-			lPush = client.LPush("list", "2")
-			Expect(lPush.Err()).NotTo(HaveOccurred())
-			Expect(lPush.Val()).To(Equal(int64(3)))
+			size, err := client.LPush("list", "1").Result()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(size).To(Equal(int64(1)))
 
-			sort := client.Sort("list", redis.Sort{Offset: 0, Count: 2, Order: "ASC"})
-			Expect(sort.Err()).NotTo(HaveOccurred())
-			Expect(sort.Val()).To(Equal([]string{"1", "2"}))
+			size, err = client.LPush("list", "3").Result()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(size).To(Equal(int64(2)))
+
+			size, err = client.LPush("list", "2").Result()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(size).To(Equal(int64(3)))
+
+			els, err := client.Sort("list", redis.Sort{
+				Offset: 0,
+				Count:  2,
+				Order:  "ASC",
+			}).Result()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(els).To(Equal([]string{"1", "2"}))
+		})
+
+		It("should Sort and Get", func() {
+			size, err := client.LPush("list", "1").Result()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(size).To(Equal(int64(1)))
+
+			size, err = client.LPush("list", "3").Result()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(size).To(Equal(int64(2)))
+
+			size, err = client.LPush("list", "2").Result()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(size).To(Equal(int64(3)))
+
+			err = client.Set("object_2", "value2", 0).Err()
+			Expect(err).NotTo(HaveOccurred())
+
+			{
+				els, err := client.Sort("list", redis.Sort{
+					Get: []string{"object_*"},
+				}).Result()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(els).To(Equal([]string{"", "value2", ""}))
+			}
+
+			{
+				els, err := client.SortInterfaces("list", redis.Sort{
+					Get: []string{"object_*"},
+				}).Result()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(els).To(Equal([]interface{}{nil, "value2", nil}))
+			}
 		})
 
 		It("should TTL", func() {
@@ -1180,6 +1231,31 @@ var _ = Describe("Commands", func() {
 
 	})
 
+	Describe("hyperloglog", func() {
+		It("should PFMerge", func() {
+			pfAdd := client.PFAdd("hll1", "1", "2", "3", "4", "5")
+			Expect(pfAdd.Err()).NotTo(HaveOccurred())
+
+			pfCount := client.PFCount("hll1")
+			Expect(pfCount.Err()).NotTo(HaveOccurred())
+			Expect(pfCount.Val()).To(Equal(int64(5)))
+
+			pfAdd = client.PFAdd("hll2", "a", "b", "c", "d", "e")
+			Expect(pfAdd.Err()).NotTo(HaveOccurred())
+
+			pfMerge := client.PFMerge("hllMerged", "hll1", "hll2")
+			Expect(pfMerge.Err()).NotTo(HaveOccurred())
+
+			pfCount = client.PFCount("hllMerged")
+			Expect(pfCount.Err()).NotTo(HaveOccurred())
+			Expect(pfCount.Val()).To(Equal(int64(10)))
+
+			pfCount = client.PFCount("hll1", "hll2")
+			Expect(pfCount.Err()).NotTo(HaveOccurred())
+			Expect(pfCount.Val()).To(Equal(int64(10)))
+		})
+	})
+
 	Describe("lists", func() {
 
 		It("should BLPop", func() {
@@ -1272,12 +1348,15 @@ var _ = Describe("Commands", func() {
 		})
 
 		It("should BRPopLPush", func() {
-			rPush := client.RPush("list1", "a", "b", "c")
-			Expect(rPush.Err()).NotTo(HaveOccurred())
+			_, err := client.BRPopLPush("list1", "list2", time.Second).Result()
+			Expect(err).To(Equal(redis.Nil))
 
-			bRPopLPush := client.BRPopLPush("list1", "list2", 0)
-			Expect(bRPopLPush.Err()).NotTo(HaveOccurred())
-			Expect(bRPopLPush.Val()).To(Equal("c"))
+			err = client.RPush("list1", "a", "b", "c").Err()
+			Expect(err).NotTo(HaveOccurred())
+
+			v, err := client.BRPopLPush("list1", "list2", 0).Result()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(v).To(Equal("c"))
 		})
 
 		It("should LIndex", func() {
@@ -2056,7 +2135,7 @@ var _ = Describe("Commands", func() {
 			Expect(zAdd.Err()).NotTo(HaveOccurred())
 
 			zInterStore := client.ZInterStore(
-				"out", redis.ZStore{Weights: []int64{2, 3}}, "zset1", "zset2")
+				"out", redis.ZStore{Weights: []float64{2, 3}}, "zset1", "zset2")
 			Expect(zInterStore.Err()).NotTo(HaveOccurred())
 			Expect(zInterStore.Val()).To(Equal(int64(2)))
 
@@ -2453,7 +2532,7 @@ var _ = Describe("Commands", func() {
 			Expect(zAdd.Err()).NotTo(HaveOccurred())
 
 			zUnionStore := client.ZUnionStore(
-				"out", redis.ZStore{Weights: []int64{2, 3}}, "zset1", "zset2")
+				"out", redis.ZStore{Weights: []float64{2, 3}}, "zset1", "zset2")
 			Expect(zUnionStore.Err()).NotTo(HaveOccurred())
 			Expect(zUnionStore.Val()).To(Equal(int64(3)))
 
@@ -2519,6 +2598,145 @@ var _ = Describe("Commands", func() {
 			Expect(val).To(Equal(int64(C * N)))
 		})
 
+	})
+
+	Describe("Geo add and radius search", func() {
+		BeforeEach(func() {
+			geoAdd := client.GeoAdd(
+				"Sicily",
+				&redis.GeoLocation{Longitude: 13.361389, Latitude: 38.115556, Name: "Palermo"},
+				&redis.GeoLocation{Longitude: 15.087269, Latitude: 37.502669, Name: "Catania"},
+			)
+			Expect(geoAdd.Err()).NotTo(HaveOccurred())
+			Expect(geoAdd.Val()).To(Equal(int64(2)))
+		})
+
+		It("should not add same geo location", func() {
+			geoAdd := client.GeoAdd(
+				"Sicily",
+				&redis.GeoLocation{Longitude: 13.361389, Latitude: 38.115556, Name: "Palermo"},
+			)
+			Expect(geoAdd.Err()).NotTo(HaveOccurred())
+			Expect(geoAdd.Val()).To(Equal(int64(0)))
+		})
+
+		It("should search geo radius", func() {
+			res, err := client.GeoRadius("Sicily", 15, 37, &redis.GeoRadiusQuery{
+				Radius: 200,
+			}).Result()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(res).To(HaveLen(2))
+			Expect(res[0].Name).To(Equal("Palermo"))
+			Expect(res[1].Name).To(Equal("Catania"))
+		})
+
+		It("should search geo radius with options", func() {
+			res, err := client.GeoRadius("Sicily", 15, 37, &redis.GeoRadiusQuery{
+				Radius:      200,
+				Unit:        "km",
+				WithGeoHash: true,
+				WithCoord:   true,
+				WithDist:    true,
+				Count:       2,
+				Sort:        "ASC",
+			}).Result()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(res).To(HaveLen(2))
+			Expect(res[1].Name).To(Equal("Palermo"))
+			Expect(res[1].Dist).To(Equal(190.4424))
+			Expect(res[1].GeoHash).To(Equal(int64(3479099956230698)))
+			Expect(res[1].Longitude).To(Equal(13.361389338970184))
+			Expect(res[1].Latitude).To(Equal(38.115556395496299))
+			Expect(res[0].Name).To(Equal("Catania"))
+			Expect(res[0].Dist).To(Equal(56.4413))
+			Expect(res[0].GeoHash).To(Equal(int64(3479447370796909)))
+			Expect(res[0].Longitude).To(Equal(15.087267458438873))
+			Expect(res[0].Latitude).To(Equal(37.50266842333162))
+		})
+
+		It("should search geo radius with WithDist=false", func() {
+			res, err := client.GeoRadius("Sicily", 15, 37, &redis.GeoRadiusQuery{
+				Radius:      200,
+				Unit:        "km",
+				WithGeoHash: true,
+				WithCoord:   true,
+				Count:       2,
+				Sort:        "ASC",
+			}).Result()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(res).To(HaveLen(2))
+			Expect(res[1].Name).To(Equal("Palermo"))
+			Expect(res[1].Dist).To(Equal(float64(0)))
+			Expect(res[1].GeoHash).To(Equal(int64(3479099956230698)))
+			Expect(res[1].Longitude).To(Equal(13.361389338970184))
+			Expect(res[1].Latitude).To(Equal(38.115556395496299))
+			Expect(res[0].Name).To(Equal("Catania"))
+			Expect(res[0].Dist).To(Equal(float64(0)))
+			Expect(res[0].GeoHash).To(Equal(int64(3479447370796909)))
+			Expect(res[0].Longitude).To(Equal(15.087267458438873))
+			Expect(res[0].Latitude).To(Equal(37.50266842333162))
+		})
+
+		It("should search geo radius by member with options", func() {
+			res, err := client.GeoRadiusByMember("Sicily", "Catania", &redis.GeoRadiusQuery{
+				Radius:      200,
+				Unit:        "km",
+				WithGeoHash: true,
+				WithCoord:   true,
+				WithDist:    true,
+				Count:       2,
+				Sort:        "ASC",
+			}).Result()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(res).To(HaveLen(2))
+			Expect(res[0].Name).To(Equal("Catania"))
+			Expect(res[0].Dist).To(Equal(0.0))
+			Expect(res[0].GeoHash).To(Equal(int64(3479447370796909)))
+			Expect(res[0].Longitude).To(Equal(15.087267458438873))
+			Expect(res[0].Latitude).To(Equal(37.50266842333162))
+			Expect(res[1].Name).To(Equal("Palermo"))
+			Expect(res[1].Dist).To(Equal(166.2742))
+			Expect(res[1].GeoHash).To(Equal(int64(3479099956230698)))
+			Expect(res[1].Longitude).To(Equal(13.361389338970184))
+			Expect(res[1].Latitude).To(Equal(38.115556395496299))
+		})
+
+		It("should search geo radius with no results", func() {
+			res, err := client.GeoRadius("Sicily", 99, 37, &redis.GeoRadiusQuery{
+				Radius:      200,
+				Unit:        "km",
+				WithGeoHash: true,
+				WithCoord:   true,
+				WithDist:    true,
+			}).Result()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(res).To(HaveLen(0))
+		})
+
+		It("should get geo distance with unit options", func() {
+			// From Redis CLI, note the difference in rounding in m vs
+			// km on Redis itself.
+			//
+			// GEOADD Sicily 13.361389 38.115556 "Palermo" 15.087269 37.502669 "Catania"
+			// GEODIST Sicily Palermo Catania m
+			// "166274.15156960033"
+			// GEODIST Sicily Palermo Catania km
+			// "166.27415156960032"
+			geoDist := client.GeoDist("Sicily", "Palermo", "Catania", "km")
+			Expect(geoDist.Err()).NotTo(HaveOccurred())
+			Expect(geoDist.Val()).To(BeNumerically("~", 166.27, 0.01))
+
+			geoDist = client.GeoDist("Sicily", "Palermo", "Catania", "m")
+			Expect(geoDist.Err()).NotTo(HaveOccurred())
+			Expect(geoDist.Val()).To(BeNumerically("~", 166274.15, 0.01))
+		})
+
+		It("should get geo hash in string representation", func() {
+			res, err := client.GeoHash("Sicily", "Palermo", "Catania").Result()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(res[0]).To(Equal("sqc8b49rny0"))
+			Expect(res[1]).To(Equal("sqdtr74hyu0"))
+		})
 	})
 
 	Describe("marshaling/unmarshaling", func() {

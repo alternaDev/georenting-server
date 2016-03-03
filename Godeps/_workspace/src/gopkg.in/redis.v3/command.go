@@ -28,7 +28,7 @@ var (
 
 type Cmder interface {
 	args() []interface{}
-	parseReply(*conn) error
+	readReply(*conn) error
 	setErr(error)
 	reset()
 
@@ -152,14 +152,20 @@ func (cmd *Cmd) String() string {
 	return cmdString(cmd, cmd.val)
 }
 
-func (cmd *Cmd) parseReply(cn *conn) error {
-	cmd.val, cmd.err = parseReply(cn, parseSlice)
-	// Convert to string to preserve old behaviour.
-	// TODO: remove in v4
-	if v, ok := cmd.val.([]byte); ok {
-		cmd.val = string(v)
+func (cmd *Cmd) readReply(cn *conn) error {
+	val, err := readReply(cn, sliceParser)
+	if err != nil {
+		cmd.err = err
+		return cmd.err
 	}
-	return cmd.err
+	if v, ok := val.([]byte); ok {
+		// Convert to string to preserve old behaviour.
+		// TODO: remove in v4
+		cmd.val = string(v)
+	} else {
+		cmd.val = val
+	}
+	return nil
 }
 
 //------------------------------------------------------------------------------
@@ -191,8 +197,8 @@ func (cmd *SliceCmd) String() string {
 	return cmdString(cmd, cmd.val)
 }
 
-func (cmd *SliceCmd) parseReply(cn *conn) error {
-	v, err := parseReply(cn, parseSlice)
+func (cmd *SliceCmd) readReply(cn *conn) error {
+	v, err := readArrayReply(cn, sliceParser)
 	if err != nil {
 		cmd.err = err
 		return err
@@ -234,14 +240,9 @@ func (cmd *StatusCmd) String() string {
 	return cmdString(cmd, cmd.val)
 }
 
-func (cmd *StatusCmd) parseReply(cn *conn) error {
-	v, err := parseReply(cn, nil)
-	if err != nil {
-		cmd.err = err
-		return err
-	}
-	cmd.val = string(v.([]byte))
-	return nil
+func (cmd *StatusCmd) readReply(cn *conn) error {
+	cmd.val, cmd.err = readStringReply(cn)
+	return cmd.err
 }
 
 //------------------------------------------------------------------------------
@@ -273,14 +274,9 @@ func (cmd *IntCmd) String() string {
 	return cmdString(cmd, cmd.val)
 }
 
-func (cmd *IntCmd) parseReply(cn *conn) error {
-	v, err := parseReply(cn, nil)
-	if err != nil {
-		cmd.err = err
-		return err
-	}
-	cmd.val = v.(int64)
-	return nil
+func (cmd *IntCmd) readReply(cn *conn) error {
+	cmd.val, cmd.err = readIntReply(cn)
+	return cmd.err
 }
 
 //------------------------------------------------------------------------------
@@ -316,13 +312,13 @@ func (cmd *DurationCmd) String() string {
 	return cmdString(cmd, cmd.val)
 }
 
-func (cmd *DurationCmd) parseReply(cn *conn) error {
-	v, err := parseReply(cn, nil)
+func (cmd *DurationCmd) readReply(cn *conn) error {
+	n, err := readIntReply(cn)
 	if err != nil {
 		cmd.err = err
 		return err
 	}
-	cmd.val = time.Duration(v.(int64)) * cmd.precision
+	cmd.val = time.Duration(n) * cmd.precision
 	return nil
 }
 
@@ -357,10 +353,10 @@ func (cmd *BoolCmd) String() string {
 
 var ok = []byte("OK")
 
-func (cmd *BoolCmd) parseReply(cn *conn) error {
-	v, err := parseReply(cn, nil)
-	// `SET key value NX` returns nil when key already exists, which
-	// is inconsistent with `SETNX key value`.
+func (cmd *BoolCmd) readReply(cn *conn) error {
+	v, err := readReply(cn, nil)
+	// `SET key value NX` returns nil when key already exists. But
+	// `SETNX key value` returns bool (0/1). So convert nil to bool.
 	// TODO: is this okay?
 	if err == Nil {
 		cmd.val = false
@@ -443,13 +439,13 @@ func (cmd *StringCmd) String() string {
 	return cmdString(cmd, cmd.val)
 }
 
-func (cmd *StringCmd) parseReply(cn *conn) error {
-	v, err := parseReply(cn, nil)
+func (cmd *StringCmd) readReply(cn *conn) error {
+	b, err := readBytesReply(cn)
 	if err != nil {
 		cmd.err = err
 		return err
 	}
-	cmd.val = cn.copyBuf(v.([]byte))
+	cmd.val = cn.copyBuf(b)
 	return nil
 }
 
@@ -482,14 +478,8 @@ func (cmd *FloatCmd) String() string {
 	return cmdString(cmd, cmd.val)
 }
 
-func (cmd *FloatCmd) parseReply(cn *conn) error {
-	v, err := parseReply(cn, nil)
-	if err != nil {
-		cmd.err = err
-		return err
-	}
-	b := v.([]byte)
-	cmd.val, cmd.err = strconv.ParseFloat(bytesToString(b), 64)
+func (cmd *FloatCmd) readReply(cn *conn) error {
+	cmd.val, cmd.err = readFloatReply(cn)
 	return cmd.err
 }
 
@@ -522,8 +512,8 @@ func (cmd *StringSliceCmd) String() string {
 	return cmdString(cmd, cmd.val)
 }
 
-func (cmd *StringSliceCmd) parseReply(cn *conn) error {
-	v, err := parseReply(cn, parseStringSlice)
+func (cmd *StringSliceCmd) readReply(cn *conn) error {
+	v, err := readArrayReply(cn, stringSliceParser)
 	if err != nil {
 		cmd.err = err
 		return err
@@ -561,8 +551,8 @@ func (cmd *BoolSliceCmd) String() string {
 	return cmdString(cmd, cmd.val)
 }
 
-func (cmd *BoolSliceCmd) parseReply(cn *conn) error {
-	v, err := parseReply(cn, parseBoolSlice)
+func (cmd *BoolSliceCmd) readReply(cn *conn) error {
+	v, err := readArrayReply(cn, boolSliceParser)
 	if err != nil {
 		cmd.err = err
 		return err
@@ -600,8 +590,8 @@ func (cmd *StringStringMapCmd) String() string {
 	return cmdString(cmd, cmd.val)
 }
 
-func (cmd *StringStringMapCmd) parseReply(cn *conn) error {
-	v, err := parseReply(cn, parseStringStringMap)
+func (cmd *StringStringMapCmd) readReply(cn *conn) error {
+	v, err := readArrayReply(cn, stringStringMapParser)
 	if err != nil {
 		cmd.err = err
 		return err
@@ -639,8 +629,8 @@ func (cmd *StringIntMapCmd) reset() {
 	cmd.err = nil
 }
 
-func (cmd *StringIntMapCmd) parseReply(cn *conn) error {
-	v, err := parseReply(cn, parseStringIntMap)
+func (cmd *StringIntMapCmd) readReply(cn *conn) error {
+	v, err := readArrayReply(cn, stringIntMapParser)
 	if err != nil {
 		cmd.err = err
 		return err
@@ -678,8 +668,8 @@ func (cmd *ZSliceCmd) String() string {
 	return cmdString(cmd, cmd.val)
 }
 
-func (cmd *ZSliceCmd) parseReply(cn *conn) error {
-	v, err := parseReply(cn, parseZSlice)
+func (cmd *ZSliceCmd) readReply(cn *conn) error {
+	v, err := readArrayReply(cn, zSliceParser)
 	if err != nil {
 		cmd.err = err
 		return err
@@ -707,6 +697,9 @@ func (cmd *ScanCmd) reset() {
 	cmd.err = nil
 }
 
+// TODO: cursor should be string to match redis type
+// TODO: swap return values
+
 func (cmd *ScanCmd) Val() (int64, []string) {
 	return cmd.cursor, cmd.keys
 }
@@ -719,34 +712,27 @@ func (cmd *ScanCmd) String() string {
 	return cmdString(cmd, cmd.keys)
 }
 
-func (cmd *ScanCmd) parseReply(cn *conn) error {
-	vi, err := parseReply(cn, parseSlice)
+func (cmd *ScanCmd) readReply(cn *conn) error {
+	keys, cursor, err := readScanReply(cn)
 	if err != nil {
 		cmd.err = err
 		return cmd.err
 	}
-	v := vi.([]interface{})
-
-	cmd.cursor, cmd.err = strconv.ParseInt(v[0].(string), 10, 64)
-	if cmd.err != nil {
-		return cmd.err
-	}
-
-	keys := v[1].([]interface{})
-	for _, keyi := range keys {
-		cmd.keys = append(cmd.keys, keyi.(string))
-	}
-
+	cmd.keys = keys
+	cmd.cursor = cursor
 	return nil
 }
 
 //------------------------------------------------------------------------------
 
+// TODO: rename to ClusterSlot
 type ClusterSlotInfo struct {
-	Start, End int
-	Addrs      []string
+	Start int
+	End   int
+	Addrs []string
 }
 
+// TODO: rename to ClusterSlotsCmd
 type ClusterSlotCmd struct {
 	baseCmd
 
@@ -774,12 +760,99 @@ func (cmd *ClusterSlotCmd) reset() {
 	cmd.err = nil
 }
 
-func (cmd *ClusterSlotCmd) parseReply(cn *conn) error {
-	v, err := parseReply(cn, parseClusterSlotInfoSlice)
+func (cmd *ClusterSlotCmd) readReply(cn *conn) error {
+	v, err := readArrayReply(cn, clusterSlotInfoSliceParser)
 	if err != nil {
 		cmd.err = err
 		return err
 	}
 	cmd.val = v.([]ClusterSlotInfo)
+	return nil
+}
+
+//------------------------------------------------------------------------------
+
+// GeoLocation is used with GeoAdd to add geospatial location.
+type GeoLocation struct {
+	Name                      string
+	Longitude, Latitude, Dist float64
+	GeoHash                   int64
+}
+
+// GeoRadiusQuery is used with GeoRadius to query geospatial index.
+type GeoRadiusQuery struct {
+	Radius float64
+	// Can be m, km, ft, or mi. Default is km.
+	Unit        string
+	WithCoord   bool
+	WithDist    bool
+	WithGeoHash bool
+	Count       int
+	// Can be ASC or DESC. Default is no sort order.
+	Sort string
+}
+
+type GeoLocationCmd struct {
+	baseCmd
+
+	q         *GeoRadiusQuery
+	locations []GeoLocation
+}
+
+func NewGeoLocationCmd(q *GeoRadiusQuery, args ...interface{}) *GeoLocationCmd {
+	args = append(args, q.Radius)
+	if q.Unit != "" {
+		args = append(args, q.Unit)
+	} else {
+		args = append(args, "km")
+	}
+	if q.WithCoord {
+		args = append(args, "WITHCOORD")
+	}
+	if q.WithDist {
+		args = append(args, "WITHDIST")
+	}
+	if q.WithGeoHash {
+		args = append(args, "WITHHASH")
+	}
+	if q.Count > 0 {
+		args = append(args, "COUNT", q.Count)
+	}
+	if q.Sort != "" {
+		args = append(args, q.Sort)
+	}
+	return &GeoLocationCmd{
+		baseCmd: baseCmd{
+			_args:          args,
+			_clusterKeyPos: 1,
+		},
+		q: q,
+	}
+}
+
+func (cmd *GeoLocationCmd) reset() {
+	cmd.locations = nil
+	cmd.err = nil
+}
+
+func (cmd *GeoLocationCmd) Val() []GeoLocation {
+	return cmd.locations
+}
+
+func (cmd *GeoLocationCmd) Result() ([]GeoLocation, error) {
+	return cmd.locations, cmd.err
+}
+
+func (cmd *GeoLocationCmd) String() string {
+	return cmdString(cmd, cmd.locations)
+}
+
+func (cmd *GeoLocationCmd) readReply(cn *conn) error {
+	reply, err := readArrayReply(cn, newGeoLocationSliceParser(cmd.q))
+	if err != nil {
+		cmd.err = err
+		return err
+	}
+	cmd.locations = reply.([]GeoLocation)
 	return nil
 }

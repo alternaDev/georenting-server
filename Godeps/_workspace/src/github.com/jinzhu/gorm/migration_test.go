@@ -15,7 +15,7 @@ func runMigration() {
 		DB.Exec(fmt.Sprintf("drop table %v;", table))
 	}
 
-	values := []interface{}{&Product{}, &Email{}, &Address{}, &CreditCard{}, &Company{}, &Role{}, &Language{}, &HNPost{}, &EngadgetPost{}, &Animal{}, &User{}, &JoinTable{}}
+	values := []interface{}{&Product{}, &Email{}, &Address{}, &CreditCard{}, &Company{}, &Role{}, &Language{}, &HNPost{}, &EngadgetPost{}, &Animal{}, &User{}, &JoinTable{}, &Post{}, &Category{}, &Comment{}, &Cat{}, &Dog{}, &Toy{}}
 	for _, value := range values {
 		DB.DropTable(value)
 	}
@@ -69,6 +69,16 @@ func TestIndexes(t *testing.T) {
 
 	if DB.Save(&User{Name: "unique_indexes", Emails: []Email{{Email: "user1@example.comiii"}, {Email: "user1@example.com"}, {Email: "user1@example.com"}}}).Error == nil {
 		t.Errorf("Should get to create duplicate record when having unique index")
+	}
+
+	var user = User{Name: "sample_user"}
+	DB.Save(&user)
+	if DB.Model(&user).Association("Emails").Append(Email{Email: "not-1duplicated@gmail.com"}, Email{Email: "not-duplicated2@gmail.com"}).Error != nil {
+		t.Errorf("Should get no error when append two emails for user")
+	}
+
+	if DB.Model(&user).Association("Emails").Append(Email{Email: "duplicated@gmail.com"}, Email{Email: "duplicated@gmail.com"}).Error == nil {
+		t.Errorf("Should get no duplicated email error when insert duplicated emails for a user")
 	}
 
 	if err := DB.Model(&Email{}).RemoveIndex("idx_email_email_and_user_id").Error; err != nil {

@@ -1,6 +1,7 @@
 package redis_test
 
 import (
+	"errors"
 	"sync"
 	"testing"
 	"time"
@@ -11,7 +12,7 @@ import (
 	"gopkg.in/redis.v3"
 )
 
-var _ = Describe("Pool", func() {
+var _ = Describe("pool", func() {
 	var client *redis.Client
 
 	var perform = func(n int, cb func()) {
@@ -36,7 +37,6 @@ var _ = Describe("Pool", func() {
 	})
 
 	AfterEach(func() {
-		Expect(client.FlushDb().Err()).NotTo(HaveOccurred())
 		Expect(client.Close()).NotTo(HaveOccurred())
 	})
 
@@ -107,7 +107,7 @@ var _ = Describe("Pool", func() {
 	})
 
 	It("should remove broken connections", func() {
-		cn, err := client.Pool().Get()
+		cn, _, err := client.Pool().Get()
 		Expect(err).NotTo(HaveOccurred())
 		Expect(cn.Close()).NotTo(HaveOccurred())
 		Expect(client.Pool().Put(cn)).NotTo(HaveOccurred())
@@ -141,12 +141,12 @@ var _ = Describe("Pool", func() {
 		pool := client.Pool()
 
 		// Reserve one connection.
-		cn, err := client.Pool().Get()
+		cn, _, err := pool.Get()
 		Expect(err).NotTo(HaveOccurred())
 
 		// Reserve the rest of connections.
 		for i := 0; i < 9; i++ {
-			_, err := client.Pool().Get()
+			_, _, err := pool.Get()
 			Expect(err).NotTo(HaveOccurred())
 		}
 
@@ -168,7 +168,8 @@ var _ = Describe("Pool", func() {
 			// ok
 		}
 
-		Expect(pool.Remove(cn)).NotTo(HaveOccurred())
+		err = pool.Remove(cn, errors.New("test"))
+		Expect(err).NotTo(HaveOccurred())
 
 		// Check that Ping is unblocked.
 		select {
@@ -178,6 +179,23 @@ var _ = Describe("Pool", func() {
 			panic("Ping is not unblocked")
 		}
 		Expect(ping.Err()).NotTo(HaveOccurred())
+	})
+
+	It("should rate limit dial", func() {
+		pool := client.Pool()
+
+		var rateErr error
+		for i := 0; i < 1000; i++ {
+			cn, _, err := pool.Get()
+			if err != nil {
+				rateErr = err
+				break
+			}
+
+			_ = pool.Remove(cn, errors.New("test"))
+		}
+
+		Expect(rateErr).To(MatchError(`redis: you open connections too fast (last_error="test")`))
 	})
 })
 
@@ -191,7 +209,7 @@ func BenchmarkPool(b *testing.B) {
 
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			conn, err := pool.Get()
+			conn, _, err := pool.Get()
 			if err != nil {
 				b.Fatalf("no error expected on pool.Get but received: %s", err.Error())
 			}

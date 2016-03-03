@@ -71,7 +71,9 @@ func Query(scope *Scope) {
 					if field.Field.Kind() == reflect.Ptr {
 						values[index] = field.Field.Addr().Interface()
 					} else {
-						values[index] = reflect.New(reflect.PtrTo(field.Field.Type())).Interface()
+						reflectValue := reflect.New(reflect.PtrTo(field.Struct.Type))
+						reflectValue.Elem().Set(field.Field.Addr())
+						values[index] = reflectValue.Interface()
 					}
 				} else {
 					var value interface{}
@@ -113,6 +115,6 @@ func AfterQuery(scope *Scope) {
 
 func init() {
 	DefaultCallback.Query().Register("gorm:query", Query)
-	DefaultCallback.Query().Register("gorm:after_query", AfterQuery)
 	DefaultCallback.Query().Register("gorm:preload", Preload)
+	DefaultCallback.Query().Register("gorm:after_query", AfterQuery)
 }
