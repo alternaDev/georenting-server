@@ -105,6 +105,7 @@ func VerifyToken(token string) (User, error) {
 		return User{}, errors.New("Error during Profile Info: " + err.Error())
 	}
 
+	decoder = json.NewDecoder(resp.Body)
 	var user User
 	err = decoder.Decode(&user)
 
