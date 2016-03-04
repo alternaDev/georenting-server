@@ -89,8 +89,7 @@ func VerifyToken(token string) (User, error) {
 	}
 
 	req, err = http.NewRequest("GET", googleProfileURL, nil)
-	req.Header.Add("Access_token", response.AccessToken)
-	req.Header.Add("Authorization", "OAuth "+response.AccessToken)
+	req.Header.Add("Authorization", "Bearer "+response.AccessToken)
 
 	if err != nil {
 		return User{}, err
