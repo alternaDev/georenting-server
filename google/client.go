@@ -77,7 +77,7 @@ func VerifyToken(token string) (User, error) {
 	}
 
 	if err != nil {
-		return User{}, err
+		return User{}, errors.New("Error during Auth: " + err.Error())
 	}
 
 	decoder := json.NewDecoder(resp.Body)
@@ -85,7 +85,7 @@ func VerifyToken(token string) (User, error) {
 	err = decoder.Decode(&response)
 
 	if err != nil {
-		return User{}, err
+		return User{}, errors.New("Error during Auth Decode: " + err.Error())
 	}
 
 	req, err = http.NewRequest("GET", googleProfileURL, nil)
@@ -102,14 +102,14 @@ func VerifyToken(token string) (User, error) {
 	}
 
 	if err != nil {
-		return User{}, err
+		return User{}, errors.New("Error during Profile Info: " + err.Error())
 	}
 
 	var user User
 	err = decoder.Decode(&user)
 
 	if err != nil {
-		return User{}, err
+		return User{}, errors.New("Error during Profile Decode: " + err.Error())
 	}
 
 	return user, err
