@@ -1,28 +1,23 @@
 package google
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"net/http"
+	"net/url"
 	"os"
 )
 
 const (
-	googleVerifyURL  = "https://www.googleapis.com/oauth2/v3/tokeninfo"
+	googleVerifyURL  = "https://www.googleapis.com/oauth2/v4/token"
 	googleProfileURL = "https://www.googleapis.com/plus/v1/people/me"
 )
 
 // TokenInfoResponse Gets the Token Info from da server.
 type TokenInfoResponse struct {
-	Issuer     string `json:"iss"`
-	Audit      string `json:"aud"`
-	Sub        string `json:"sub"`
-	Email      string `json:"email"`
-	Name       string `json:"name"`
-	Avatar     string `json:"picture"`
-	GivenName  string `json:"given_name"`
-	FamilyName string `json:"family_name"`
-	Locale     string `json:"locale"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 // User represents the data for a given Google User
@@ -57,7 +52,13 @@ type CoverPhoto struct {
 func VerifyToken(token string) (User, error) {
 	client := &http.Client{}
 
-	req, err := http.NewRequest("GET", googleVerifyURL+"?id_token="+token, nil)
+	data := url.Values{}
+	data.Set("client_id", os.Getenv("GOOGLE_CLIENT_ID"))
+	data.Add("client_secret", os.Getenv("GOOGLE_CLIENT_SECRET"))
+	data.Add("code", token)
+	data.Add("grant_type", "authorization_code")
+
+	req, err := http.NewRequest("POST", googleVerifyURL, bytes.NewBufferString(data.Encode()))
 
 	//req.Header.Add("Access_token", token)
 	//req.Header.Add("Authorization", "OAuth "+token)
@@ -84,15 +85,9 @@ func VerifyToken(token string) (User, error) {
 		return User{}, err
 	}
 
-	if response.Audit != os.Getenv("GOOGLE_CLIENT_ID") {
-		return User{}, errors.New("Invalid Client.")
-	}
-
-	// TODO: Check whether the Token was valid.
-
 	req, err = http.NewRequest("GET", googleProfileURL, nil)
-	req.Header.Add("Access_token", token)
-	req.Header.Add("Authorization", "OAuth "+token)
+	req.Header.Add("Access_token", response.AccessToken)
+	req.Header.Add("Authorization", "OAuth "+response.AccessToken)
 
 	if err != nil {
 		return User{}, err
@@ -105,7 +100,7 @@ func VerifyToken(token string) (User, error) {
 	}
 
 	if resp.StatusCode != 200 {
-		return User{}, errors.New("Invalid Token")
+		return User{}, errors.New("Invalid User")
 	}
 
 	var user User
