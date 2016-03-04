@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 )
 
 const (
@@ -59,6 +60,8 @@ func VerifyToken(token string) (User, error) {
 	data.Add("grant_type", "authorization_code")
 
 	req, err := http.NewRequest("POST", googleVerifyURL, bytes.NewBufferString(data.Encode()))
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
 
 	//req.Header.Add("Access_token", token)
 	//req.Header.Add("Authorization", "OAuth "+token)
@@ -74,7 +77,7 @@ func VerifyToken(token string) (User, error) {
 	}
 
 	if resp.StatusCode != 200 {
-		return User{}, errors.New("Invalid Token")
+		return User{}, errors.New("Invalid Token.")
 	}
 
 	decoder := json.NewDecoder(resp.Body)
