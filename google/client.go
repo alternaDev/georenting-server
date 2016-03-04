@@ -14,16 +14,15 @@ const (
 
 // TokenInfoResponse Gets the Token Info from da server.
 type TokenInfoResponse struct {
-	Issuer        string `json:"iss"`
-	Audit         string `json:"aud"`
-	Sub           string `json:"sub"`
-	EmailVerified bool   `json:"email_verified"`
-	Email         string `json:"email"`
-	Name          string `json:"name"`
-	Avatar        string `json:"picture"`
-	GivenName     string `json:"given_name"`
-	FamilyName    string `json:"family_name"`
-	Locale        string `json:"locale"`
+	Issuer     string `json:"iss"`
+	Audit      string `json:"aud"`
+	Sub        string `json:"sub"`
+	Email      string `json:"email"`
+	Name       string `json:"name"`
+	Avatar     string `json:"picture"`
+	GivenName  string `json:"given_name"`
+	FamilyName string `json:"family_name"`
+	Locale     string `json:"locale"`
 }
 
 // User represents the data for a given Google User
