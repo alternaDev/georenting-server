@@ -72,12 +72,12 @@ func VerifyToken(token string) (User, error) {
 
 	resp, err := client.Do(req)
 
-	if err != nil {
-		return User{}, err
-	}
-
 	if resp.StatusCode != 200 {
 		return User{}, errors.New("Invalid Token.")
+	}
+
+	if err != nil {
+		return User{}, err
 	}
 
 	decoder := json.NewDecoder(resp.Body)
@@ -97,12 +97,12 @@ func VerifyToken(token string) (User, error) {
 
 	resp, err = client.Do(req)
 
-	if err != nil {
-		return User{}, err
-	}
-
 	if resp.StatusCode != 200 {
 		return User{}, errors.New("Invalid User")
+	}
+
+	if err != nil {
+		return User{}, err
 	}
 
 	var user User
