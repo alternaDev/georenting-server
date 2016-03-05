@@ -21,7 +21,7 @@ func (p *pgStringSlice) Scan(src interface{}) error {
 	srcString = "[" + srcString[1:len(srcString)-1] + "]"
 	return json.Unmarshal([]byte(srcString), &p)
 }
-func (p *pgStringSlice) Value() (driver.Value, error) {
+func (p pgStringSlice) Value() (driver.Value, error) {
 	res, err := json.Marshal(&p)
 	resString := string(res)
 	resString = "{" + resString[1:len(resString)-1] + "}"
