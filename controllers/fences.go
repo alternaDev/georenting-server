@@ -63,9 +63,10 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 	if err4 == nil {
 		var user models.User
 		models.DB.First(&user, userID)
-		var fences []models.Fence
-		models.DB.Model(&user).Related(&fences)
-		bytes, err := json.Marshal(&fences)
+		//var fences []models.Fence
+		//models.DB.Model(&user).Related(&fences)
+
+		bytes, err := json.Marshal(&user)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
