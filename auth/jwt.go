@@ -70,15 +70,15 @@ func ValidateJWTToken(input string) (models.User, error) {
 		return privateKey.Public(), err
 	})
 
+	if err != nil || !token.Valid {
+		return models.User{}, err
+	}
+
 	if token.Claims["user"] != token.Header["user"] {
 		return models.User{}, errors.New("The token has been tampered with...inside.")
 	}
 
-	if err == nil && token.Valid {
-		return user, nil
-
-	}
-	return models.User{}, err
+	return user, nil
 }
 
 func isInBlacklist(tokenString string) bool {
