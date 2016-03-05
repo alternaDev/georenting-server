@@ -105,7 +105,7 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 	var f models.Fence
 	err = decoder.Decode(&f)
 
-	f.Owner = user
+	f.User = user
 	f.Radius = 100
 	geoCells := geomodel.GeoCells(f.Lat, f.Lon, 20)
 

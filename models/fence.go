@@ -9,8 +9,8 @@ import (
 // Fence is a fence
 type Fence struct {
 	gorm.Model
-	Owner    User
-	OwnerID  uint
+	User     User
+	UserID   uint
 	Lat      float64 `json:"centerLat"`
 	Lon      float64 `json:"centerLon"`
 	Radius   int
