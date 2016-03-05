@@ -33,16 +33,16 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 
 	models.DB.Preload("User").Find(&fence, fenceID)
 
-	//TODO: Do many calculations and all those things.
+	//TODO: Do money calculations and all those things.
 
-	err = gcm.SendToGroup(gcm.NewMessage(map[string]interface{}{"type": "onForeignFenceEntered", "fenceId": fence.ID}, user.GCMNotificationID))
+	err = gcm.SendToGroup(gcm.NewMessage(map[string]interface{}{"type": "onForeignFenceEntered", "fenceId": fence.ID, "fenceName": fence.Name, "ownerName": fence.User.Name}, user.GCMNotificationID))
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	err = gcm.SendToGroup(gcm.NewMessage(map[string]interface{}{"type": "onOwnFenceEntered", "fenceId": fence.ID}, fence.User.GCMNotificationID))
+	err = gcm.SendToGroup(gcm.NewMessage(map[string]interface{}{"type": "onOwnFenceEntered", "fenceId": fence.ID, "fenceName": fence.Name, "visitorName": user.Name}, fence.User.GCMNotificationID))
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
