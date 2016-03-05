@@ -42,7 +42,7 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = gcm.SendToGroup(gcm.NewMessage(map[string]interface{}{"type": "onForeignFenceEntered", "fenceId": fence.ID}, fence.User.GCMNotificationID))
+	err = gcm.SendToGroup(gcm.NewMessage(map[string]interface{}{"type": "onOwnFenceEntered", "fenceId": fence.ID}, fence.User.GCMNotificationID))
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
