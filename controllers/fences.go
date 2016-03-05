@@ -62,7 +62,7 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err4 == nil {
 		var user models.User
-		models.DB.First(user, userID)
+		models.DB.First(&user, userID)
 		bytes, err := json.Marshal(&user.Fences)
 
 		if err != nil {
