@@ -9,6 +9,7 @@ import (
 	"github.com/alternaDev/georenting-server/models"
 )
 
+// CreateFenceHandler POST /fences
 func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := auth.ValidateSession(r)
 
@@ -29,6 +30,8 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 	for i := range geoCells {
 		f.GeoCells[i].Value = geoCells[i]
 	}
+
+	// TODO: Check overlap with other fences.
 
 	models.DB.Save(&f)
 
