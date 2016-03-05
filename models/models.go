@@ -1,9 +1,6 @@
 package models
 
 import (
-	"database/sql/driver"
-	"encoding/json"
-	"errors"
 	"log"
 	"os"
 
@@ -11,7 +8,7 @@ import (
 	_ "github.com/lib/pq" // Required for Postgres Databases
 )
 
-type pgStringSlice []string
+/*type pgStringSlice []string
 
 func (p *pgStringSlice) Scan(src interface{}) error {
 	srcString, ok := src.(string)
@@ -27,7 +24,7 @@ func (p pgStringSlice) Value() (driver.Value, error) {
 	resString = "{" + resString[1:len(resString)-1] + "}"
 
 	return res, err
-}
+}*/
 
 // DB provides the ability to access the Database.
 var DB, err = initDB(os.Getenv("DATABASE_URL"))
