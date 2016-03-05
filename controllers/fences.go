@@ -32,4 +32,12 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 
 	models.DB.Save(&f)
 
+	bytes, err := json.Marshal(&f)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(bytes)
 }
