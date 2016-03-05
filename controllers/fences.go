@@ -8,8 +8,48 @@ import (
 
 	"github.com/alternaDev/geomodel"
 	"github.com/alternaDev/georenting-server/auth"
+	"github.com/alternaDev/georenting-server/google/gcm"
 	"github.com/alternaDev/georenting-server/models"
+	"github.com/gorilla/mux"
 )
+
+func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
+	user, err := auth.ValidateSession(r)
+
+	if err != nil {
+		http.Error(w, "Invalid Session token. "+err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	vars := mux.Vars(r)
+
+	fenceID, err := strconv.ParseUint(vars["fenceId"], 10, 8)
+	if err != nil {
+		http.Error(w, "Invalid Fence ID. "+err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	var fence models.Fence
+
+	models.DB.Preload("User").Find(&fence, fenceID)
+
+	//TODO: Do many calculations and all those things.
+
+	err = gcm.SendToGroup(gcm.NewMessage(map[string]interface{}{"type": "onForeignFenceEntered", "fenceId": fence.ID}, user.GCMNotificationID))
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = gcm.SendToGroup(gcm.NewMessage(map[string]interface{}{"type": "onForeignFenceEntered", "fenceId": fence.ID}, fence.User.GCMNotificationID))
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+}
 
 // GetFencesHandler GET /fences
 func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
