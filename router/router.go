@@ -9,13 +9,14 @@ import (
 func SetupRouter() *mux.Router {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/{name}", c.IndexHandler)
 	r.HandleFunc("/users/auth", c.AuthHandler).Methods("POST")
 	r.HandleFunc("/users/auth", c.LogoutHandler).Methods("DELETE")
 	r.HandleFunc("/users/me/gcm", c.GCMAddHandler).Methods("POST")
 
 	//r.HandleFunc("/fences", c.GetFencesHandler).Methods("GET")
 	r.HandleFunc("/fences", c.CreateFenceHandler).Methods("POST")
+	r.HandleFunc("/{name}", c.IndexHandler)
+
 	//r.HandleFunc("/fences/{fenceId}", c.GetFenceHandler).Methods("GET")
 	//r.HandleFunc("/fences/{fenceId}", c.UpdateFenceHandler).Methods("PUT")
 	//r.HandleFunc("/fences/{fenceId}", c.DeleteFenceHandler).Methods("DELETE")
