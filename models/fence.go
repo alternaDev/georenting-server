@@ -11,5 +11,5 @@ type Fence struct {
 	Lon      float64 `json:"centerLon"`
 	Radius   int
 	Name     string `json:"name"`
-	GeoCells []string
+	GeoCells []pgStringSlice
 }
