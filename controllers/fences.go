@@ -64,7 +64,7 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 		var user models.User
 		models.DB.First(&user, userID)
 		var fences []models.Fence
-		models.DB.Model(&user).Association("Fences").Find(&fences)
+		models.DB.Model(&user).Related(&fences)
 
 		bytes, err := json.Marshal(&fences)
 
