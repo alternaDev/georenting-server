@@ -16,8 +16,8 @@ type gcmNotificationKeyResponse struct {
 	NotificationKey string `json:"gcm_notification_key"`
 }
 
-// GCMAddFunc POST /users/me/gcm
-func GCMAddFunc(w http.ResponseWriter, r *http.Request) {
+// GCMAddHandler POST /users/me/gcm
+func GCMAddHandler(w http.ResponseWriter, r *http.Request) {
 
 	user, err := auth.ValidateSession(r)
 
