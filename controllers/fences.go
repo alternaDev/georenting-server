@@ -14,7 +14,7 @@ import (
 // GetFencesHandler GET /fences
 func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 
-	lat, err1 := strconv.ParseFloat(r.URL.Query().Get("latitude", 64)
+	lat, err1 := strconv.ParseFloat(r.URL.Query().Get("latitude"), 64)
 	lon, err2 := strconv.ParseFloat(r.URL.Query().Get("longitude"), 64)
 	radius, err3 := strconv.ParseFloat(r.URL.Query().Get("radius"), 64)
 	userID, err4 := strconv.ParseUint(r.URL.Query().Get("user"), 10, 8)
