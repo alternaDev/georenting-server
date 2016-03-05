@@ -9,13 +9,13 @@ import (
 // Fence is a fence
 type Fence struct {
 	gorm.Model
-	User     User
-	UserID   uint
+	User     User    `json:"-"`
+	UserID   uint    `json:"-"`
 	Lat      float64 `json:"centerLat"`
 	Lon      float64 `json:"centerLon"`
 	Radius   int
-	Name     string `json:"name"`
-	GeoCells []GeoCell
+	Name     string    `json:"name"`
+	GeoCells []GeoCell `json:"-"`
 }
 
 func (p Fence) Latitude() float64 {
