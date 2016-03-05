@@ -14,5 +14,12 @@ func SetupRouter() *mux.Router {
 	r.HandleFunc("/users/auth", c.LogoutHandler).Methods("DELETE")
 	r.HandleFunc("/users/me/gcm", c.GCMAddHandler).Methods("POST")
 
+	//r.HandleFunc("/fences", c.GetFencesHandler).Methods("GET")
+	r.HandleFunc("/fences", c.CreateFenceHandler).Methods("POST")
+	//r.HandleFunc("/fences/{fenceId}", c.GetFenceHandler).Methods("GET")
+	//r.HandleFunc("/fences/{fenceId}", c.UpdateFenceHandler).Methods("PUT")
+	//r.HandleFunc("/fences/{fenceId}", c.DeleteFenceHandler).Methods("DELETE")
+	//r.HandleFunc("/fences/{fenceId}/visit", c.VisitFenceHandler).Methods("POST")
+
 	return r
 }
