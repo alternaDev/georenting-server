@@ -23,8 +23,12 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 
 	f.Owner = user
 	f.Radius = 100
+	geoCells := geomodel.GeoCells(f.Lat, f.Lon, 20)
 
-	f.GeoCells = geomodel.GeoCells(f.Lat, f.Lon, 20)
+	f.GeoCells = make([]models.GeoCell, len(geoCells))
+	for i := range geoCells {
+		f.GeoCells[i].Value = geoCells[i]
+	}
 
 	models.DB.Save(&f)
 
