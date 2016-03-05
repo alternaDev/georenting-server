@@ -1,6 +1,10 @@
 package models
 
-import "github.com/jinzhu/gorm"
+import (
+	"strconv"
+
+	"github.com/jinzhu/gorm"
+)
 
 // Fence is a fence
 type Fence struct {
@@ -12,4 +16,26 @@ type Fence struct {
 	Radius   int
 	Name     string `json:"name"`
 	GeoCells []GeoCell
+}
+
+func (p Fence) Latitude() float64 {
+	return p.Lat
+}
+
+func (p Fence) Longitude() float64 {
+	return p.Lon
+}
+
+func (p Fence) Key() string {
+	return strconv.Itoa(int(p.ID))
+}
+
+func (p Fence) Geocells() []string {
+	var cells = make([]string, len(p.GeoCells))
+
+	for i := range p.GeoCells {
+		cells[i] = p.GeoCells[i].Value
+	}
+
+	return cells
 }
