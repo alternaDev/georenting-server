@@ -25,7 +25,9 @@ func main() {
 		log.Fatal("$PORT must be set")
 	}
 
-	log.Print(models.DB)
+	models.Init()
+
+	log.Printf("Listening on port %s.", port)
 
 	listen(port)
 }
