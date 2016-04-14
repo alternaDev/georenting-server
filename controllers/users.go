@@ -19,6 +19,10 @@ type authResponseBody struct {
 	User  models.User `json:"user"`
 }
 
+type refreshTokenBody struct {
+	Token string `json:"token"`
+}
+
 // AuthHandler handles POST /users/auth
 func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
@@ -44,6 +48,41 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	user.AvatarURL = googleUser.Avatar.URL
 	user.CoverURL = googleUser.Cover.CoverPhoto.URL
 	models.DB.Save(&user)
+
+	token, err := auth.GenerateJWTToken(user)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	bytes, err := json.Marshal(authResponseBody{Token: token, User: user})
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(bytes)
+}
+
+// RefreshTokenHandler handles POST /users/refreshToken
+func RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
+	decoder := json.NewDecoder(r.Body)
+	var b refreshTokenBody
+	err := decoder.Decode(&b)
+
+	if err != nil {
+		http.Error(w, "Invalid Body.", http.StatusBadRequest)
+		return
+	}
+
+	user, err := auth.ValidateJWTToken(b.Token)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
 
 	token, err := auth.GenerateJWTToken(user)
 

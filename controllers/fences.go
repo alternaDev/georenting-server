@@ -13,6 +13,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// VisitFenceHandler handles POST /fences/{fenceId}/visit
 func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := auth.ValidateSession(r)
 
