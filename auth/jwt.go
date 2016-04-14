@@ -8,6 +8,8 @@ import (
 
 	"github.com/alternaDev/georenting-server/models"
 	"github.com/dgrijalva/jwt-go"
+
+	redis "gopkg.in/redis.v3"
 )
 
 // GenerateJWTToken generates a JWT token for a given UserID and signs it with
