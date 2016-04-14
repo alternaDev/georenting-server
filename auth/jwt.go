@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"gopkg.in/redis.v3"
-
 	"github.com/alternaDev/georenting-server/models"
 	"github.com/dgrijalva/jwt-go"
 )
@@ -38,6 +36,7 @@ func GenerateJWTToken(user models.User) (string, error) {
 	token.Claims["user"] = user.ID
 	token.Header["user"] = user.ID
 	token.Claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
+	token.Header["exp"] = token.Claims["exp"]
 
 	tokenString, err := token.SignedString(privateKey)
 
