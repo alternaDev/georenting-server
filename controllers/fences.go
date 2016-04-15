@@ -57,7 +57,7 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
+	w.Write([]byte("{}"))
 }
 
 // GetFencesHandler GET /fences
