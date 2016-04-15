@@ -13,6 +13,14 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type fenceResponse struct {
+	ID     uint    `json:"id"`
+	Lat    float64 `json:"centerLat"`
+	Lon    float64 `json:"centerLon"`
+	Radius int     `json:"radius"`
+	Name   string  `json:"name"`
+}
+
 // VisitFenceHandler handles POST /fences/{fenceId}/visit
 func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := auth.ValidateSession(r)
@@ -85,9 +93,14 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 			return result
 		}, 20)
 
-		fences := make([]models.Fence, len(result))
+		fences := make([]fenceResponse, len(result))
 		for i := range result {
-			fences[i] = result[i].(models.Fence)
+			f := result[i].(models.Fence)
+			fences[i].ID = f.ID
+			fences[i].Lat = f.Lat
+			fences[i].Lon = f.Lon
+			fences[i].Name = f.Name
+			fences[i].Radius = f.Radius
 		}
 
 		bytes, err := json.Marshal(&fences)
@@ -104,8 +117,19 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 	if err4 == nil {
 		var user models.User
 		models.DB.Preload("Fences").First(&user, userID)
+		result := user.Fences
 
-		bytes, err := json.Marshal(&user.Fences)
+		fences := make([]fenceResponse, len(result))
+		for i := range result {
+			f := result[i]
+			fences[i].ID = f.ID
+			fences[i].Lat = f.Lat
+			fences[i].Lon = f.Lon
+			fences[i].Name = f.Name
+			fences[i].Radius = f.Radius
+		}
+
+		bytes, err := json.Marshal(&fences)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
