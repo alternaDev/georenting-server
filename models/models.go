@@ -30,6 +30,8 @@ func initDB(url string) (gorm.DB, error) {
 		return db, err
 	}
 
+	db.LogMode(true)
+
 	db.AutoMigrate(&User{}, &Fence{}, &GeoCell{})
 
 	return db, nil
