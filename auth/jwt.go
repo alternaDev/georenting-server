@@ -3,6 +3,7 @@ package auth
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -61,8 +62,10 @@ func ValidateJWTToken(input string) (models.User, error) {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
 
+		log.Printf("Stuff: %s", token.Header["user"])
+
 		// Get the user ID
-		userID := token.Header["user"].(uint)
+		userID := uint(token.Header["user"].(float64))
 
 		models.DB.First(&user, userID)
 
