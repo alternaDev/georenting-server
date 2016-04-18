@@ -91,7 +91,7 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 			return result
-		}, 20)
+		}, 13)
 
 		fences := make([]fenceResponse, len(result))
 		for i := range result {
