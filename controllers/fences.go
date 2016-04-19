@@ -19,6 +19,7 @@ type fenceResponse struct {
 	Lon    float64 `json:"centerLon"`
 	Radius int     `json:"radius"`
 	Name   string  `json:"name"`
+	Owner  uint    `json:"owner"`
 }
 
 // VisitFenceHandler handles POST /fences/{fenceId}/visit
@@ -101,6 +102,7 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 			fences[i].Lon = f.Lon
 			fences[i].Name = f.Name
 			fences[i].Radius = f.Radius
+			fences[i].Owner = f.UserID
 		}
 
 		bytes, err := json.Marshal(&fences)
@@ -127,6 +129,7 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 			fences[i].Lon = f.Lon
 			fences[i].Name = f.Name
 			fences[i].Radius = f.Radius
+			fences[i].Owner = f.UserID
 		}
 
 		bytes, err := json.Marshal(&fences)
