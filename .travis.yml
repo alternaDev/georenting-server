@@ -3,3 +3,7 @@ go:
 - 1.6
 script:
 - go build
+notifications:
+  slack:
+    rooms:
+      - alternadev:DV4HmorAz8nFcc4rxBdy92ke#backend
