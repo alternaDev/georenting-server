@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/alternaDev/geomodel"
+	"github.com/alternaDev/georenting-server/activity"
 	"github.com/alternaDev/georenting-server/auth"
 	"github.com/alternaDev/georenting-server/google/gcm"
 	"github.com/alternaDev/georenting-server/models"
@@ -44,6 +45,9 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 
 	//TODO: Do money calculations and all those things.
 
+	rent := 100.0
+
+	// GCM
 	err = gcm.SendToGroup(gcm.NewMessage(map[string]interface{}{"type": "onForeignFenceEntered", "fenceId": fence.ID, "fenceName": fence.Name, "ownerName": fence.User.Name}, user.GCMNotificationID))
 
 	if err != nil {
@@ -57,6 +61,22 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// Activity Stream
+	err = activity.AddForeignVisitedActivity(user.ID, fence.User.Name, fence.User.ID, fence.Name, fence.ID, rent)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = activity.AddOwnFenceVisitedActivity(fence.User.ID, user.Name, user.ID, fence.Name, fence.ID, rent)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.Write([]byte("{}"))
 }
 
