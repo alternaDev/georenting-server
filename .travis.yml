@@ -1,5 +1,12 @@
 language: go
 go:
 - 1.6
+install:
+- go get github.com/tools/godep
+- godep restore
 script:
 - go build
+notifications:
+  slack:
+    rooms:
+      - alternadev:DV4HmorAz8nFcc4rxBdy92ke#backend
