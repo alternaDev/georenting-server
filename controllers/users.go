@@ -1,10 +1,13 @@
 package controllers
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
+	"github.com/alternaDev/georenting-server/activity"
 	"github.com/alternaDev/georenting-server/auth"
 	"github.com/alternaDev/georenting-server/google"
 	"github.com/alternaDev/georenting-server/models"
@@ -113,4 +116,50 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintf(w, "{}")
+}
+
+// HistoryHandler GET /users/me/history
+func HistoryHandler(w http.ResponseWriter, r *http.Request) {
+	user, err := auth.ValidateSession(r)
+
+	if err != nil {
+		http.Error(w, "Invalid Session token. "+err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	from, err := strconv.ParseInt(r.URL.Query().Get("from"), 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid From Value. "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	to, err := strconv.ParseInt(r.URL.Query().Get("to"), 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid To Value. "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	data, err := activity.GetActivities(user.ID, to, from)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var buffer bytes.Buffer
+
+	buffer.WriteString("[")
+
+	for i := 0; i < len(data); i++ {
+		buffer.WriteString(data[i])
+		buffer.WriteString(",")
+	}
+
+	if len(data) > 0 {
+		buffer.Truncate(buffer.Len() - 1)
+	}
+
+	buffer.WriteString("]")
+
+	w.Write(buffer.Bytes())
 }

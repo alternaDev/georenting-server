@@ -71,6 +71,6 @@ func addActivity(userID uint, score float64, data string) error {
 	return models.RedisInstance.ZAdd(fmt.Sprintf("%v", userID), redis.Z{Score: score, Member: data}).Err()
 }
 
-/*func GetActivities(userID uint, start int32, end int32) {
-	models.RedisInstance.ZRevRangeByScore(userID, start, end)
-}*/
+func GetActivities(userID uint, start int64, end int64) ([]string, error) {
+	return models.RedisInstance.ZRevRangeByScore(fmt.Sprintf("%v", userID), redis.ZRangeByScore{Min: fmt.Sprintf("%v", start), Max: fmt.Sprintf("%v", end)}).Result()
+}
