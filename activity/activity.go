@@ -45,7 +45,7 @@ func AddOwnFenceVisitedActivity(ownerID uint, visitorName string, visitorID uint
 		return err
 	}
 
-	return models.RedisInstance.ZAdd(fmt.Sprintf("%v", ownerID), redis.Z{Score: float64(now), Member: string(bytes[:])}).Err()
+	return addActivity(ownerID, float64(now), string(bytes[:]))
 }
 
 // AddForeignVisitedActivity adds the activity to the stream of the owner.
@@ -64,7 +64,11 @@ func AddForeignVisitedActivity(visitorID uint, ownerName string, ownerID uint, f
 		return err
 	}
 
-	return models.RedisInstance.ZAdd(fmt.Sprintf("%v", visitorID), redis.Z{Score: float64(now), Member: string(bytes[:])}).Err()
+	return addActivity(visitorID, float64(now), string(bytes[:]))
+}
+
+func addActivity(userID uint, score float64, data string) error {
+	return models.RedisInstance.ZAdd(fmt.Sprintf("%v", userID), redis.Z{Score: score, Member: data}).Err()
 }
 
 /*func GetActivities(userID uint, start int32, end int32) {
