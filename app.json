@@ -1,0 +1,23 @@
+{
+  "name": "GeoRenting Server",
+  "description": "Server for GeoRenting",
+  "image": "heroku/go",
+  "addons": [
+    "heroku-postgresql",
+    "heroku-redis"
+  ],
+  "env": {
+    "GOOGLE_API_KEY": {
+      "description": "Api Key for Google APIs"
+    },
+    "GOOGLE_CLIENT_ID": {
+      "description": "Client ID for Google OAuth 2"
+    },
+    "GOOGLE_CLIENT_SECRET": {
+      "description": "Client Secret for Google OAuth 2"
+    },
+    "GOOGLE_PROJECT_ID": {
+      "description": "Project ID for Google GCM"
+    }
+  }
+}
