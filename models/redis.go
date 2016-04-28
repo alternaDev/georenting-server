@@ -12,7 +12,11 @@ var RedisInstance = initRedis(os.Getenv("REDIS_URL"))
 
 func initRedis(www string) *redis.Client {
 	redisURL, _ := url.Parse(www)
-	password, _ := redisURL.User.Password()
+	password := ""
+
+	if(redisURL.User != nil) {
+		password, _ = redisURL.User.Password()
+	}
 
 	client := redis.NewClient(&redis.Options{
 		Addr:     redisURL.Host,
