@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/alternaDev/georenting-server",
-	"GoVersion": "go1.6",
+	"GoVersion": "go1.6.0",
 	"Packages": [
 		"github.com/alternaDev/georenting-server"
 	],
