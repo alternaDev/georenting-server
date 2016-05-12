@@ -2,6 +2,7 @@ package models
 
 import (
   elastic "gopkg.in/olivere/elastic.v3"
+  "net/url"
   "log"
   "os"
   "errors"
@@ -18,10 +19,19 @@ const (
 // ElasticInstance is a usable ElasticSearch instance.
 var ElasticInstance = initElastic(os.Getenv("ELASTICSEARCH_URL"))
 
-func initElastic(url string) *elastic.Client {
-  log.Println("Initializing ES.")
+func initElastic(www string) *elastic.Client {
+  esURL, _ := url.Parse(www)
+  username := ""
+	password := ""
 
-  client, err := elastic.NewClient(elastic.SetURL(url))
+	if(esURL.User != nil) {
+    password, _ = esURL.User.Password()
+    username = esURL.User.Username()
+	}
+
+  log.Printf("Initializing ES: %v.", esURL.Scheme + "://" + esURL.Host)
+
+  client, err := elastic.NewClient(elastic.SetBasicAuth(username, password), elastic.SetURL(esURL.Scheme + "://" + esURL.Host))
   if err != nil {
       log.Fatalf("Error while connecting to ElasticSearch: %s", err)
       return nil
