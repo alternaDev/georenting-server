@@ -56,6 +56,10 @@ func initIndices(client *elastic.Client) error {
   if err != nil {
   	return err
   }
+  _, err = client.DeleteIndex(IndexGeoFences).Do()
+  if err != nil {
+  	return err
+  }
   if true || !exists {
     log.Println("Creating Index for GeoFences.")
     mapping := `{
