@@ -41,7 +41,11 @@ func initElastic(www string) *elastic.Client {
 
   log.Println("Initializing Indices.")
 
-  initIndices(client)
+  err := initIndices(client)
+  if err != nil {
+      log.Fatalf("Error while creating ElasticSearch Indices: %s", err)
+      return nil
+  }
 
   return client
 }
@@ -55,7 +59,7 @@ func initIndices(client *elastic.Client) error {
     log.Println("Creating Index for GeoFences.")
     createIndex, err := client.CreateIndex(IndexGeoFences).Do()
     if err != nil {
-      // Handle error
+
       return err
     }
     if !createIndex.Acknowledged {
