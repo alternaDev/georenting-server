@@ -12,9 +12,9 @@ import (
 
 const (
   // IndexGeoFences specifies the name of the geofences index
-  IndexGeoFences = "geoFences"
+  IndexGeoFences = "geofences"
   // TypeGeoFence specifies the name of the geofences type
-  TypeGeoFence = "geoFence"
+  TypeGeoFence = "geofence"
 )
 
 // ElasticInstance is a usable ElasticSearch instance.
