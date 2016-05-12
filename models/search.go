@@ -56,9 +56,33 @@ func initIndices(client *elastic.Client) error {
   if err != nil {
   	return err
   }
-  if !exists {
+  if true || !exists {
     log.Println("Creating Index for GeoFences.")
-    createIndex, err := client.CreateIndex(IndexGeoFences).Do()
+    mapping := `{
+        "settings":{
+            "number_of_shards":1,
+            "number_of_replicas":0
+        },
+        "mappings":{
+            "geofence":{
+                "properties":{
+                    "name":{
+                        "type":"string"
+                    },
+                    "radius":{
+                        "type":"double"
+                    },
+                    "center":{
+                        "type":"geo_point"
+                    },
+                    "owner": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }`
+    createIndex, err := client.CreateIndex(IndexGeoFences).BodyString(mapping).Do()
     if err != nil {
 
       return err
@@ -70,7 +94,7 @@ func initIndices(client *elastic.Client) error {
   return nil
 }
 
-/*func MigrateGeofencesToElasticSearch() {
+func MigrateGeofencesToElasticSearch() {
   log.Print("Migrating to ElasticSearch")
   var geoFences []Fence
   DB.Find(&geoFences)
@@ -83,10 +107,10 @@ func initIndices(client *elastic.Client) error {
       log.Fatal(err)
     }
   }
-}*/
+}
 
 func IndexGeoFence(fence *Fence) error {
-  data := fmt.Sprintf(`{"name": "%s", "center": {"location": {"lat": %f, "lon": %f}}, "radius": %d, "owner": %d}`, fence.Name, fence.Lat, fence.Lon, fence.Radius, fence.UserID);
+  data := fmt.Sprintf(`{"name": "%s", "center": {"lat": %f, "lon": %f}, "radius": %d, "owner": %d}`, fence.Name, fence.Lat, fence.Lon, fence.Radius, fence.UserID);
   log.Println("Indexing: " + data)
   _, err := ElasticInstance.Index().
     Index(IndexGeoFences).
