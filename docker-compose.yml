@@ -6,7 +6,7 @@ web:
     PORT: 8080
     DATABASE_URL: 'postgres://postgres:@herokuPostgresql:5432/postgres?sslmode=disable'
     REDIS_URL: 'redis://herokuRedis:6379'
-    ELASTICSEARCH_URL: 'http://herokuElasticsearch:9300'
+    ELASTICSEARCH_URL: 'http://:@herokuElasticsearch:9200'
   ports:
     - '8080:8080'
   links:
@@ -21,7 +21,7 @@ shell:
     PORT: 8080
     DATABASE_URL: 'postgres://postgres:@herokuPostgresql:5432/postgres?sslmode=disable'
     REDIS_URL: 'redis://herokuRedis:6379'
-    ELASTICSEARCH_URL: 'http://herokuElasticsearch:9300'
+    ELASTICSEARCH_URL: 'http://:@herokuElasticsearch'
   ports:
     - '8080:8080'
   links:
@@ -36,3 +36,6 @@ herokuRedis:
   image: redis
 herokuElasticsearch:
   image: elasticsearch
+  ports:
+    - "9200:9200"
+    - "9300:9300"
