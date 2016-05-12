@@ -24,7 +24,7 @@ func main() {
 	if port == "" {
 		log.Fatal("$PORT must be set")
 	}
-
+	log.Println("Initializing Models.")
 	models.Init()
 	//models.MigrateGeofencesToElasticSearch()
 

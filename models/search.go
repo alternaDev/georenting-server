@@ -19,11 +19,15 @@ const (
 var ElasticInstance = initElastic(os.Getenv("ELASTICSEARCH_URL"))
 
 func initElastic(url string) *elastic.Client {
+  log.Println("Initializing ES.")
+
   client, err := elastic.NewClient(elastic.SetURL(url))
   if err != nil {
       log.Fatalf("Error while connecting to ElasticSearch: %s", err)
       return nil
   }
+
+  log.Println("Initializing Indices.")
 
   initIndices(client)
 
