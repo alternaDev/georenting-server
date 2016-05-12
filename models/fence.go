@@ -1,8 +1,6 @@
 package models
 
 import (
-	"strconv"
-
 	"github.com/jinzhu/gorm"
 )
 
@@ -15,27 +13,4 @@ type Fence struct {
 	Lon      float64   `json:"centerLon"`
 	Radius   int       `json:"radius"`
 	Name     string    `json:"name"`
-	GeoCells []GeoCell `json:"-"`
-}
-
-func (p Fence) Latitude() float64 {
-	return p.Lat
-}
-
-func (p Fence) Longitude() float64 {
-	return p.Lon
-}
-
-func (p Fence) Key() string {
-	return strconv.Itoa(int(p.ID))
-}
-
-func (p Fence) Geocells() []string {
-	var cells = make([]string, len(p.GeoCells))
-
-	for i := range p.GeoCells {
-		cells[i] = p.GeoCells[i].Value
-	}
-
-	return cells
 }

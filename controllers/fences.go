@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"log"
 
-	"github.com/alternaDev/geomodel"
 	"github.com/alternaDev/georenting-server/activity"
 	"github.com/alternaDev/georenting-server/auth"
 	"github.com/alternaDev/georenting-server/google/gcm"
@@ -91,29 +90,6 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 	userID, err4 := strconv.ParseUint(r.URL.Query().Get("user"), 10, 8)
 
 	if err1 == nil && err2 == nil && err3 == nil {
-		/*var result = geomodel.ProximityFetch(lat, lon, 20, radius, func(cells []string) []geomodel.LocationCapable {
-			var result []geomodel.LocationCapable = make([]geomodel.LocationCapable, 0)
-
-			var geoCells []models.GeoCell
-
-			models.DB.Where("Value in (?)", cells).Find(&geoCells)
-
-			for i := range geoCells {
-				var fence models.Fence
-				models.DB.Model(geoCells[i]).Related(&fence)
-				exists := false
-				for j := range result {
-					if result[j].Key() == fence.Key() {
-						exists = true
-						break
-					}
-				}
-				if !exists {
-					result = append(result, fence)
-				}
-			}
-			return result
-		}, 13)*/
 
 		ids, err := models.FindGeoFences(lat, lon, radius)
 		if err != nil {
@@ -206,18 +182,12 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 
 	f.User = user
 	f.Radius = 100
-	geoCells := geomodel.GeoCells(f.Lat, f.Lon, 20)
-
-	f.GeoCells = make([]models.GeoCell, len(geoCells))
-	for i := range geoCells {
-		f.GeoCells[i].Value = geoCells[i]
-	}
-
 	// TODO: Check overlap with other fences.
 
 	models.DB.Save(&f)
 
 	err = models.IndexGeoFence(&f)
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
