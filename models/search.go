@@ -99,7 +99,7 @@ func IndexGeoFence(fence *Fence) error {
 }
 
 func FindGeoFences(centerLat float64, centerLon float64, radius int64) ([]int64, error) {
-  query := elastic.NewGeoDistanceQuery("center").Distance(fmt.Sprintf("%dm", radius)).Lat(centerLat).Lon(centerLon)
+  query := elastic.NewGeoDistanceQuery("center.location").Distance(fmt.Sprintf("%dm", radius)).Lat(centerLat).Lon(centerLon)
 
   searchResult, err := ElasticInstance.Search().
     Index(IndexGeoFences).
