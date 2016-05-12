@@ -4,7 +4,8 @@
   "image": "heroku/go",
   "addons": [
     "heroku-postgresql",
-    "heroku-redis"
+    "heroku-redis",
+    "bonsai"
   ],
   "env": {
     "GOOGLE_API_KEY": {
