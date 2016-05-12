@@ -2,7 +2,8 @@ package models
 
 import (
   elastic "gopkg.in/olivere/elastic.v3"
-  "net/url"
+  "regexp"
+  "strings"
   "log"
   "os"
   "errors"
@@ -19,19 +20,20 @@ const (
 // ElasticInstance is a usable ElasticSearch instance.
 var ElasticInstance = initElastic(os.Getenv("ELASTICSEARCH_URL"))
 
+func parseBonsaiURL(url string) (string, string, string){
+	rex, _ := regexp.Compile(".*?://([a-z0-9]{1,}):([a-z0-9]{1,})@.*$")
+	user := rex.ReplaceAllString(url, "$1")
+	pass := rex.ReplaceAllString(url, "$2")
+	host := strings.Replace(url, user+":"+pass+"@", "", -1)
+	return user,pass,host
+}
+
 func initElastic(www string) *elastic.Client {
-  esURL, _ := url.Parse(www)
-  username := ""
-	password := ""
+  username, password, host := parseBonsaiURL(www)
 
-	if(esURL.User != nil) {
-    password, _ = esURL.User.Password()
-    username = esURL.User.Username()
-	}
+  log.Printf("Initializing ES: %v.", host)
 
-  log.Printf("Initializing ES: %v.", esURL.Scheme + "://" + esURL.Host)
-
-  client, err := elastic.NewClient(elastic.SetBasicAuth(username, password), elastic.SetURL(esURL.Scheme + "://" + esURL.Host))
+  client, err := elastic.NewClient(elastic.SetURL(host), elastic.SetMaxRetries(10), elastic.SetBasicAuth(username, password), elastic.SetSniff(false))
   if err != nil {
       log.Fatalf("Error while connecting to ElasticSearch: %s", err)
       return nil
