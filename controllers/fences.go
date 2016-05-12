@@ -206,6 +206,12 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 
 	models.DB.Save(&f)
 
+	err = models.IndexGeoFence(&f)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	bytes, err := json.Marshal(&f)
 
 	if err != nil {

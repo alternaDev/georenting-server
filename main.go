@@ -26,6 +26,7 @@ func main() {
 	}
 
 	models.Init()
+	models.MigrateGeofencesToElasticSearch()
 
 	log.Printf("Listening on port %s.", port)
 
