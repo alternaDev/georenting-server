@@ -41,7 +41,7 @@ func initElastic(www string) *elastic.Client {
 
   log.Println("Initializing Indices.")
 
-  err := initIndices(client)
+  err = initIndices(client)
   if err != nil {
       log.Fatalf("Error while creating ElasticSearch Indices: %s", err)
       return nil
