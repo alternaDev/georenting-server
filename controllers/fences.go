@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"log"
 
 	"github.com/alternaDev/geomodel"
 	"github.com/alternaDev/georenting-server/activity"
@@ -86,11 +87,11 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 
 	lat, err1 := strconv.ParseFloat(r.URL.Query().Get("latitude"), 64)
 	lon, err2 := strconv.ParseFloat(r.URL.Query().Get("longitude"), 64)
-	radius, err3 := strconv.ParseFloat(r.URL.Query().Get("radius"), 64)
+	radius, err3 := strconv.ParseInt(r.URL.Query().Get("radius"), 10, 64)
 	userID, err4 := strconv.ParseUint(r.URL.Query().Get("user"), 10, 8)
 
 	if err1 == nil && err2 == nil && err3 == nil {
-		var result = geomodel.ProximityFetch(lat, lon, 20, radius, func(cells []string) []geomodel.LocationCapable {
+		/*var result = geomodel.ProximityFetch(lat, lon, 20, radius, func(cells []string) []geomodel.LocationCapable {
 			var result []geomodel.LocationCapable = make([]geomodel.LocationCapable, 0)
 
 			var geoCells []models.GeoCell
@@ -112,11 +113,21 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 			return result
-		}, 13)
+		}, 13)*/
+
+		ids, err := models.FindGeoFences(lat, lon, radius)
+		if err != nil {
+			log.Fatal(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		result := make([]models.Fence, len(ids))
+		models.DB.Where(ids).Find(&result)
+
 
 		fences := make([]fenceResponse, len(result))
 		for i := range result {
-			f := result[i].(models.Fence)
+			f := result[i]
 			fences[i].ID = f.ID
 			fences[i].Lat = f.Lat
 			fences[i].Lon = f.Lon

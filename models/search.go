@@ -8,6 +8,7 @@ import (
   "os"
   "errors"
   "fmt"
+  "strconv"
 )
 
 const (
@@ -69,7 +70,7 @@ func initIndices(client *elastic.Client) error {
   return nil
 }
 
-func MigrateGeofencesToElasticSearch() {
+/*func MigrateGeofencesToElasticSearch() {
   log.Print("Migrating to ElasticSearch")
   var geoFences []Fence
   DB.Find(&geoFences)
@@ -82,7 +83,7 @@ func MigrateGeofencesToElasticSearch() {
       log.Fatal(err)
     }
   }
-}
+}*/
 
 func IndexGeoFence(fence *Fence) error {
   data := fmt.Sprintf(`{"name": "%s", "center": {"location": {"lat": %f, "lon": %f}}, "radius": %d, "owner": %d}`, fence.Name, fence.Lat, fence.Lon, fence.Radius, fence.UserID);
@@ -97,7 +98,7 @@ func IndexGeoFence(fence *Fence) error {
   return err
 }
 
-func FindGeoFences(centerLat float64, centerLon float64, radius int) ([]string, error) {
+func FindGeoFences(centerLat float64, centerLon float64, radius int64) ([]int64, error) {
   query := elastic.NewGeoDistanceQuery("center").Distance(fmt.Sprintf("%dm", radius)).Lat(centerLat).Lon(centerLon)
 
   searchResult, err := ElasticInstance.Search().
@@ -110,18 +111,19 @@ func FindGeoFences(centerLat float64, centerLon float64, radius int) ([]string, 
   }
 
   if searchResult.Hits != nil {
-    fences := make([]string, searchResult.TotalHits(), searchResult.TotalHits())
+    fences := make([]int64, searchResult.TotalHits(), searchResult.TotalHits())
     fmt.Printf("Found a total of %d GeoFences\n", searchResult.Hits.TotalHits)
 
     // Iterate through results
     for i, hit := range searchResult.Hits.Hits {
-      fences[i] = hit.Id
+      stringId, _ := strconv.ParseInt(hit.Id, 10, 64)
+      fences[i] = stringId
     }
     return fences, nil
   }
 
   fmt.Print("Found no fences\n")
-  return make([]string, 0), nil
+  return make([]int64, 0), nil
 }
 
 func DeleteGeoFence(id string) error {
