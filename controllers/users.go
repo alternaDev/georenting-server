@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"os"
 
 	"github.com/alternaDev/georenting-server/activity"
 	"github.com/alternaDev/georenting-server/auth"
@@ -73,6 +74,8 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusForbidden)
 		return
 	}
+
+	user.AvatarURL = os.Getenv("BASE_URL") + "/users/" + user.Name + "/avatar"
 
 	bytes, err := json.Marshal(authResponseBody{Token: token, User: user})
 

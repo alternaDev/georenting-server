@@ -19,6 +19,9 @@
     },
     "GOOGLE_PROJECT_ID": {
       "description": "Project ID for Google GCM"
+    },
+    "BASE_URL": {
+      "description": "Base URL of the thing."
     }
   }
 }

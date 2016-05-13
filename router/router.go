@@ -14,6 +14,7 @@ func SetupRouter() *mux.Router {
 	r.HandleFunc("/users/refreshToken", c.RefreshTokenHandler).Methods("POST")
 	r.HandleFunc("/users/me/gcm", c.GCMAddHandler).Methods("POST")
 	r.HandleFunc("/users/me/history", c.HistoryHandler).Methods("GET")
+	r.HandleFunc("/users/{name}/avatar", c.AvatarHandler).Methods("GET")
 
 	r.HandleFunc("/fences", c.GetFencesHandler).Methods("GET")
 	r.HandleFunc("/fences", c.CreateFenceHandler).Methods("POST")
