@@ -51,16 +51,29 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	models.DB.Where(models.User{GoogleID: googleUser.GoogleID}).FirstOrInit(&user)
 
 	if user.Name == "" {
-		id, err := strconv.ParseInt(googleUser.GoogleID[:7], 10, 64)
+		var id int64
+		id, err = strconv.ParseInt(googleUser.GoogleID[:7], 10, 64)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusForbidden)
 			return
 		}
-		name, err := nameGen.GenerateNameWithSeed(1, 1, 3, id)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusForbidden)
-			return
+
+		name := ""
+		i := 0
+		for name == "" {
+			genName, err := nameGen.GenerateNameWithSeed(1, 1, 3, id + int64(i))
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusForbidden)
+				return
+			}
+			count := 0
+			models.DB.Where(models.User{Name: genName}).Count(&count)
+			if count == 0 {
+				name = genName
+			}
+			i = i + 1
 		}
+
 		user.Name = name
 	}
 
