@@ -8,6 +8,10 @@
 			"Rev": "5db9ed2a99fadcccc259089ee7e98a3a774bd69a"
 		},
 		{
+			"ImportPath": "github.com/alternaDev/go-random-name-gen",
+			"Rev": "c4b574d43703996916d94f9476250cae15b35c27"
+		},
+		{
 			"ImportPath": "github.com/dgrijalva/jwt-go",
 			"Comment": "v2.4.0-11-gf219341",
 			"Rev": "f2193411bd642f7db03249fd79d5292c9b34916a"

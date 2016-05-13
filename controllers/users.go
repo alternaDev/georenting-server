@@ -11,6 +11,8 @@ import (
 	"github.com/alternaDev/georenting-server/auth"
 	"github.com/alternaDev/georenting-server/google"
 	"github.com/alternaDev/georenting-server/models"
+
+	nameGen "github.com/alternaDev/go-random-name-gen"
 )
 
 type authBody struct {
@@ -47,7 +49,20 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 	models.DB.Where(models.User{GoogleID: googleUser.GoogleID}).FirstOrInit(&user)
 
-	user.Name = googleUser.Name
+	if user.Name == "" {
+		id, err := strconv.ParseInt(googleUser.GoogleID[:7], 10, 64)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusForbidden)
+			return
+		}
+		name, err := nameGen.GenerateNameWithSeed(1, 1, 3, id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusForbidden)
+			return
+		}
+		user.Name = name
+	}
+
 	user.AvatarURL = googleUser.Avatar.URL
 	user.CoverURL = googleUser.Cover.CoverPhoto.URL
 	models.DB.Save(&user)
