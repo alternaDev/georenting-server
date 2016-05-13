@@ -112,6 +112,8 @@ func RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user.AvatarURL = os.Getenv("BASE_URL") + "/users/" + user.Name + "/avatar"
+
 	bytes, err := json.Marshal(authResponseBody{Token: token, User: user})
 
 	if err != nil {
