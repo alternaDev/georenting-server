@@ -8,6 +8,10 @@
 			"Rev": "5db9ed2a99fadcccc259089ee7e98a3a774bd69a"
 		},
 		{
+			"ImportPath": "github.com/alternaDev/go-avatar-gen",
+			"Rev": "b7f71f2faac6e5b3a984044001731fabb55b34b0"
+		},
+		{
 			"ImportPath": "github.com/alternaDev/go-random-name-gen",
 			"Rev": "c4b574d43703996916d94f9476250cae15b35c27"
 		},
