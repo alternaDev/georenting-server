@@ -94,7 +94,7 @@ func initIndices(client *elastic.Client) error {
   return nil
 }
 
-func MigrateGeofencesToElasticSearch() {
+/*func MigrateGeofencesToElasticSearch() {
   log.Print("Migrating to ElasticSearch")
   var geoFences []Fence
   DB.Find(&geoFences)
@@ -107,7 +107,7 @@ func MigrateGeofencesToElasticSearch() {
       log.Fatal(err)
     }
   }
-}
+}*/
 
 func IndexGeoFence(fence *Fence) error {
   data := fmt.Sprintf(`{"name": "%s", "center": {"lat": %f, "lon": %f}, "radius": %d, "owner": %d}`, fence.Name, fence.Lat, fence.Lon, fence.Radius, fence.UserID);
