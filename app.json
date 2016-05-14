@@ -5,7 +5,7 @@
   "addons": [
     "heroku-postgresql",
     "heroku-redis",
-    "bonsai"
+    "searchly"
   ],
   "env": {
     "GOOGLE_API_KEY": {
