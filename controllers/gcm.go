@@ -18,11 +18,10 @@ type gcmNotificationKeyResponse struct {
 
 // GCMAddHandler POST /users/me/gcm
 func GCMAddHandler(w http.ResponseWriter, r *http.Request) {
-
 	user, err := auth.ValidateSession(r)
 
 	if err != nil {
-		http.Error(w, "Invalid Session token. "+err.Error(), http.StatusUnauthorized)
+		http.Error(w, "Invalid Session token. "+err.Error(), http.StatusForbidden)
 		return
 	}
 
