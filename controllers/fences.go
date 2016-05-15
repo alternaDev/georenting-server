@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"log"
+	"fmt"
 
 	"github.com/alternaDev/georenting-server/activity"
 	"github.com/alternaDev/georenting-server/auth"
@@ -238,4 +239,53 @@ func GetFenceHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(bytes)
+}
+
+// RemoveFenceHandler DELETE /fences/{fenceId}
+func RemoveFenceHandler(w http.ResponseWriter, r *http.Request) {
+	user, err := auth.ValidateSession(r)
+
+	if err != nil {
+		http.Error(w, "Invalid Session token. "+err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	vars := mux.Vars(r)
+
+	fenceID, err := strconv.ParseUint(vars["fenceId"], 10, 8)
+	if err != nil {
+		http.Error(w, "Invalid Fence ID. "+err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	var fence models.Fence
+
+	notFound := models.DB.Find(&fence, fenceID).RecordNotFound()
+
+	if notFound {
+		http.Error(w, "GeoFence Not Found.", http.StatusNotFound)
+		return
+	}
+
+	if fence.UserID != user.ID {
+		http.Error(w, "Unauthorized User.", http.StatusUnauthorized)
+		return
+	}
+
+
+	err = models.DeleteGeoFence(&fence)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = models.DB.Delete(fence).Error
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Fprintf(w, "{}")
 }

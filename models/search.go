@@ -140,8 +140,8 @@ func FindGeoFences(centerLat float64, centerLon float64, radius int64) ([]int64,
 
     // Iterate through results
     for i, hit := range searchResult.Hits.Hits {
-      stringId, _ := strconv.ParseInt(hit.Id, 10, 64)
-      fences[i] = stringId
+      stringID, _ := strconv.ParseInt(hit.Id, 10, 64)
+      fences[i] = stringID
     }
     return fences, nil
   }
@@ -150,7 +150,7 @@ func FindGeoFences(centerLat float64, centerLon float64, radius int64) ([]int64,
   return make([]int64, 0), nil
 }
 
-func DeleteGeoFence(id string) error {
-  _, err := ElasticInstance.Delete().Index(IndexGeoFences).Id(id).Do()
+func DeleteGeoFence(fence *Fence) error {
+  _, err := ElasticInstance.Delete().Index(IndexGeoFences).Id(strconv.Itoa(int(fence.ID))).Do()
   return err
 }
