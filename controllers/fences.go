@@ -202,3 +202,40 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Write(bytes)
 }
+
+// GetFenceHandler GET /fences/{fenceId}
+func GetFenceHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	fenceID, err := strconv.ParseUint(vars["fenceId"], 10, 8)
+	if err != nil {
+		http.Error(w, "Invalid Fence ID. "+err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	var fence models.Fence
+
+	notFound := models.DB.Find(&fence, fenceID).RecordNotFound()
+
+	if notFound {
+		http.Error(w, "GeoFence Not Found.", http.StatusNotFound)
+		return
+	}
+
+	var f fenceResponse
+	f.ID = fence.ID
+	f.Lat = fence.Lat
+	f.Lon = fence.Lon
+	f.Name = fence.Name
+	f.Radius = fence.Radius
+	f.Owner = fence.UserID
+
+	bytes, err := json.Marshal(&f)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(bytes)
+}
