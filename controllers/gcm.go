@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
+	"fmt"
 
 	"github.com/alternaDev/georenting-server/auth"
 	"github.com/alternaDev/georenting-server/google/gcm"
@@ -65,4 +66,37 @@ func GCMAddHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(bytes)
+}
+
+// GCMRemoveHandler DELETE /users/me/gcm
+func GCMRemoveHandler(w http.ResponseWriter, r *http.Request) {
+	user, err := auth.ValidateSession(r)
+
+	if err != nil {
+		http.Error(w, "Invalid Session token. "+err.Error(), http.StatusForbidden)
+		return
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	var b gcmID
+	err = decoder.Decode(&b)
+
+	if err != nil {
+		http.Error(w, "Invalid Body.", http.StatusBadRequest)
+		return
+	}
+
+	if user.GCMNotificationID != "" {
+		err = gcm.RemoveDeviceFromGroup(b.GCMID, user)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+	} else {
+		http.Error(w, "Could not remove Token from nonexisting Group.", http.StatusUnauthorized)
+		return
+	}
+
+	fmt.Fprintf(w, "{}")
 }
