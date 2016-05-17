@@ -310,16 +310,16 @@ func RemoveFenceHandler(w http.ResponseWriter, r *http.Request) {
 
 // EstimateFencePriceHandler POST /fences/estimatePrice
 func EstimateFencePriceHandler(w http.ResponseWriter, r *http.Request) {
-	_, err := auth.ValidateSession(r)
+	/*_, err := auth.ValidateSession(r)
 
 	if err != nil {
 		http.Error(w, "Invalid Session token. "+err.Error(), http.StatusUnauthorized)
 		return
-	}
+	}*/
 
 	decoder := json.NewDecoder(r.Body)
 	var f models.Fence
-	err = decoder.Decode(&f)
+	err := decoder.Decode(&f)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
