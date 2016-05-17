@@ -13,6 +13,7 @@ import (
 	"github.com/alternaDev/georenting-server/google/gcm"
 	"github.com/alternaDev/georenting-server/models"
 	"github.com/alternaDev/georenting-server/models/search"
+	"github.com/alternaDev/georenting-server/scores"
 	"github.com/gorilla/mux"
 )
 
@@ -80,6 +81,13 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = scores.RecordVisit(fence.Lat, fence.Lon)
+
+	if err != nil {
+		log.Fatalf("Error while calulating score: %s", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	w.Write([]byte("{}"))
 }
 

@@ -34,7 +34,7 @@ func initDB(url string) (gorm.DB, error) {
 		return db, err
 	}
 
-	db.AutoMigrate(&User{}, &Fence{})
+	db.AutoMigrate(&User{}, &Fence{}, &Score{})
 
 	return db, nil
 }
