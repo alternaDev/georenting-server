@@ -12,6 +12,7 @@ import (
 	"github.com/alternaDev/georenting-server/auth"
 	"github.com/alternaDev/georenting-server/google/gcm"
 	"github.com/alternaDev/georenting-server/models"
+	"github.com/alternaDev/georenting-server/models/search"
 	"github.com/gorilla/mux"
 )
 
@@ -92,7 +93,7 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err1 == nil && err2 == nil && err3 == nil {
 
-		ids, err := models.FindGeoFences(lat, lon, radius)
+		ids, err := search.FindGeoFences(lat, lon, radius)
 		if err != nil {
 			log.Fatal(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -187,7 +188,7 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 
 	models.DB.Save(&f)
 
-	err = models.IndexGeoFence(&f)
+	err = search.IndexGeoFence(&f)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -273,7 +274,7 @@ func RemoveFenceHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 
-	err = models.DeleteGeoFence(&fence)
+	err = search.DeleteGeoFence(&fence)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

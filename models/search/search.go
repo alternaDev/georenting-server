@@ -1,4 +1,4 @@
-package models
+package search
 
 import (
   elastic "gopkg.in/olivere/elastic.v3"
@@ -9,6 +9,8 @@ import (
   "errors"
   "fmt"
   "strconv"
+
+  models "github.com/alternaDev/georenting-server/models"
 )
 
 const (
@@ -109,7 +111,7 @@ func initIndices(client *elastic.Client) error {
   }
 }*/
 
-func IndexGeoFence(fence *Fence) error {
+func IndexGeoFence(fence *models.Fence) error {
   data := fmt.Sprintf(`{"name": "%s", "center": {"lat": %f, "lon": %f}, "radius": %d, "owner": %d}`, fence.Name, fence.Lat, fence.Lon, fence.Radius, fence.UserID);
   log.Println("Indexing: " + data)
   _, err := ElasticInstance.Index().
@@ -150,7 +152,7 @@ func FindGeoFences(centerLat float64, centerLon float64, radius int64) ([]int64,
   return make([]int64, 0), nil
 }
 
-func DeleteGeoFence(fence *Fence) error {
+func DeleteGeoFence(fence *models.Fence) error {
   _, err := ElasticInstance.Delete().Index(IndexGeoFences).Id(strconv.Itoa(int(fence.ID))).Do()
   return err
 }

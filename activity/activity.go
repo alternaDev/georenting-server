@@ -2,11 +2,9 @@ package activity
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 
-	models "github.com/alternaDev/georenting-server/models"
-	redis "gopkg.in/redis.v3"
+	redis "github.com/alternaDev/georenting-server/models/redis"
 )
 
 type ownFenceVisitedActivity struct {
@@ -45,7 +43,7 @@ func AddOwnFenceVisitedActivity(ownerID uint, visitorName string, visitorID uint
 		return err
 	}
 
-	return addActivity(ownerID, float64(now), string(bytes[:]))
+	return redis.AddActivity(ownerID, float64(now), string(bytes[:]))
 }
 
 // AddForeignVisitedActivity adds the activity to the stream of the owner.
@@ -64,13 +62,9 @@ func AddForeignVisitedActivity(visitorID uint, ownerName string, ownerID uint, f
 		return err
 	}
 
-	return addActivity(visitorID, float64(now), string(bytes[:]))
-}
-
-func addActivity(userID uint, score float64, data string) error {
-	return models.RedisInstance.ZAdd(fmt.Sprintf("%v", userID), redis.Z{Score: score, Member: data}).Err()
+	return redis.AddActivity(visitorID, float64(now), string(bytes[:]))
 }
 
 func GetActivities(userID uint, start int64, end int64) ([]string, error) {
-	return models.RedisInstance.ZRevRangeByScore(fmt.Sprintf("%v", userID), redis.ZRangeByScore{Min: fmt.Sprintf("%v", start), Max: fmt.Sprintf("%v", end)}).Result()
+	return redis.GetActivities(userID, start, end)
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/alternaDev/georenting-server/models"
 	"github.com/dgrijalva/jwt-go"
 
-	redis "gopkg.in/redis.v3"
+	redis "github.com/alternaDev/georenting-server/models/redis"
 )
 
 // GenerateJWTToken generates a JWT token for a given UserID and signs it with
@@ -51,7 +51,7 @@ func GenerateJWTToken(user models.User) (string, error) {
 func ValidateJWTToken(input string) (models.User, error) {
 	var user models.User
 
-	if isInBlacklist(input) {
+	if redis.TokenIsInBlacklist(input) {
 		return models.User{}, errors.New("Token is in blacklist.")
 	}
 
@@ -83,14 +83,6 @@ func ValidateJWTToken(input string) (models.User, error) {
 	}
 
 	return user, nil
-}
-
-func isInBlacklist(tokenString string) bool {
-	_, err := models.RedisInstance.Get(tokenString).Result()
-	if err == redis.Nil {
-		return false
-	}
-	return true
 }
 
 func getRemainingTokenValidity(input string) int {
@@ -140,7 +132,6 @@ func ValidateSession(r *http.Request) (models.User, error) {
 	return ValidateJWTToken(token)
 }
 
-// InvalidateToken invalidates a given token
-func InvalidateToken(token string) error {
-	return models.RedisInstance.Set(token, token, time.Duration(getRemainingTokenValidity(token))*time.Second).Err()
+func InvalidateToken(token string) (error) {
+	return redis.TokenInvalidate(token, time.Duration(getRemainingTokenValidity(token))*time.Second)
 }
