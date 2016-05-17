@@ -207,12 +207,12 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 	overlap, err := checkFenceOverlap(&f)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	if overlap {
-		http.Error(w, "Fence does overlap.", http.StatusInternalServerError)
+		http.Error(w, "Fence does overlap.", http.StatusBadRequest)
 		return
 	}
 
@@ -321,7 +321,7 @@ func RemoveFenceHandler(w http.ResponseWriter, r *http.Request) {
 
 	fenceID, err := strconv.ParseUint(vars["fenceId"], 10, 8)
 	if err != nil {
-		http.Error(w, "Invalid Fence ID. "+err.Error(), http.StatusUnauthorized)
+		http.Error(w, "Invalid Fence ID. "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -387,12 +387,12 @@ func EstimateFenceCostHandler(w http.ResponseWriter, r *http.Request) {
 	overlap, err := checkFenceOverlap(&f)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	if overlap {
-		http.Error(w, "Fence does overlap.", http.StatusInternalServerError)
+		http.Error(w, "Fence does overlap.", http.StatusBadRequest)
 		return
 	}
 
