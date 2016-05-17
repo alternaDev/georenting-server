@@ -35,16 +35,17 @@ func RecordVisit(lat float64, lon float64) (error) {
 }
 
 func CalculateScore(score *models.Score) (error) {
+  models.DB.LogMode(true)
   type SumResult struct {
-    TSum int64
+    Tsum int64
   }
   var sumResult SumResult
-  err := models.DB.Raw("SELECT SUM(? - last_visit) AS tSum FROM scores", time.Now().Unix()).Scan(&sumResult).Error
+  err := models.DB.Raw("SELECT SUM(? - last_visit) AS tsum FROM scores", time.Now().Unix()).Scan(&sumResult).Error
 
   if err != nil {
     return err
   }
-  tSum := sumResult.TSum
+  tSum := sumResult.Tsum
   log.Printf("Sum: %d", tSum)
 
   var count int64
@@ -66,5 +67,6 @@ func CalculateScore(score *models.Score) (error) {
   log.Printf("logN: %f", logN)
 
   score.Score = math.Max(0, math.Max(score.Score, 0) + logN)
+  models.DB.LogMode(false)
   return models.DB.Save(&score).Error
 }
