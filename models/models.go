@@ -1,7 +1,6 @@
 package models
 
 import (
-	"errors"
 	"log"
 	"os"
 
@@ -10,10 +9,15 @@ import (
 )
 
 // DB provides the ability to access the Database.
-var DB, err = gorm.DB{}, errors.New("")
+var DB gorm.DB
 
-func Init() {
-	DB, err = initDB(os.Getenv("DATABASE_URL"))
+func init() {
+	log.Println("Initializing Models.")
+	db, err := initDB(os.Getenv("DATABASE_URL"))
+	if err != nil {
+		panic(err)
+	}
+	DB = db
 }
 
 func initDB(url string) (gorm.DB, error) {

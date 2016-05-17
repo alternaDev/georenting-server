@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 
-	models "github.com/alternaDev/georenting-server/models"
 	router "github.com/alternaDev/georenting-server/router"
 
 	"github.com/gorilla/handlers"
@@ -24,8 +23,6 @@ func main() {
 	if port == "" {
 		log.Fatal("$PORT must be set")
 	}
-	log.Println("Initializing Models.")
-	models.Init()
 
 	log.Printf("Listening on port %s.", port)
 

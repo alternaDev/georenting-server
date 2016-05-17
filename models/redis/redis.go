@@ -5,14 +5,25 @@ import (
 	"os"
 	"fmt"
 	"time"
-
+	"log"
+	
 	"gopkg.in/redis.v3"
 )
 
 // RedisInstance is a usable redis instance.
-var RedisInstance = initRedis(os.Getenv("REDIS_URL"))
+var RedisInstance *redis.Client
 
-func initRedis(www string) *redis.Client {
+func init() {
+	log.Println("Initializing Redis.")
+
+	client, err := initRedis(os.Getenv("REDIS_URL"))
+	if err != nil {
+		panic(err)
+	}
+	RedisInstance = client
+}
+
+func initRedis(www string) (*redis.Client, error) {
 	redisURL, _ := url.Parse(www)
 	password := ""
 
@@ -26,7 +37,11 @@ func initRedis(www string) *redis.Client {
 		DB:       0,
 	})
 
-	return client
+	err := client.Ping().Err()
+	if err != nil {
+		return nil, err
+	}
+	return client, nil
 }
 
 func TokenIsInBlacklist(tokenString string) bool {
@@ -37,7 +52,7 @@ func TokenIsInBlacklist(tokenString string) bool {
 	return true
 }
 
-// InvalidateToken invalidates a given token
+// TokenInvalidate invalidates a given token
 func TokenInvalidate(token string, ttl time.Duration) error {
 	return RedisInstance.Set(token, token, ttl).Err()
 }

@@ -21,7 +21,7 @@ const (
 )
 
 // ElasticInstance is a usable ElasticSearch instance.
-var ElasticInstance = initElastic(os.Getenv("ELASTICSEARCH_URL"))
+var ElasticInstance *elastic.Client
 
 func parseBonsaiURL(url string) (string, string, string){
 	rex, _ := regexp.Compile(".*?://([a-z0-9]{1,}):([a-z0-9]{1,})@.*$")
@@ -31,7 +31,17 @@ func parseBonsaiURL(url string) (string, string, string){
 	return user,pass,host
 }
 
-func initElastic(www string) *elastic.Client {
+func init() {
+  log.Println("Initializing ElasticSearch.")
+
+  elastic, err := initElastic(os.Getenv("ELASTICSEARCH_URL"))
+  if err != nil {
+		panic(err)
+	}
+  ElasticInstance = elastic
+}
+
+func initElastic(www string) (*elastic.Client, error) {
   username, password, host := parseBonsaiURL(www)
 
   log.Printf("Initializing ES: %v.", host)
@@ -39,7 +49,7 @@ func initElastic(www string) *elastic.Client {
   client, err := elastic.NewClient(elastic.SetURL(host), elastic.SetMaxRetries(10), elastic.SetBasicAuth(username, password), elastic.SetSniff(false))
   if err != nil {
       log.Fatalf("Error while connecting to ElasticSearch: %s", err)
-      return nil
+      return nil, err
   }
 
   log.Println("Initializing Indices.")
@@ -47,10 +57,10 @@ func initElastic(www string) *elastic.Client {
   err = initIndices(client)
   if err != nil {
       log.Fatalf("Error while creating ElasticSearch Indices: %s", err)
-      return nil
+      return nil, err
   }
 
-  return client
+  return client, err
 }
 
 func initIndices(client *elastic.Client) error {
