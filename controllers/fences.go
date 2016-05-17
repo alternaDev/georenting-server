@@ -309,8 +309,8 @@ func RemoveFenceHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "{}")
 }
 
-// EstimateFencePriceHandler POST /fences/estimatePrice
-func EstimateFencePriceHandler(w http.ResponseWriter, r *http.Request) {
+// EstimateFenceCostHandler POST /fences/estimateCost
+func EstimateFenceCostHandler(w http.ResponseWriter, r *http.Request) {
 	/*_, err := auth.ValidateSession(r)
 
 	if err != nil {
