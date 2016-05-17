@@ -64,7 +64,10 @@ func CalculateScore(score *models.Score) (error) {
   tAvg := float64((1 / count) * tSum)
   log.Printf("tAvg: %f", tAvg)
 
-  logN := math.Log(tAvg / float64(time.Now().Unix() - score.LastVisit))
+  fraction := tAvg / float64(time.Now().Unix() - score.LastVisit)
+  log.Printf("Fraction: %f", fraction)
+
+  logN := math.Log(fraction)
   log.Printf("logN: %f", logN)
 
   score.Score = math.Max(0, math.Max(score.Score, 0) + logN)
