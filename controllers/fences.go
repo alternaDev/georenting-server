@@ -26,6 +26,10 @@ type fenceResponse struct {
 	Owner  uint    `json:"owner"`
 }
 
+type costEstimateResponse struct {
+	Cost float64 `json:"cost"`
+}
+
 // VisitFenceHandler handles POST /fences/{fenceId}/visit
 func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := auth.ValidateSession(r)
@@ -190,6 +194,11 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 	var f models.Fence
 	err = decoder.Decode(&f)
 
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	f.User = user
 	f.Radius = 100
 	// TODO: Check overlap with other fences.
@@ -297,4 +306,43 @@ func RemoveFenceHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintf(w, "{}")
+}
+
+// EstimateFencePriceHandler POST /fences/estimatePrice
+func EstimateFencePriceHandler(w http.ResponseWriter, r *http.Request) {
+	_, err := auth.ValidateSession(r)
+
+	if err != nil {
+		http.Error(w, "Invalid Session token. "+err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	var f models.Fence
+	err = decoder.Decode(&f)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	price, err := scores.GetGeoFencePrice(f.Lat, f.Lon)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// TODO: Check for overlap.
+
+	var response = costEstimateResponse{Cost: price}
+
+	bytes, err := json.Marshal(&response)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(bytes)
 }

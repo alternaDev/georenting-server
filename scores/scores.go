@@ -11,6 +11,7 @@ import (
 
 const (
   geoHashResolution = 6
+  geoFenceBasePrice = 100
 )
 
 func RecordVisit(lat float64, lon float64) (error) {
@@ -61,4 +62,17 @@ func CalculateScore(score *models.Score) (error) {
   logN := math.Log(fraction)
   score.Score = math.Max(0, math.Max(score.Score, 0) + logN)
   return models.DB.Save(&score).Error
+}
+
+func GetGeoFencePrice(lat float64, lon float64) (float64, error) {
+  geoHash := geomodel.GeoCell(lat, lon, geoHashResolution)
+
+  score := &models.Score{}
+  err := models.DB.Where(models.Score{GeoHash: geoHash}).First(&score).Error
+
+  if err != nil {
+    return 0, err
+  }
+
+  return math.Pow(math.E, score.Score) * geoFenceBasePrice, nil
 }
