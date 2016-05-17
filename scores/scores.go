@@ -68,7 +68,7 @@ func GetGeoFencePrice(lat float64, lon float64) (float64, error) {
   geoHash := geomodel.GeoCell(lat, lon, geoHashResolution)
 
   score := &models.Score{}
-  err := models.DB.Where(models.Score{GeoHash: geoHash}).First(&score).Error
+  err := models.DB.Where(models.Score{GeoHash: geoHash}).FirstOrInit(&score).Error
 
   if err != nil {
     return 0, err
