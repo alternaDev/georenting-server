@@ -11,4 +11,5 @@ type User struct {
 	Name              string  `json:"name"`
 	AvatarURL         string  `json:"avatar_url"`
 	CoverURL          string  `json:"cover_url"`
+	Balance						float64 `json:"balance"`
 }
