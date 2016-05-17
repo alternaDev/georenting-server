@@ -3,6 +3,7 @@ package scores
 import (
   "time"
   "math"
+  "log"
 
   geomodel "github.com/alternaDev/geomodel"
   models "github.com/alternaDev/georenting-server/models"
@@ -35,7 +36,7 @@ func RecordVisit(lat float64, lon float64) (error) {
 
 func CalculateScore(score *models.Score) (error) {
   type SumResult struct {
-    tSum int64
+    TSum int64
   }
   var sumResult SumResult
   err := models.DB.Raw("SELECT SUM(? - last_visit) AS tSum FROM scores", time.Now().Unix()).Scan(&sumResult).Error
@@ -43,7 +44,8 @@ func CalculateScore(score *models.Score) (error) {
   if err != nil {
     return err
   }
-  tSum := sumResult.tSum
+  tSum := sumResult.TSum
+  log.Printf("Sum: %d", tSum)
 
   var count int64
   err = models.DB.Model(&models.Score{}).Count(&count).Error
@@ -51,11 +53,18 @@ func CalculateScore(score *models.Score) (error) {
   if err != nil {
     return err
   }
+  log.Printf("Count 1: %d", count)
+
 
   count = int64(math.Max(float64(count), 1))
+  log.Printf("Count 2: %d", count)
 
   tAvg := float64((1 / count) * tSum)
+  log.Printf("tAvg: %f", tAvg)
 
-  score.Score = math.Max(0, score.Score + math.Log(tAvg / float64(time.Now().Unix() - score.LastVisit)))
+  logN := math.Log(tAvg / float64(time.Now().Unix() - score.LastVisit))
+  log.Printf("logN: %f", logN)
+
+  score.Score = math.Max(0, math.Max(score.Score, 0) + logN)
   return models.DB.Save(&score).Error
 }
