@@ -38,7 +38,7 @@ func CalculateScore(score *models.Score) (error) {
     tSum int64
   }
   var sumResult SumResult
-  err := models.DB.Raw("SELECT SUM(? - LastVisit) AS tSum FROM Score", time.Now().Unix()).Scan(&sumResult).Error
+  err := models.DB.Raw("SELECT SUM(? - last_visit) AS tSum FROM scores", time.Now().Unix()).Scan(&sumResult).Error
 
   if err != nil {
     return err
