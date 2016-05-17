@@ -52,6 +52,8 @@ func CalculateScore(score *models.Score) (error) {
     return err
   }
 
+  count = int64(math.Max(float64(count), 1))
+
   tAvg := float64((1 / count) * tSum)
 
   score.Score = math.Max(0, score.Score + math.Log(tAvg / float64(time.Now().Unix() - score.LastVisit)))
