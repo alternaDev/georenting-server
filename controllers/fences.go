@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"log"
 	"fmt"
+	"math"
 
 	"github.com/alternaDev/georenting-server/activity"
 	"github.com/alternaDev/georenting-server/auth"
@@ -201,8 +202,19 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	f.User = user
-	f.Radius = 100
-	// TODO: Check overlap with other fences.
+	f.Radius = models.FenceMinRadius
+
+	overlap, err := checkFenceOverlap(&f)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if overlap {
+		http.Error(w, "Fence does overlap.", http.StatusInternalServerError)
+		return
+	}
 
 	models.DB.Save(&f)
 
@@ -221,6 +233,32 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(bytes)
+}
+
+func checkFenceOverlap(fence *models.Fence) (bool, error) {
+	ids, err := search.FindGeoFences(fence.Lat, fence.Lon, int64(fence.Radius + models.FenceMaxRadius))
+
+	if err != nil {
+		return false, err
+	}
+
+	result := make([]models.Fence, len(ids))
+	err = models.DB.Where(ids).Find(&result).Error
+
+	if err != nil {
+		return false, err
+	}
+
+	for i := range result {
+		fenceB := result[i]
+		//   D = sqrt( (Ax - Bx)2 + (Ay - By)2 )
+		distance := math.Sqrt((fence.Lat - fenceB.Lat) * (fence.Lat - fenceB.Lat) +
+														(fence.Lon - fenceB.Lon) * (fence.Lon - fenceB.Lon))
+		if distance < float64(fence.Radius + fenceB.Radius) {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 // GetFenceHandler GET /fences/{fenceId}
@@ -334,7 +372,19 @@ func EstimateFenceCostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: Check for overlap.
+	f.Radius = models.FenceMinRadius
+
+	overlap, err := checkFenceOverlap(&f)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if overlap {
+		http.Error(w, "Fence does overlap.", http.StatusInternalServerError)
+		return
+	}
 
 	var response = costEstimateResponse{Cost: price}
 

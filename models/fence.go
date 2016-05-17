@@ -4,6 +4,11 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+const (
+	FenceMinRadius = 100
+	FenceMaxRadius = 1000
+)
+
 // Fence is a fence
 type Fence struct {
 	gorm.Model
