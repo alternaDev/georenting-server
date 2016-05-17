@@ -216,6 +216,16 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	price, err := scores.GetGeoFencePrice(f.Lat, f.Lon)
+
+	if price > user.Balance {
+		http.Error(w, "You do not have enough money for this thing.", http.StatusPaymentRequired)
+		return
+	}
+
+	user.Balance = user.Balance - price
+
+	models.DB.Save(&user)
 	models.DB.Save(&f)
 
 	err = search.IndexGeoFence(&f)
