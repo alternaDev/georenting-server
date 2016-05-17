@@ -30,6 +30,7 @@ type costEstimateResponse struct {
 	Cost float64 `json:"cost"`
 }
 
+
 // VisitFenceHandler handles POST /fences/{fenceId}/visit
 func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := auth.ValidateSession(r)
