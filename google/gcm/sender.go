@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	gcmSendURL = "https://gcm-http.googleapis.com/gcm/send"
+	gcmSendURL = "https://fcm.googleapis.com/fcm/"
 )
 
 type sendMessageResponse struct {
