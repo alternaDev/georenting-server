@@ -11,5 +11,7 @@ func Setup(dbURL string) (*pgx.ConnPool, *que.Client) {
 
 	qc := que.NewClient(pgxpool)
 
+	defer pgxpool.Close()
+
 	return pgxpool, qc
 }

@@ -76,8 +76,6 @@ func init() {
 		panic(err)
 	}
 	DB = db
-
-	defer DBPool.Close()
 }
 
 func initDB() (*gorm.DB, error) {
