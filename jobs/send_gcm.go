@@ -27,12 +27,6 @@ func SendGcmJob(j *que.Job) error {
 
 	log.Print("Processing SendGcmRequest")
 
-	enc, err := json.Marshal(r.Message)
-	if err != nil {
-		return err
-	}
-	log.Printf("Enc: %s", enc)
-
 	err = gcm.SendToGroup(r.Message)
 
 	if err != nil {

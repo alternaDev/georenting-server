@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"time"
 )
@@ -22,6 +23,7 @@ type sendMessageResponse struct {
 func SendToGroup(msg *Message) error {
 	httpClient := &http.Client{}
 
+	log.Print("Marshalling")
 	data, err := json.Marshal(msg)
 
 	if err != nil {
@@ -36,6 +38,8 @@ func SendToGroup(msg *Message) error {
 	req.Header.Add("Authorization", "key="+googleAPIKey)
 	req.Header.Add("project_id", googleProjectID)
 
+	log.Print("Sending Request")
+
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		return err
@@ -43,10 +47,13 @@ func SendToGroup(msg *Message) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return err
 		}
+		log.Printf("Got failed Request: %s", body)
+
 		var response sendMessageResponse
 		err = json.Unmarshal(body, &response)
 
@@ -55,9 +62,15 @@ func SendToGroup(msg *Message) error {
 		}
 
 		time.Sleep(500)
+		log.Printf("Sending new things.")
 
 		for _, id := range response.FailedRegistrationIDs {
 			msg.To = id
+			data, err = json.Marshal(msg)
+
+			if err != nil {
+				return err
+			}
 			req, err := http.NewRequest("POST", gcmSendURL, bytes.NewBuffer(data))
 			if err != nil {
 				return err
