@@ -2,8 +2,9 @@ package controllers
 
 import (
 	"encoding/json"
-	"net/http"
 	"fmt"
+	"log"
+	"net/http"
 
 	"github.com/alternaDev/georenting-server/auth"
 	"github.com/alternaDev/georenting-server/google/gcm"
@@ -39,6 +40,7 @@ func GCMAddHandler(w http.ResponseWriter, r *http.Request) {
 		err = gcm.AddDeviceToGroup(b.GCMID, user)
 
 		if err != nil {
+			log.Printf("Error while adding device to group: %s", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -46,6 +48,7 @@ func GCMAddHandler(w http.ResponseWriter, r *http.Request) {
 		err = gcm.CreateDeviceGroup(b.GCMID, user)
 
 		if err != nil {
+			log.Printf("Error while creating device group: %s", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
