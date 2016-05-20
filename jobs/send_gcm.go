@@ -31,7 +31,7 @@ func SendGcmJob(j *que.Job) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Enc: %v", enc)
+	log.Printf("Enc: %s", enc)
 
 	err = gcm.SendToGroup(r.Message)
 
