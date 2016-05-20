@@ -4,13 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"time"
 )
 
 const (
-	gcmSendURL = "https://fcm.googleapis.com/fcm/"
+	gcmSendURL = "https://gcm-http.googleapis.com/gcm/"
 )
 
 type sendMessageResponse struct {
@@ -23,7 +22,6 @@ type sendMessageResponse struct {
 func SendToGroup(msg *Message) error {
 	httpClient := &http.Client{}
 
-	log.Print("Marshalling")
 	data, err := json.Marshal(msg)
 
 	if err != nil {
@@ -38,8 +36,6 @@ func SendToGroup(msg *Message) error {
 	req.Header.Add("Authorization", "key="+googleAPIKey)
 	req.Header.Add("project_id", googleProjectID)
 
-	log.Print("Sending Request")
-
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		return err
@@ -52,7 +48,6 @@ func SendToGroup(msg *Message) error {
 		if err != nil {
 			return err
 		}
-		log.Printf("Got failed Request: %s", body)
 
 		var response sendMessageResponse
 		err = json.Unmarshal(body, &response)
@@ -62,7 +57,6 @@ func SendToGroup(msg *Message) error {
 		}
 
 		time.Sleep(500)
-		log.Printf("Sending new things.")
 
 		for _, id := range response.FailedRegistrationIDs {
 			msg.To = id
