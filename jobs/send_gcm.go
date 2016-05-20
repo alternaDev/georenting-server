@@ -29,6 +29,10 @@ func SendGcmJob(j *que.Job) error {
 
 	err = gcm.SendToGroup(gcm.NewMessage(r.Data, r.GCMNotificationID))
 
+	if err != nil {
+		log.Fatalf("Could not send GCM message: %s", err)
+	}
+
 	return err
 }
 

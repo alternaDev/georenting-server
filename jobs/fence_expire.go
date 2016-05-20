@@ -30,3 +30,17 @@ func FenceExpireJob(j *que.Job) error {
 
 	return nil
 }
+
+func QueueFenceExpireRequest(r FenceExpireRequest) error {
+	enc, err := json.Marshal(r)
+	if err != nil {
+		return err
+	}
+
+	j := que.Job{
+		Type: FenceExpireJobName,
+		Args: enc,
+	}
+
+	return QC.Enqueue(&j)
+}
