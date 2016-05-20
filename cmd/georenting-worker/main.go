@@ -11,11 +11,11 @@ import (
 )
 
 func main() {
-	dbURL := os.Getenv("DATABASE_URL")
-	_, qc := jobs.Setup(dbURL)
+	qc := jobs.QC
 
 	wm := que.WorkMap{
 		jobs.FenceExpireJobName: jobs.FenceExpireJob,
+		jobs.SendGcmJobName:     jobs.SendGcmJob,
 	}
 
 	// 2 worker go routines

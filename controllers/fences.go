@@ -3,15 +3,15 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"log"
+	"math"
 	"net/http"
 	"strconv"
-	"log"
-	"fmt"
-	"math"
 
 	"github.com/alternaDev/georenting-server/activity"
 	"github.com/alternaDev/georenting-server/auth"
-	"github.com/alternaDev/georenting-server/google/gcm"
+	"github.com/alternaDev/georenting-server/jobs"
 	"github.com/alternaDev/georenting-server/models"
 	"github.com/alternaDev/georenting-server/models/search"
 	"github.com/alternaDev/georenting-server/scores"
@@ -30,7 +30,6 @@ type fenceResponse struct {
 type costEstimateResponse struct {
 	Cost float64 `json:"cost"`
 }
-
 
 // VisitFenceHandler handles POST /fences/{fenceId}/visit
 func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
@@ -58,19 +57,24 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 	rent := 100.0
 
 	// GCM
-	err = gcm.SendToGroup(gcm.NewMessage(map[string]interface{}{"type": "onForeignFenceEntered", "fenceId": fence.ID, "fenceName": fence.Name, "ownerName": fence.User.Name}, user.GCMNotificationID))
+	err = jobs.QueueSendGcmRequest(jobs.SendGcmRequest{GCMNotificationID: user.GCMNotificationID,
+		Data: map[string]interface{}{"type": "onForeignFenceEntered", "fenceId": fence.ID, "fenceName": fence.Name, "ownerName": fence.User.Name}})
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	err = gcm.SendToGroup(gcm.NewMessage(map[string]interface{}{"type": "onOwnFenceEntered", "fenceId": fence.ID, "fenceName": fence.Name, "visitorName": user.Name}, fence.User.GCMNotificationID))
+	err = jobs.QueueSendGcmRequest(jobs.SendGcmRequest{GCMNotificationID: fence.User.GCMNotificationID,
+		Data: map[string]interface{}{"type": "onOwnFenceEntered", "fenceId": fence.ID, "fenceName": fence.Name, "visitorName": user.Name}})
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// map[string]interface{}{"type": "onOwnFenceEntered", "fenceId": fence.ID, "fenceName": fence.Name, "visitorName": user.Name}
+	// fence.User.GCMNotificationID
 
 	// Activity Stream
 	err = activity.AddForeignVisitedActivity(user.ID, fence.User.Name, fence.User.ID, fence.Name, fence.ID, rent)
@@ -115,7 +119,6 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		result := make([]models.Fence, len(ids))
 		models.DB.Where(ids).Find(&result)
-
 
 		fences := make([]fenceResponse, len(result))
 		for i := range result {
@@ -246,7 +249,7 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func checkFenceOverlap(fence *models.Fence) (bool, error) {
-	ids, err := search.FindGeoFences(fence.Lat, fence.Lon, int64(fence.Radius + models.FenceMaxRadius))
+	ids, err := search.FindGeoFences(fence.Lat, fence.Lon, int64(fence.Radius+models.FenceMaxRadius))
 
 	if err != nil {
 		return false, err
@@ -262,7 +265,7 @@ func checkFenceOverlap(fence *models.Fence) (bool, error) {
 	for i := range result {
 		fenceB := result[i]
 		distance := distance(fence.Lat, fence.Lon, fenceB.Lat, fenceB.Lon)
-		if distance < float64(fence.Radius + fenceB.Radius) {
+		if distance < float64(fence.Radius+fenceB.Radius) {
 			return true, nil
 		}
 	}
@@ -270,10 +273,10 @@ func checkFenceOverlap(fence *models.Fence) (bool, error) {
 }
 
 func distance(lat1 float64, lon1 float64, lat2 float64, lon2 float64) float64 {
-	R := 6378.137;
+	R := 6378.137
 	dLat := (lat2 - lat1) * math.Pi / 180
-	dLon := (lon2 - lon1) * math.Pi / 180;
-	a := math.Sin(dLat / 2) * math.Sin(dLat / 2) + math.Cos(lat1 * math.Pi / 180) * math.Cos(lat2 * math.Pi / 180) * math.Sin(dLon / 2) * math.Sin(dLon / 2)
+	dLon := (lon2 - lon1) * math.Pi / 180
+	a := math.Sin(dLat/2)*math.Sin(dLat/2) + math.Cos(lat1*math.Pi/180)*math.Cos(lat2*math.Pi/180)*math.Sin(dLon/2)*math.Sin(dLon/2)
 	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
 	d := R * c
 	return d * 1000
@@ -346,7 +349,6 @@ func RemoveFenceHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unauthorized User.", http.StatusUnauthorized)
 		return
 	}
-
 
 	err = search.DeleteGeoFence(&fence)
 
