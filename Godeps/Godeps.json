@@ -46,6 +46,11 @@
 			"Rev": "90f22c17175fab5f9ad48abba5a18f5f2b5c9d2e"
 		},
 		{
+			"ImportPath": "github.com/jackc/pgx/stdlib",
+			"Comment": "v2.8.1-24-g90f22c1",
+			"Rev": "90f22c17175fab5f9ad48abba5a18f5f2b5c9d2e"
+		},
+		{
 			"ImportPath": "github.com/jinzhu/gorm",
 			"Rev": "e1df3994fb585496b9224e25cba1d3c2d0e06460"
 		},
