@@ -7,19 +7,21 @@ import (
 	"reflect"
 )
 
+// Field model field definition
 type Field struct {
 	*StructField
 	IsBlank bool
 	Field   reflect.Value
 }
 
+// Set set a value to the field
 func (field *Field) Set(value interface{}) (err error) {
 	if !field.Field.IsValid() {
 		return errors.New("field value not valid")
 	}
 
 	if !field.Field.CanAddr() {
-		return errors.New("unaddressable value")
+		return ErrUnaddressable
 	}
 
 	reflectValue, ok := value.(reflect.Value)
@@ -52,39 +54,5 @@ func (field *Field) Set(value interface{}) (err error) {
 	}
 
 	field.IsBlank = isBlank(field.Field)
-	return nil
-}
-
-// Fields get value's fields
-func (scope *Scope) Fields() map[string]*Field {
-	if scope.fields == nil {
-		fields := map[string]*Field{}
-		modelStruct := scope.GetModelStruct()
-
-		indirectValue := scope.IndirectValue()
-		isStruct := indirectValue.Kind() == reflect.Struct
-		for _, structField := range modelStruct.StructFields {
-			if field, ok := fields[structField.DBName]; !ok || field.IsIgnored {
-				if isStruct {
-					fields[structField.DBName] = getField(indirectValue, structField)
-				} else {
-					fields[structField.DBName] = &Field{StructField: structField, IsBlank: true}
-				}
-			}
-		}
-
-		scope.fields = fields
-		return fields
-	}
-	return scope.fields
-}
-
-func getField(indirectValue reflect.Value, structField *StructField) *Field {
-	field := &Field{StructField: structField}
-	for _, name := range structField.Names {
-		indirectValue = reflect.Indirect(indirectValue).FieldByName(name)
-	}
-	field.Field = indirectValue
-	field.IsBlank = isBlank(indirectValue)
-	return field
+	return err
 }

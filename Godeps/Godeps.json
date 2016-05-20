@@ -52,7 +52,13 @@
 		},
 		{
 			"ImportPath": "github.com/jinzhu/gorm",
-			"Rev": "e1df3994fb585496b9224e25cba1d3c2d0e06460"
+			"Comment": "v1.0-12-g57c7212",
+			"Rev": "57c72125b3087e1ed02c16f23a1f381cde3aaf2c"
+		},
+		{
+			"ImportPath": "github.com/jinzhu/gorm/dialects/postgres",
+			"Comment": "v1.0-12-g57c7212",
+			"Rev": "57c72125b3087e1ed02c16f23a1f381cde3aaf2c"
 		},
 		{
 			"ImportPath": "github.com/jinzhu/inflection",

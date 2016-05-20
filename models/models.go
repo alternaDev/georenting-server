@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx"
 	pgxstd "github.com/jackc/pgx/stdlib"
 	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres" // For GORM
 )
 
 const (
