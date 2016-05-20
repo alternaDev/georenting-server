@@ -8,6 +8,7 @@ import (
 
 	"github.com/alternaDev/georenting-server/auth"
 	"github.com/alternaDev/georenting-server/google/gcm"
+	"github.com/alternaDev/georenting-server/jobs"
 )
 
 type gcmID struct {
@@ -54,7 +55,12 @@ func GCMAddHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	err = gcm.SendToGroup(gcm.NewMessage(map[string]interface{}{"type": "sync"}, user.GCMNotificationID))
+	err = jobs.QueueSendGcmRequest(gcm.NewMessage(map[string]interface{}{"type": "sync"}, user.GCMNotificationID))
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
