@@ -57,8 +57,6 @@ func getPgxPool(dbURL string) (*pgx.ConnPool, error) {
 		return nil, err
 	}
 
-	defer pgxpool.Close()
-
 	return pgxpool, nil
 }
 
@@ -77,6 +75,8 @@ func init() {
 		panic(err)
 	}
 	DB = db
+
+	defer DBPool.Close()
 }
 
 func initDB() (gorm.DB, error) {
