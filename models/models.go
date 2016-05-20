@@ -30,7 +30,7 @@ const (
 // DB provides the ability to access the Database.
 var (
 	DBPool *pgx.ConnPool
-	DB     gorm.DB
+	DB     *gorm.DB
 )
 
 // prepQue ensures that the que table exists and que's prepared statements are
@@ -81,7 +81,7 @@ func init() {
 	defer DBPool.Close()
 }
 
-func initDB() (gorm.DB, error) {
+func initDB() (*gorm.DB, error) {
 	dbC, err := pgxstd.OpenFromConnPool(DBPool)
 	if err != nil {
 		panic(err)
