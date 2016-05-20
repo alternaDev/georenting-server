@@ -13,7 +13,7 @@ const (
 )
 
 type SendGcmRequest struct {
-	Message gcm.Message
+	Message *gcm.Message
 }
 
 func SendGcmJob(j *que.Job) error {
@@ -27,7 +27,7 @@ func SendGcmJob(j *que.Job) error {
 
 	log.Print("Processing SendGcmRequest")
 
-	err = gcm.SendToGroup(&r.Message)
+	err = gcm.SendToGroup(r.Message)
 
 	if err != nil {
 		log.Printf("Could not send GCM message: %s", err)
@@ -36,7 +36,8 @@ func SendGcmJob(j *que.Job) error {
 	return err
 }
 
-func QueueSendGcmRequest(r SendGcmRequest) error {
+func QueueSendGcmRequest(m *gcm.Message) error {
+	r := SendGcmRequest{Message: m}
 	enc, err := json.Marshal(r)
 	if err != nil {
 		return err
