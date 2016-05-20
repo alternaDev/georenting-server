@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	gcmSendURL = "https://gcm-http.googleapis.com/gcm/"
+	gcmSendURL = "https://gcm-http.googleapis.com/gcm/send"
 )
 
 type sendMessageResponse struct {
@@ -35,7 +35,7 @@ func SendToGroup(msg *Message) error {
 	}
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", "key="+googleAPIKey)
-	req.Header.Add("project_id", googleProjectID)
+	//req.Header.Add("project_id", googleProjectID)
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
