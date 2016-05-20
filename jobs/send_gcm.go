@@ -13,8 +13,7 @@ const (
 )
 
 type SendGcmRequest struct {
-	GCMNotificationID string
-	Data              map[string]interface{}
+	Message gcm.Message
 }
 
 func SendGcmJob(j *que.Job) error {
@@ -27,10 +26,10 @@ func SendGcmJob(j *que.Job) error {
 
 	log.Print("Processing SendGcmRequest")
 
-	err = gcm.SendToGroup(gcm.NewMessage(r.Data, r.GCMNotificationID))
+	err = gcm.SendToGroup(&r.Message)
 
 	if err != nil {
-		log.Fatalf("Could not send GCM message: %s", err)
+		log.Printf("Could not send GCM message: %s", err)
 	}
 
 	return err

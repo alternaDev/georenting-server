@@ -11,6 +11,7 @@ import (
 
 	"github.com/alternaDev/georenting-server/activity"
 	"github.com/alternaDev/georenting-server/auth"
+	"github.com/alternaDev/georenting-server/google/gcm"
 	"github.com/alternaDev/georenting-server/jobs"
 	"github.com/alternaDev/georenting-server/models"
 	"github.com/alternaDev/georenting-server/models/search"
@@ -57,16 +58,16 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 	rent := 100.0
 
 	// GCM
-	err = jobs.QueueSendGcmRequest(jobs.SendGcmRequest{GCMNotificationID: user.GCMNotificationID,
-		Data: map[string]interface{}{"type": "onForeignFenceEntered", "fenceId": fence.ID, "fenceName": fence.Name, "ownerName": fence.User.Name}})
+	err = jobs.QueueSendGcmRequest(jobs.SendGcmRequest{Message: *gcm.NewMessage(
+		map[string]interface{}{"type": "onForeignFenceEntered", "fenceId": fence.ID, "fenceName": fence.Name, "ownerName": fence.User.Name}, user.GCMNotificationID)})
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	err = jobs.QueueSendGcmRequest(jobs.SendGcmRequest{GCMNotificationID: fence.User.GCMNotificationID,
-		Data: map[string]interface{}{"type": "onOwnFenceEntered", "fenceId": fence.ID, "fenceName": fence.Name, "visitorName": user.Name}})
+	err = jobs.QueueSendGcmRequest(jobs.SendGcmRequest{Message: *gcm.NewMessage(
+		map[string]interface{}{"type": "onOwnFenceEntered", "fenceId": fence.ID, "fenceName": fence.Name, "visitorName": user.Name}, fence.User.GCMNotificationID)})
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
