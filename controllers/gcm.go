@@ -41,9 +41,13 @@ func GCMAddHandler(w http.ResponseWriter, r *http.Request) {
 		err = gcm.AddDeviceToGroup(b.GCMID, user)
 
 		if err != nil {
-			log.Printf("Error while adding device to group: %s", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+			err = gcm.CreateDeviceGroup(b.GCMID, user)
+
+			if err != nil {
+				log.Printf("Error while creating device group: %s", err)
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 		}
 	} else {
 		err = gcm.CreateDeviceGroup(b.GCMID, user)
