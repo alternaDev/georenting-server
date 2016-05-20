@@ -13,6 +13,18 @@ web:
     - herokuPostgresql
     - herokuRedis
     - herokuElasticsearch
+worker:
+  build: .
+  command: 'bash -c ''georenting-worker'''
+  working_dir: /app/user
+  environment:
+    DATABASE_URL: 'postgres://postgres:@herokuPostgresql:5432/postgres?sslmode=disable'
+    REDIS_URL: 'redis://herokuRedis:6379'
+    ELASTICSEARCH_URL: 'http://:@herokuElasticsearch:9200'
+  links:
+    - herokuPostgresql
+    - herokuRedis
+    - herokuElasticsearch
 shell:
   build: .
   command: bash
