@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"time"
 )
@@ -48,6 +49,8 @@ func SendToGroup(msg *Message) error {
 		if err != nil {
 			return err
 		}
+
+		log.Printf("Failed GCM: %s", body)
 
 		var response sendMessageResponse
 		err = json.Unmarshal(body, &response)

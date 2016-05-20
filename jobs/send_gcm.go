@@ -23,7 +23,6 @@ func SendGcmJob(j *que.Job) error {
 		log.Fatal("Unable to unmarshal job arguments into SendGcmRequest")
 		return err
 	}
-	log.Printf("Message: %v", r.Message)
 
 	log.Print("Processing SendGcmRequest")
 
@@ -47,8 +46,6 @@ func QueueSendGcmRequest(m *gcm.Message) error {
 		Type: SendGcmJobName,
 		Args: enc,
 	}
-
-	log.Printf("Data: %s", string(enc))
 
 	return QC.Enqueue(&j)
 }
