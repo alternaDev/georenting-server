@@ -6,7 +6,6 @@ import (
 
 	"github.com/bgentry/que-go"
 	"github.com/jackc/pgx"
-	pgxstd "github.com/jackc/pgx/stdlib"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres" // For GORM
 )
@@ -82,12 +81,7 @@ func init() {
 }
 
 func initDB() (*gorm.DB, error) {
-	dbC, err := pgxstd.OpenFromConnPool(DBPool)
-	if err != nil {
-		panic(err)
-	}
-
-	db, err := gorm.Open("postgres", dbC)
+	db, err := gorm.Open("postgres", os.Getenv("DATABASE_URL"))
 
 	if err != nil {
 		log.Fatalf("Error while connecting to DB: %s", err)
