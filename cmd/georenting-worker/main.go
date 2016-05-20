@@ -11,13 +11,8 @@ import (
 )
 
 func main() {
-	var err error
 	dbURL := os.Getenv("DATABASE_URL")
-	pgxpool, qc, err := jobs.Setup(dbURL)
-	if err != nil {
-		log.Fatalf("Errors setting up the queue / database: %s", err)
-	}
-	defer pgxpool.Close()
+	_, qc := jobs.Setup(dbURL)
 
 	wm := que.WorkMap{
 		jobs.FenceExpireJobName: jobs.FenceExpireJob,

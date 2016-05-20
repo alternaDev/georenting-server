@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 
+	//"github.com/alternaDev/georenting-server/models"
 	"github.com/bgentry/que-go"
 )
 
@@ -24,6 +25,8 @@ func FenceExpireJob(j *que.Job) error {
 	}
 
 	log.Print("Processing FenceExpireJob")
+
+	//models.DB.Model(&models.Fence{}).Delete(value, where)
 
 	return nil
 }
