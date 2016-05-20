@@ -19,6 +19,10 @@
 			"Rev": "c4b574d43703996916d94f9476250cae15b35c27"
 		},
 		{
+			"ImportPath": "github.com/bgentry/que-go",
+			"Rev": "f18340e98b6af0edfaa4fec11de2182346965639"
+		},
+		{
 			"ImportPath": "github.com/dgrijalva/jwt-go",
 			"Comment": "v2.4.0-11-gf219341",
 			"Rev": "f2193411bd642f7db03249fd79d5292c9b34916a"
@@ -29,11 +33,17 @@
 		},
 		{
 			"ImportPath": "github.com/gorilla/handlers",
+			"Comment": "v1.1",
 			"Rev": "ee54c7b44cab12289237fb8631314790076e728b"
 		},
 		{
 			"ImportPath": "github.com/gorilla/mux",
 			"Rev": "c9e326e2bdec29039a3761c07bece13133863e1e"
+		},
+		{
+			"ImportPath": "github.com/jackc/pgx",
+			"Comment": "v2.8.1-24-g90f22c1",
+			"Rev": "90f22c17175fab5f9ad48abba5a18f5f2b5c9d2e"
 		},
 		{
 			"ImportPath": "github.com/jinzhu/gorm",
