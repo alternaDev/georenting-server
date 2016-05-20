@@ -51,7 +51,12 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 
 	var fence models.Fence
 
-	models.DB.Preload("User").Find(&fence, fenceID)
+	err = models.DB.Preload("User").Find(&fence, fenceID).Error
+
+	if err != nil {
+		http.Error(w, "Fence not Found", http.StatusNotFound)
+		return
+	}
 
 	//TODO: Do money calculations and all those things.
 
