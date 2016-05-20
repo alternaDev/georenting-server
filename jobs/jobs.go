@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	QueTableSQL = `
+	queTableSQL = `
 		CREATE TABLE IF NOT EXISTS que_jobs
 		(
 			priority    smallint    NOT NULL DEFAULT 100,
@@ -24,7 +24,7 @@ const (
 // prepQue ensures that the que table exists and que's prepared statements are
 // run. It is meant to be used in a pgx.ConnPool's AfterConnect hook.
 func prepQue(conn *pgx.Conn) error {
-	_, err := conn.Exec(QueTableSQL)
+	_, err := conn.Exec(queTableSQL)
 	if err != nil {
 		return err
 	}
