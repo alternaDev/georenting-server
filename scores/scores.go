@@ -73,5 +73,5 @@ func GetGeoFencePrice(lat float64, lon float64) (float64, error) {
 		return 0, err
 	}
 
-	return math.Pow(math.E, score.Score) * geoFenceBasePrice, nil
+	return math.Sqrt(score.Score+1.0) * geoFenceBasePrice, nil
 }
