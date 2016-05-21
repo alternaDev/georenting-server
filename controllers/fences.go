@@ -8,6 +8,7 @@ import (
 	"math"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/alternaDev/georenting-server/activity"
 	"github.com/alternaDev/georenting-server/auth"
@@ -97,7 +98,8 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = scores.RecordVisit(fence.Lat, fence.Lon)
+	// Score Calculation
+	err = jobs.QueueRecordVisitRequest(fence.Lat, fence.Lon, time.Now()) //scores.RecordVisit(fence.Lat, fence.Lon)
 
 	if err != nil {
 		log.Fatalf("Error while calulating score: %s", err.Error())
