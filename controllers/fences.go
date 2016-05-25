@@ -30,7 +30,8 @@ type fenceResponse struct {
 }
 
 type costEstimateResponse struct {
-	Cost float64 `json:"cost"`
+	Cost      float64 `json:"cost"`
+	CanAfford bool    `json:"canAfford"`
 }
 
 // VisitFenceHandler handles POST /fences/{fenceId}/visit
@@ -381,16 +382,16 @@ func RemoveFenceHandler(w http.ResponseWriter, r *http.Request) {
 
 // EstimateFenceCostHandler POST /fences/estimateCost
 func EstimateFenceCostHandler(w http.ResponseWriter, r *http.Request) {
-	/*_, err := auth.ValidateSession(r)
+	user, err := auth.ValidateSession(r)
 
 	if err != nil {
 		http.Error(w, "Invalid Session token. "+err.Error(), http.StatusUnauthorized)
 		return
-	}*/
+	}
 
 	decoder := json.NewDecoder(r.Body)
 	var f models.Fence
-	err := decoder.Decode(&f)
+	err = decoder.Decode(&f)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -418,7 +419,7 @@ func EstimateFenceCostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var response = costEstimateResponse{Cost: price}
+	var response = costEstimateResponse{Cost: price, CanAfford: user.Balance >= price}
 
 	bytes, err := json.Marshal(&response)
 
