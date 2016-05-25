@@ -9,7 +9,7 @@ import (
 
 type upgradesResponse struct {
 	Radius    []int     `json:"radius"`
-	Rent      []float32 `json:"rent"`
+	Rent      []float64 `json:"rent"`
 	MaxTTL    int       `json:"max_ttl"`
 	MaxRadius int       `json:"max_radius"`
 	MinRadius int       `json:"min_radius"`

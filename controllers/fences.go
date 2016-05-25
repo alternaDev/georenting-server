@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sort"
 	"strconv"
 	"time"
 
@@ -22,12 +23,15 @@ import (
 )
 
 type fenceResponse struct {
-	ID     uint    `json:"id"`
-	Lat    float64 `json:"centerLat"`
-	Lon    float64 `json:"centerLon"`
-	Radius int     `json:"radius"`
-	Name   string  `json:"name"`
-	Owner  uint    `json:"owner"`
+	ID             uint      `json:"id"`
+	Lat            float64   `json:"centerLat"`
+	Lon            float64   `json:"centerLon"`
+	Radius         int       `json:"radius"`
+	Name           string    `json:"name"`
+	Owner          uint      `json:"owner"`
+	TTL            int       `json:"ttl"`
+	RentMultiplier float64   `json:"rentMultiplier"`
+	DiesAt         time.Time `json:"diesAt"`
 }
 
 type costEstimateResponse struct {
@@ -141,6 +145,8 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 			fences[i].Name = f.Name
 			fences[i].Radius = f.Radius
 			fences[i].Owner = f.UserID
+			fences[i].DiesAt = f.DiesAt
+			fences[i].RentMultiplier = f.RentMultiplier
 		}
 
 		bytes, err := json.Marshal(&fences)
@@ -175,6 +181,8 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 			fences[i].Name = f.Name
 			fences[i].Radius = f.Radius
 			fences[i].Owner = f.UserID
+			fences[i].DiesAt = f.DiesAt
+			fences[i].RentMultiplier = f.RentMultiplier
 		}
 
 		bytes, err := json.Marshal(&fences)
@@ -223,11 +231,32 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	indexRadius := sort.SearchInts(models.UpgradeTypesRadius[:], requestFence.Radius)
+	if !(indexRadius < len(models.UpgradeTypesRadius) && models.UpgradeTypesRadius[indexRadius] == requestFence.Radius) {
+		http.Error(w, "Invalid Radius", http.StatusExpectationFailed)
+		return
+	}
+
+	indexRent := sort.SearchFloat64s(models.UpgradeTypesRent[:], float64(requestFence.RentMultiplier))
+	if !(indexRent < len(models.UpgradeTypesRent) && models.UpgradeTypesRent[indexRent] == requestFence.RentMultiplier) {
+		http.Error(w, "Invalid RentMultiplier", http.StatusExpectationFailed)
+		return
+	}
+
+	if requestFence.TTL <= 0 || requestFence.TTL > models.FenceMaxTTL {
+		http.Error(w, "Invalid TTL", http.StatusExpectationFailed)
+		return
+	}
+
 	var f models.Fence
 
 	f.Lat = requestFence.Lat
 	f.Lon = requestFence.Lon
 	f.Name = requestFence.Name
+	f.Radius = requestFence.Radius
+	f.RentMultiplier = requestFence.RentMultiplier
+	f.TTL = requestFence.TTL
+	f.DiesAt = time.Now().Add(time.Duration(f.TTL) * time.Second) // TODO: Add Destruction Task.
 
 	f.Radius = models.FenceMinRadius
 
@@ -243,7 +272,7 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	price, err := scores.GetGeoFencePrice(f.Lat, f.Lon)
+	price, err := scores.GetGeoFencePrice(f.Lat, f.Lon, f.TTL, f.RentMultiplier, indexRadius)
 	if price > user.Balance {
 		http.Error(w, "You do not have enough money for this thing.", http.StatusPaymentRequired)
 		return
@@ -282,6 +311,10 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(bytes)
+}
+
+func checkFenceOverlapWithFenceResponse(f *fenceResponse) (bool, error) {
+	return checkFenceOverlap(&models.Fence{Lat: f.Lat, Lon: f.Lon, Radius: f.Radius})
 }
 
 func checkFenceOverlap(fence *models.Fence) (bool, error) {
@@ -334,6 +367,8 @@ func GetFenceHandler(w http.ResponseWriter, r *http.Request) {
 	f.Name = fence.Name
 	f.Radius = fence.Radius
 	f.Owner = fence.UserID
+	f.DiesAt = fence.DiesAt
+	f.RentMultiplier = fence.RentMultiplier
 
 	bytes, err := json.Marshal(&f)
 
@@ -405,24 +440,39 @@ func EstimateFenceCostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	decoder := json.NewDecoder(r.Body)
-	var f models.Fence
+	var f fenceResponse
 	err = decoder.Decode(&f)
+
+	indexRadius := sort.SearchInts(models.UpgradeTypesRadius[:], f.Radius)
+	if !(indexRadius < len(models.UpgradeTypesRadius) && models.UpgradeTypesRadius[indexRadius] == f.Radius) {
+		http.Error(w, "Invalid Radius", http.StatusExpectationFailed)
+		return
+	}
+
+	indexRent := sort.SearchFloat64s(models.UpgradeTypesRent[:], float64(f.RentMultiplier))
+	if !(indexRent < len(models.UpgradeTypesRent) && models.UpgradeTypesRent[indexRent] == f.RentMultiplier) {
+		http.Error(w, "Invalid RentMultiplier", http.StatusExpectationFailed)
+		return
+	}
+
+	if f.TTL <= 0 || f.TTL > models.FenceMaxTTL {
+		http.Error(w, "Invalid TTL", http.StatusExpectationFailed)
+		return
+	}
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	price, err := scores.GetGeoFencePrice(f.Lat, f.Lon)
+	price, err := scores.GetGeoFencePrice(f.Lat, f.Lon, f.TTL, f.RentMultiplier, indexRadius)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	f.Radius = models.FenceMinRadius
-
-	overlap, err := checkFenceOverlap(&f)
+	overlap, err := checkFenceOverlapWithFenceResponse(&f)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

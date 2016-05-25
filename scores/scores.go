@@ -66,7 +66,7 @@ func CalculateScore(score *models.Score, now int64) error {
 	return models.DB.Save(&score).Error
 }
 
-func GetGeoFencePrice(lat float64, lon float64) (float64, error) {
+func GetGeoFencePrice(lat float64, lon float64, ttl int, rentMultiplier float64, radiusIndex int) (float64, error) {
 	geoHash := geomodel.GeoCell(lat, lon, geoHashResolution)
 
 	score := &models.Score{}
@@ -76,7 +76,9 @@ func GetGeoFencePrice(lat float64, lon float64) (float64, error) {
 		return 0, err
 	}
 
-	return math.Pow(score.Score+1.0, 1.0/magicalGeoRentingConstant) * geoFenceBasePrice, nil
+	price := math.Pow(score.Score+1.0, 1.0/magicalGeoRentingConstant) * geoFenceBasePrice
+
+	return rentMultiplier * float64((ttl/models.FenceMaxTTL)+1) * float64(((radiusIndex+1)/(len(models.UpgradeTypesRadius)+1))+1) * price, nil
 }
 
 func GetGeoFenceRent(f *models.Fence) float64 {
