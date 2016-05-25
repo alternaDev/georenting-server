@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/alternaDev/geomodel"
 	"github.com/alternaDev/georenting-server/activity"
 	"github.com/alternaDev/georenting-server/auth"
 	"github.com/alternaDev/georenting-server/google/gcm"
@@ -107,19 +108,21 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	user.LastKnownGeoHash = geomodel.GeoCell(fence.Lat, fence.Lon, models.LastKnownGeoHashResolution)
+	models.DB.Save(&user)
+
 	w.Write([]byte("{}"))
 }
 
 // GetFencesHandler GET /fences
 func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
-
 	lat, err1 := strconv.ParseFloat(r.URL.Query().Get("latitude"), 64)
 	lon, err2 := strconv.ParseFloat(r.URL.Query().Get("longitude"), 64)
 	radius, err3 := strconv.ParseInt(r.URL.Query().Get("radius"), 10, 64)
 	userID, err4 := strconv.ParseUint(r.URL.Query().Get("user"), 10, 8)
 
 	if err1 == nil && err2 == nil && err3 == nil {
-
 		ids, err := search.FindGeoFences(lat, lon, radius)
 		if err != nil {
 			log.Fatal(err)
@@ -145,6 +148,13 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
+		}
+
+		user, err := auth.ValidateSession(r)
+
+		if err == nil {
+			user.LastKnownGeoHash = geomodel.GeoCell(lat, lon, models.LastKnownGeoHashResolution)
+			models.DB.Save(&user)
 		}
 
 		w.Write(bytes)
@@ -239,6 +249,7 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user.LastKnownGeoHash = geomodel.GeoCell(requestFence.Lat, requestFence.Lon, models.LastKnownGeoHashResolution)
 	user.Balance = user.Balance - price
 
 	err = models.DB.Save(&user).Error
