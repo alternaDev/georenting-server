@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/alternaDev/georenting-server/maths"
 	"github.com/jinzhu/gorm"
 )
@@ -16,10 +18,13 @@ var (
 // Fence is a fence
 type Fence struct {
 	gorm.Model
-	User   User    `json:"-"`
-	UserID uint    `json:"ownerId"`
-	Lat    float64 `json:"centerLat"`
-	Lon    float64 `json:"centerLon"`
-	Radius int     `json:"radius"`
-	Name   string  `json:"name"`
+	User           User    `json:"-"`
+	UserID         uint    `json:"ownerId"`
+	Lat            float64 `json:"centerLat"`
+	Lon            float64 `json:"centerLon"`
+	Radius         int     `json:"radius"`
+	RentMultiplier float32 `json:"rentMultiplier"`
+	TTL            int     `json:"ttl"`
+	DiesAt         time.Time
+	Name           string `json:"name"`
 }
