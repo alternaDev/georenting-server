@@ -25,6 +25,6 @@ type Fence struct {
 	Radius         int       `json:"radius"`
 	RentMultiplier float32   `json:"rentMultiplier"`
 	TTL            int       `json:"ttl"`
-	DiesAt         time.Time `json:"DiesAt"`
+	DiesAt         time.Time `json:"diesAt"`
 	Name           string    `json:"name"`
 }
