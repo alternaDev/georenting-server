@@ -204,13 +204,19 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	decoder := json.NewDecoder(r.Body)
-	var f models.Fence
-	err = decoder.Decode(&f)
+	var requestFence fenceResponse
+	err = decoder.Decode(&requestFence)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	var f models.Fence
+
+	f.Lat = requestFence.Lat
+	f.Lon = requestFence.Lon
+	f.Name = requestFence.Name
 
 	f.User = user
 	f.Radius = models.FenceMinRadius
@@ -228,11 +234,12 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	price, err := scores.GetGeoFencePrice(f.Lat, f.Lon)
-
 	if price > user.Balance {
 		http.Error(w, "You do not have enough money for this thing.", http.StatusPaymentRequired)
 		return
 	}
+
+	log.Printf("Buying GeoFence for %f GC.", price)
 
 	err = models.DB.Model(&user).Updates(models.User{Balance: user.Balance - price}).Error
 	if err != nil {
