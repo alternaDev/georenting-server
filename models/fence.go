@@ -10,7 +10,7 @@ import (
 var (
 	UpgradeTypesRadius = [...]int{100, 150, 200, 250, 300, 350, 400}
 	UpgradeTypesRent   = [...]float32{1, 1.5, 2, 2.5, 3, 3.5, 4}
-	UpgradeTypesTTL    = [...]int{3, 5, 7}
+	FenceMaxTTL        = 60 * 60 * 24 * 7
 	FenceMinRadius     = maths.Min(UpgradeTypesRadius[:])
 	FenceMaxRadius     = maths.Max(UpgradeTypesRadius[:])
 )

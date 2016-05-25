@@ -9,9 +9,11 @@ import (
 )
 
 const (
-	geoHashResolution         = 6
-	geoFenceBasePrice         = 100
-	magicalGeoRentingConstant = 2
+	geoHashResolution                  = 6
+	geoFenceBasePrice                  = 100
+	magicalGeoRentingConstant          = 2
+	secondaryMagicalGeoRentingConstant = 2.0
+	geoFenceRentBasePrice              = 10.0
 )
 
 func RecordVisit(lat float64, lon float64, now int64) error {
@@ -75,4 +77,8 @@ func GetGeoFencePrice(lat float64, lon float64) (float64, error) {
 	}
 
 	return math.Pow(score.Score+1.0, 1.0/magicalGeoRentingConstant) * geoFenceBasePrice, nil
+}
+
+func GetGeoFenceRent(f *models.Fence) float64 {
+	return float64(f.RentMultiplier)*geoFenceRentBasePrice + (((float64(f.RentMultiplier) - 1.0) * (float64(f.RentMultiplier) - 1.0)) / secondaryMagicalGeoRentingConstant)
 }
