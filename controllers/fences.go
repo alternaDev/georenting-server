@@ -242,16 +242,15 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Buying GeoFence for %f GC.", price)
 	log.Printf("Before Balance %f GC.", user.Balance)
 
-	err = models.DB.Model(&user).Updates(models.User{Balance: user.Balance - price}).Error
-	if err != nil {
-		log.Printf("Error while saving user: %v", err)
-	}
-	log.Printf("After Balance %f GC.", user.Balance)
-
 	err = models.DB.Save(&f).Error
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	err = models.DB.Model(&user).Updates(models.User{Balance: user.Balance - price}).Error
+	if err != nil {
+		log.Printf("Error while saving user: %v", err)
 	}
 
 	err = search.IndexGeoFence(&f)
