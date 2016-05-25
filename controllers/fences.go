@@ -219,7 +219,6 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 	f.Lon = requestFence.Lon
 	f.Name = requestFence.Name
 
-	f.User = user
 	f.Radius = models.FenceMinRadius
 
 	overlap, err := checkFenceOverlap(&f)
@@ -240,18 +239,19 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("Buying GeoFence for %f GC.", price)
-	log.Printf("Before Balance %f GC.", user.Balance)
+	user.Balance = user.Balance - price
+
+	err = models.DB.Save(&user).Error
+	if err != nil {
+		log.Printf("Error while saving user: %v", err)
+	}
+
+	f.User = user
 
 	err = models.DB.Save(&f).Error
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
-	}
-
-	err = models.DB.Model(&user).Updates(models.User{Balance: user.Balance - price}).Error
-	if err != nil {
-		log.Printf("Error while saving user: %v", err)
 	}
 
 	err = search.IndexGeoFence(&f)
