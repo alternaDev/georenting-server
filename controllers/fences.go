@@ -234,10 +234,16 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user.Balance = user.Balance - price
+	err = models.DB.Model(&user).Updates(models.User{Balance: user.Balance - price}).Error
+	if err != nil {
+		log.Printf("Error while saving user: %v", err)
+	}
 
-	models.DB.Save(&user)
-	models.DB.Save(&f)
+	err = models.DB.Save(&f).Error
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	err = search.IndexGeoFence(&f)
 
