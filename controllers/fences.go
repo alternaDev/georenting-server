@@ -272,6 +272,8 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	jobs.QueueNotifyUsersSyncRequest(f.Lat, f.Lon)
+
 	bytes, err := json.Marshal(&f)
 
 	if err != nil {
@@ -387,6 +389,8 @@ func RemoveFenceHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	jobs.QueueNotifyUsersSyncRequest(fence.Lat, fence.Lon)
 
 	fmt.Fprintf(w, "{}")
 }
