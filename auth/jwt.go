@@ -3,7 +3,6 @@ package auth
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -61,8 +60,6 @@ func ValidateJWTToken(input string) (models.User, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
-
-		log.Printf("Stuff: %s", token.Header["user"])
 
 		// Get the user ID
 		userID := uint(token.Header["user"].(float64))
@@ -132,6 +129,6 @@ func ValidateSession(r *http.Request) (models.User, error) {
 	return ValidateJWTToken(token)
 }
 
-func InvalidateToken(token string) (error) {
+func InvalidateToken(token string) error {
 	return redis.TokenInvalidate(token, time.Duration(getRemainingTokenValidity(token))*time.Second)
 }
