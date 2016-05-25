@@ -14,9 +14,10 @@ func main() {
 	qc := jobs.QC
 
 	wm := que.WorkMap{
-		jobs.FenceExpireJobName: jobs.FenceExpireJob,
-		jobs.SendGcmJobName:     jobs.SendGcmJob,
-		jobs.RecordVisitJobName: jobs.RecordVisitJob,
+		jobs.FenceExpireJobName:     jobs.FenceExpireJob,
+		jobs.SendGcmJobName:         jobs.SendGcmJob,
+		jobs.RecordVisitJobName:     jobs.RecordVisitJob,
+		jobs.NotifyUsersSyncJobName: jobs.NotifyUsersSyncJob,
 	}
 
 	// 2 worker go routines
