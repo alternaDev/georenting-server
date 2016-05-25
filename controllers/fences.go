@@ -62,7 +62,7 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 
 	//TODO: Do money calculations and all those things.
 
-	rent := 100.0
+	rent := scores.GetGeoFenceRent(&fence)
 
 	// GCM
 	err = jobs.QueueSendGcmRequest(gcm.NewMessage(
