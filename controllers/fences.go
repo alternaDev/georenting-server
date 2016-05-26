@@ -65,8 +65,6 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//TODO: Do money calculations and all those things.
-
 	rent := scores.GetGeoFenceRent(&fence)
 
 	// GCM
@@ -85,9 +83,6 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	// map[string]interface{}{"type": "onOwnFenceEntered", "fenceId": fence.ID, "fenceName": fence.Name, "visitorName": user.Name}
-	// fence.User.GCMNotificationID
 
 	// Activity Stream
 	err = activity.AddForeignVisitedActivity(user.ID, fence.User.Name, fence.User.ID, fence.Name, fence.ID, rent)
@@ -114,7 +109,11 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user.LastKnownGeoHash = geomodel.GeoCell(fence.Lat, fence.Lon, models.LastKnownGeoHashResolution)
+	user.Balance = user.Balance - rent
 	models.DB.Save(&user)
+
+	fence.User.Balance = fence.User.Balance + rent
+	models.DB.Save(&fence.User)
 
 	w.Write([]byte("{}"))
 }
