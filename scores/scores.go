@@ -85,7 +85,9 @@ func GetGeoFencePrice(lat float64, lon float64, ttl int, rentMultiplier float64,
 	radiusMultiplier := (((float64(radiusIndex + 1)) / (float64(len(models.UpgradeTypesRadius)))) + 1.0)
 	fmt.Printf("RadiusMult: %f", radiusMultiplier)
 
-	return rentMultiplier * ttlMultiplier * radiusMultiplier * price, nil
+	value := rentMultiplier * ttlMultiplier * radiusMultiplier * price
+	fmt.Printf("Value: %f", value)
+	return value, nil
 }
 
 func GetGeoFenceRent(f *models.Fence) float64 {
