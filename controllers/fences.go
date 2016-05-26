@@ -110,6 +110,11 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 
 	user.LastKnownGeoHash = geomodel.GeoCell(fence.Lat, fence.Lon, models.LastKnownGeoHashResolution)
 	user.Balance = user.Balance - rent
+
+	if user.Balance < 0 { // TODO: Decide what to do here.
+		user.Balance = 0
+	}
+
 	models.DB.Save(&user)
 
 	fence.User.Balance = fence.User.Balance + rent
