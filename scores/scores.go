@@ -1,6 +1,7 @@
 package scores
 
 import (
+	"fmt"
 	"log"
 	"math"
 
@@ -78,7 +79,13 @@ func GetGeoFencePrice(lat float64, lon float64, ttl int, rentMultiplier float64,
 
 	price := math.Pow(score.Score+1.0, 1.0/magicalGeoRentingConstant) * geoFenceBasePrice
 
-	return rentMultiplier * ((float64(ttl) / float64(models.FenceMaxTTL)) + 1.0) * (((float64(radiusIndex) + 1.0) / (float64(len(models.UpgradeTypesRadius)) + 1.0)) + 1.0) * price, nil
+	ttlMultiplier := ((float64(ttl) / float64(models.FenceMaxTTL)) + 1.0)
+	fmt.Printf("TTLMult: %f", ttlMultiplier)
+
+	radiusMultiplier := (((float64(radiusIndex + 1)) / (float64(len(models.UpgradeTypesRadius)))) + 1.0)
+	fmt.Printf("RadiusMult: %f", radiusMultiplier)
+
+	return rentMultiplier * ttlMultiplier * radiusMultiplier * price, nil
 }
 
 func GetGeoFenceRent(f *models.Fence) float64 {
