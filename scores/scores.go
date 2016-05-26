@@ -78,7 +78,7 @@ func GetGeoFencePrice(lat float64, lon float64, ttl int, rentMultiplier float64,
 
 	price := math.Pow(score.Score+1.0, 1.0/magicalGeoRentingConstant) * geoFenceBasePrice
 
-	return rentMultiplier * float64((ttl/models.FenceMaxTTL)+1) * float64(((radiusIndex+1)/(len(models.UpgradeTypesRadius)+1))+1) * price, nil
+	return rentMultiplier * float64((float64(ttl)/float64(models.FenceMaxTTL))+1.0) * float64((float64(radiusIndex+1.0)/float64(len(models.UpgradeTypesRadius)+1.0))+1.0) * price, nil
 }
 
 func GetGeoFenceRent(f *models.Fence) float64 {
