@@ -302,6 +302,7 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jobs.QueueNotifyUsersSyncRequest(f.Lat, f.Lon)
+	jobs.QueueFenceExpireRequest(f)
 
 	bytes, err := json.Marshal(&f)
 

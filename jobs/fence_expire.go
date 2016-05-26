@@ -5,6 +5,9 @@ import (
 	"log"
 
 	//"github.com/alternaDev/georenting-server/models"
+	"github.com/alternaDev/georenting-server/jobs"
+	"github.com/alternaDev/georenting-server/models"
+	"github.com/alternaDev/georenting-server/models/search"
 	"github.com/bgentry/que-go"
 )
 
@@ -13,7 +16,7 @@ const (
 )
 
 type FenceExpireRequest struct {
-	FenceID int64
+	FenceID uint
 }
 
 func FenceExpireJob(j *que.Job) error {
@@ -26,20 +29,40 @@ func FenceExpireJob(j *que.Job) error {
 
 	log.Print("Processing FenceExpireJob")
 
-	//models.DB.Model(&models.Fence{}).Delete(value, where)
+	notFound := models.DB.Find(&fence, fenceID).RecordNotFound()
+
+	if notFound {
+		return nil
+	}
+
+	err = search.DeleteGeoFence(&fence)
+
+	if err != nil {
+		return err
+	}
+
+	err = models.DB.Delete(fence).Error
+
+	if err != nil {
+		return err
+	}
+
+	jobs.QueueNotifyUsersSyncRequest(fence.Lat, fence.Lon)
+	// TODO: Send FenceExpired GCM Message to owner.
 
 	return nil
 }
 
-func QueueFenceExpireRequest(r FenceExpireRequest) error {
-	enc, err := json.Marshal(r)
+func QueueFenceExpireRequest(fence *models.Fence) error {
+	enc, err := json.Marshal(&FenceExpireRequest{FenceID: fence.ID})
 	if err != nil {
 		return err
 	}
 
 	j := que.Job{
-		Type: FenceExpireJobName,
-		Args: enc,
+		Type:  FenceExpireJobName,
+		Args:  enc,
+		RunAt: fence.DiesAt,
 	}
 
 	return QC.Enqueue(&j)
