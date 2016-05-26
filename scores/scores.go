@@ -1,6 +1,7 @@
 package scores
 
 import (
+	"errors"
 	"log"
 	"math"
 
@@ -10,7 +11,7 @@ import (
 
 const (
 	geoHashResolution                  = 6
-	geoFenceBasePrice                  = 100
+	geoFenceBasePrice                  = 100.0
 	magicalGeoRentingConstant          = 2
 	secondaryMagicalGeoRentingConstant = 2.0
 	geoFenceRentBasePrice              = 10.0
@@ -63,6 +64,11 @@ func CalculateScore(score *models.Score, now int64) error {
 	fraction := tAvg / float64(now-score.LastVisit)
 	logN := math.Log(fraction)
 	score.Score = math.Max(0, math.Max(score.Score, 0)+logN)
+
+	if score.Score == math.NaN() {
+		return errors.New("NaN Error!")
+	}
+
 	return models.DB.Save(&score).Error
 }
 
@@ -76,7 +82,7 @@ func GetGeoFencePrice(lat float64, lon float64, ttl int, rentMultiplier float64,
 		return 0, err
 	}
 
-	price := math.Pow(score.Score+1.0, 1.0/float64(magicalGeoRentingConstant)) * geoFenceBasePrice
+	price := math.Pow(score.Score+1.0, 1.0/magicalGeoRentingConstant) * geoFenceBasePrice
 
 	ttlMultiplier := ((float64(ttl) / float64(models.FenceMaxTTL)) + 1.0)
 	radiusMultiplier := (((float64(radiusIndex + 1)) / (float64(len(models.UpgradeTypesRadius)))) + 1.0)
