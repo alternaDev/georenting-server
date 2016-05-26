@@ -38,6 +38,8 @@ func FenceExpireJob(j *que.Job) error {
 		return nil
 	}
 
+	QueueSendGcmRequest(gcm.NewMessage(map[string]interface{}{"type": "onFenceExpired", "fenceId": fence.ID, "fenceName": fence.Name}, fence.User.GCMNotificationID))
+
 	err = search.DeleteGeoFence(&fence)
 
 	if err != nil {
@@ -51,7 +53,6 @@ func FenceExpireJob(j *que.Job) error {
 	}
 
 	QueueNotifyUsersSyncRequest(fence.Lat, fence.Lon)
-	QueueSendGcmRequest(gcm.NewMessage(map[string]interface{}{"type": "onFenceExpired", "fenceId": fence.ID, "fenceName": fence.Name}, fence.User.GCMNotificationID))
 
 	return nil
 }
