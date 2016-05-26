@@ -5,7 +5,7 @@ import (
 	"log"
 
 	//"github.com/alternaDev/georenting-server/models"
-	"github.com/alternaDev/georenting-server/jobs"
+
 	"github.com/alternaDev/georenting-server/models"
 	"github.com/alternaDev/georenting-server/models/search"
 	"github.com/bgentry/que-go"
@@ -29,7 +29,9 @@ func FenceExpireJob(j *que.Job) error {
 
 	log.Print("Processing FenceExpireJob")
 
-	notFound := models.DB.Find(&fence, fenceID).RecordNotFound()
+	var fence models.Fence
+
+	notFound := models.DB.Find(&fence, fer.FenceID).RecordNotFound()
 
 	if notFound {
 		return nil
@@ -47,7 +49,7 @@ func FenceExpireJob(j *que.Job) error {
 		return err
 	}
 
-	jobs.QueueNotifyUsersSyncRequest(fence.Lat, fence.Lon)
+	QueueNotifyUsersSyncRequest(fence.Lat, fence.Lon)
 	// TODO: Send FenceExpired GCM Message to owner.
 
 	return nil
