@@ -260,9 +260,7 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 	f.Radius = requestFence.Radius
 	f.RentMultiplier = requestFence.RentMultiplier
 	f.TTL = requestFence.TTL
-	f.DiesAt = time.Now().Add(time.Duration(f.TTL) * time.Second) // TODO: Add Destruction Task.
-
-	f.Radius = models.FenceMinRadius
+	f.DiesAt = time.Now().Add(time.Duration(f.TTL) * time.Second)
 
 	overlap, err := checkFenceOverlap(&f)
 
