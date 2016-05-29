@@ -27,6 +27,13 @@ type foreignFenceVisitedActivity struct {
 	Time      int32   `json:"time"`
 }
 
+type fenceExpiredActivity struct {
+	Verb      string `json:"verb"`
+	FenceID   uint   `json:"fenceId"`
+	FenceName string `json:"fenceName"`
+	Time      int32  `json:"time"`
+}
+
 // AddOwnFenceVisitedActivity adds the activity to the stream of the owner.
 func AddOwnFenceVisitedActivity(ownerID uint, visitorName string, visitorID uint, fenceName string, fenceID uint, rent float64) error {
 	now := int32(time.Now().Unix())
@@ -63,6 +70,22 @@ func AddForeignVisitedActivity(visitorID uint, ownerName string, ownerID uint, f
 	}
 
 	return redis.AddActivity(visitorID, float64(now), string(bytes[:]))
+}
+
+// AddFenceExpiredActivity adds the activity to the stream of the owner.
+func AddFenceExpiredActivity(ownerID uint, fenceID uint, fenceName string) error {
+	now := int32(time.Now().Unix())
+
+	bytes, err := json.Marshal(fenceExpiredActivity{Verb: "fenceExpired",
+		FenceID:   fenceID,
+		FenceName: fenceName,
+		Time:      now})
+
+	if err != nil {
+		return err
+	}
+
+	return redis.AddActivity(ownerID, float64(now), string(bytes[:]))
 }
 
 func GetActivities(userID uint, start int64, end int64) ([]string, error) {

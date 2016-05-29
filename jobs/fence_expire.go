@@ -6,6 +6,7 @@ import (
 
 	//"github.com/alternaDev/georenting-server/models"
 
+	"github.com/alternaDev/georenting-server/activity"
 	"github.com/alternaDev/georenting-server/google/gcm"
 	"github.com/alternaDev/georenting-server/models"
 	"github.com/alternaDev/georenting-server/models/search"
@@ -38,6 +39,7 @@ func FenceExpireJob(j *que.Job) error {
 		return nil
 	}
 
+	activity.AddFenceExpiredActivity(fence.User.ID, fence.ID, fence.Name)
 	QueueSendGcmRequest(gcm.NewMessage(map[string]interface{}{"type": "onFenceExpired", "fenceId": fence.ID, "fenceName": fence.Name}, fence.User.GCMNotificationID))
 
 	err = search.DeleteGeoFence(&fence)
