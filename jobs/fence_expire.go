@@ -33,13 +33,17 @@ func FenceExpireJob(j *que.Job) error {
 
 	var fence models.Fence
 
-	notFound := models.DB.Find(&fence, fer.FenceID).RecordNotFound()
+	notFound := models.DB.Preload("User").Find(&fence, fer.FenceID).RecordNotFound()
 
 	if notFound {
 		return nil
 	}
 
-	activity.AddFenceExpiredActivity(fence.User.ID, fence.ID, fence.Name)
+	err = activity.AddFenceExpiredActivity(fence.User.ID, fence.ID, fence.Name)
+	if err != nil {
+		log.Printf("Activity creation error: %v", err)
+	}
+
 	QueueSendGcmRequest(gcm.NewMessage(map[string]interface{}{"type": "onFenceExpired", "fenceId": fence.ID, "fenceName": fence.Name}, fence.User.GCMNotificationID))
 
 	err = search.DeleteGeoFence(&fence)
