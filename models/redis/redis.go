@@ -36,6 +36,7 @@ func initRedis(www string) (*redis.Client, error) {
 		Addr:     redisURL.Host,
 		Password: password,
 		DB:       0,
+		MaxRetries: 2,
 	})
 
 	err := client.Ping().Err()
