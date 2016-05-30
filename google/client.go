@@ -27,7 +27,6 @@ type User struct {
 	Name          string `json:"displayName"`
 	GooglePlusURL string `json:"url"`
 	Avatar        Avatar `json:"image"`
-	Cover         Cover  `json:"cover"`
 	Gender        string `json:"gender"`
 	Locale        string `json:"language"`
 }
