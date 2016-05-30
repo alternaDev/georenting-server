@@ -103,7 +103,7 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 	err = jobs.QueueRecordVisitRequest(fence.Lat, fence.Lon, time.Now()) //scores.RecordVisit(fence.Lat, fence.Lon)
 
 	if err != nil {
-		log.Fatalf("Error while calulating score: %s", err.Error())
+		log.Printf("Error while calulating score: %s", err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -118,7 +118,13 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 	models.DB.Save(&user)
 
 	fence.User.Balance = fence.User.Balance + rent
-	models.DB.Save(&fence.User)
+	err = models.DB.Save(&fence.User).Error
+
+	if err != nil {
+		log.Printf("Error while saving user: %s", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	w.Write([]byte("{}"))
 }
@@ -138,7 +144,13 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		result := make([]models.Fence, len(ids))
-		models.DB.Where(ids).Find(&result)
+		err = models.DB.Where(ids).Find(&result).Error
+
+		if err != nil {
+			log.Printf("Error while finding users: %s", err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
 		fences := make([]fenceResponse, len(result))
 		for i := range result {
@@ -173,7 +185,14 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err4 == nil {
 		var user models.User
-		models.DB.Preload("Fences").First(&user, userID)
+		err = models.DB.Preload("Fences").First(&user, userID)
+
+		if err != nil {
+			log.Printf("Error while finding fences: %s", err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		result := user.Fences
 
 		fences := make([]fenceResponse, len(result))
