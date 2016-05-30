@@ -185,11 +185,11 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err4 == nil {
 		var user models.User
-		err: = models.DB.Preload("Fences").First(&user, userID)
+		errA := models.DB.Preload("Fences").First(&user, userID).Error
 
-		if err != nil {
-			log.Printf("Error while finding fences: %s", err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		if errA != nil {
+			log.Printf("Error while finding fences: %s", errA.Error())
+			http.Error(w, errA.Error(), http.StatusInternalServerError)
 			return
 		}
 
