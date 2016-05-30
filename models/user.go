@@ -3,7 +3,7 @@ package models
 import "github.com/jinzhu/gorm"
 
 const (
-	LastKnownGeoHashResolution = 6
+	LastKnownGeoHashResolution = 5
 )
 
 type User struct {
