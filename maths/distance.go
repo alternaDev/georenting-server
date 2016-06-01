@@ -2,6 +2,7 @@ package maths
 
 import "math"
 
+// Distance calculates the distance between two lat/lon pairs on the earth.
 func Distance(lat1 float64, lon1 float64, lat2 float64, lon2 float64) float64 {
 	R := 6378.137
 	dLat := (lat2 - lat1) * math.Pi / 180

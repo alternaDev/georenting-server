@@ -46,6 +46,7 @@ func initRedis(www string) (*redis.Client, error) {
 	return client, nil
 }
 
+// TokenIsInBlacklist checks whether a token is blacklisted.
 func TokenIsInBlacklist(tokenString string) bool {
 	_, err := RedisInstance.Get(tokenString).Result()
 	if err == redis.Nil {
@@ -59,10 +60,12 @@ func TokenInvalidate(token string, ttl time.Duration) error {
 	return RedisInstance.Set(token, token, ttl).Err()
 }
 
+// AddActivity adds an activity to a user.
 func AddActivity(userID uint, score float64, data string) error {
 	return RedisInstance.ZAdd(fmt.Sprintf("%v", userID), redis.Z{Score: score, Member: data}).Err()
 }
 
+// GetActivities returns the activities of a user in the specified timeframe.
 func GetActivities(userID uint, start int64, end int64) ([]string, error) {
 	return RedisInstance.ZRevRangeByScore(fmt.Sprintf("%v", userID), redis.ZRangeByScore{Min: fmt.Sprintf("%v", start), Max: fmt.Sprintf("%v", end)}).Result()
 }

@@ -14,13 +14,16 @@ import (
 )
 
 const (
+	// FenceExpireJobName is the Name of FenceExpireJob
 	FenceExpireJobName = "ExpireFence"
 )
 
+// FenceExpireRequest holds the Data for a FenceExpireJob.
 type FenceExpireRequest struct {
 	FenceID uint
 }
 
+// FenceExpireJob executes a FenceExpireJob.
 func FenceExpireJob(j *que.Job) error {
 	var fer FenceExpireRequest
 	err := json.Unmarshal(j.Args, &fer)
@@ -63,6 +66,7 @@ func FenceExpireJob(j *que.Job) error {
 	return nil
 }
 
+// QueueFenceExpireRequest creates a new FenceExpiry Job for a fence.
 func QueueFenceExpireRequest(fence *models.Fence) error {
 	enc, err := json.Marshal(&FenceExpireRequest{FenceID: fence.ID})
 	if err != nil {

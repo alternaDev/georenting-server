@@ -88,6 +88,7 @@ func AddFenceExpiredActivity(ownerID uint, fenceID uint, fenceName string) error
 	return redis.AddActivity(ownerID, float64(now), string(bytes[:]))
 }
 
+// GetActivities returns all activities from the specified user in a timerange.
 func GetActivities(userID uint, start int64, end int64) ([]string, error) {
 	return redis.GetActivities(userID, start, end)
 }

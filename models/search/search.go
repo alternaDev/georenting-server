@@ -122,6 +122,7 @@ func initIndices(client *elastic.Client) error {
   }
 }*/
 
+// IndexGeoFence indexes a geofence.
 func IndexGeoFence(fence *models.Fence) error {
 	data := fmt.Sprintf(`{"name": "%s", "center": {"lat": %f, "lon": %f}, "radius": %d, "owner": %d}`, fence.Name, fence.Lat, fence.Lon, fence.Radius, fence.UserID)
 	log.Println("Indexing: " + data)
@@ -135,6 +136,7 @@ func IndexGeoFence(fence *models.Fence) error {
 	return err
 }
 
+// FindGeoFences returns all geofences around a lat/lon pair.
 func FindGeoFences(centerLat float64, centerLon float64, radius int64) ([]int64, error) {
 	query := elastic.NewGeoDistanceQuery("center").Distance(fmt.Sprintf("%dm", radius)).Lat(centerLat).Lon(centerLon)
 
@@ -143,6 +145,7 @@ func FindGeoFences(centerLat float64, centerLon float64, radius int64) ([]int64,
 		Query(query).
 		Do()
 
+	// Check whether an error appeared or not.
 	if err != nil {
 		return nil, err
 	}
@@ -163,6 +166,7 @@ func FindGeoFences(centerLat float64, centerLon float64, radius int64) ([]int64,
 	return make([]int64, 0), nil
 }
 
+// DeleteGeoFence deletes a geofence from the search index.
 func DeleteGeoFence(fence *models.Fence) error {
 	_, err := ElasticInstance.Delete().Index(IndexGeoFences).Type(TypeGeoFence).Id(strconv.Itoa(int(fence.ID))).Do()
 	return err

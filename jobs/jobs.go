@@ -8,6 +8,7 @@ import (
 )
 
 var (
+	// QC is the current que-client
 	QC *que.Client
 )
 

@@ -129,6 +129,7 @@ func ValidateSession(r *http.Request) (models.User, error) {
 	return ValidateJWTToken(token)
 }
 
+// InvalidateToken makes an old Token unusable by putting it on a blacklist.
 func InvalidateToken(token string) error {
 	return redis.TokenInvalidate(token, time.Duration(getRemainingTokenValidity(token))*time.Second)
 }

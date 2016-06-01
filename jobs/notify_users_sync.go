@@ -11,13 +11,16 @@ import (
 )
 
 const (
+	// NotifyUsersSyncJobName is the internal name of a NotifyUsersSync job.
 	NotifyUsersSyncJobName = "NotifyUsersSync"
 )
 
+// NotifyUsersSyncRequest holds the data for a NotifyUsersSyncJob.
 type NotifyUsersSyncRequest struct {
 	GeoHash string
 }
 
+// NotifyUsersSyncJob executes a NotifyUsersSyncJob.
 func NotifyUsersSyncJob(j *que.Job) error {
 	var r NotifyUsersSyncRequest
 	err := json.Unmarshal(j.Args, &r)
@@ -38,6 +41,7 @@ func NotifyUsersSyncJob(j *que.Job) error {
 	return nil
 }
 
+// QueueNotifyUsersSyncRequest queues a new NotifyUsersSyncJob
 func QueueNotifyUsersSyncRequest(lat float64, lon float64) error {
 	r := NotifyUsersSyncRequest{GeoHash: geomodel.GeoCell(lat, lon, models.LastKnownGeoHashResolution)}
 	enc, err := json.Marshal(r)

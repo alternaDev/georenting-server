@@ -3,9 +3,11 @@ package models
 import "github.com/jinzhu/gorm"
 
 const (
+	// LastKnownGeoHashResolution is the resolution for the geohash of the last known position.
 	LastKnownGeoHashResolution = 5
 )
 
+// User is a user.
 type User struct {
 	gorm.Model
 	GoogleID          string  `json:"-"`

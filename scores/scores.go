@@ -17,6 +17,7 @@ const (
 	geoFenceRentBasePrice              = 10.0
 )
 
+// RecordVisit calculates the new score of a geofence after a visit.
 func RecordVisit(lat float64, lon float64, now int64) error {
 	geoHash := geomodel.GeoCell(lat, lon, geoHashResolution)
 
@@ -44,6 +45,7 @@ func RecordVisit(lat float64, lon float64, now int64) error {
 	return nil
 }
 
+// CalculateScore calculates a geofence score.
 func CalculateScore(score *models.Score, now int64) error {
 	var tSum int64
 	err := models.DB.Raw("SELECT SUM(? - last_visit) AS tsum FROM scores", now).Row().Scan(&tSum)
@@ -72,6 +74,7 @@ func CalculateScore(score *models.Score, now int64) error {
 	return models.DB.Save(&score).Error
 }
 
+// GetGeoFencePrice returns the price of a geofence depending on the upgrade status and current score.
 func GetGeoFencePrice(lat float64, lon float64, ttl int, rentMultiplier float64, radiusIndex int) (float64, error) {
 	geoHash := geomodel.GeoCell(lat, lon, geoHashResolution)
 
@@ -91,6 +94,7 @@ func GetGeoFencePrice(lat float64, lon float64, ttl int, rentMultiplier float64,
 	return value, nil
 }
 
+// GetGeoFenceRent returns the rent of a geofence.
 func GetGeoFenceRent(f *models.Fence) float64 {
 	return float64(f.RentMultiplier)*geoFenceRentBasePrice + (((float64(f.RentMultiplier) - 1.0) * (float64(f.RentMultiplier) - 1.0)) / secondaryMagicalGeoRentingConstant)
 }

@@ -9,13 +9,16 @@ import (
 )
 
 const (
+	// SendGcmJobName is the name for a SendGcmJob.
 	SendGcmJobName = "SendGcm"
 )
 
+// SendGcmRequest holds the data for a SendGcmRequest.
 type SendGcmRequest struct {
 	Message *gcm.Message
 }
 
+// SendGcmJob executes a SendGcm Job.
 func SendGcmJob(j *que.Job) error {
 	var r SendGcmRequest
 	err := json.Unmarshal(j.Args, &r)
@@ -35,6 +38,7 @@ func SendGcmJob(j *que.Job) error {
 	return err
 }
 
+// QueueSendGcmRequest queues a new SendGcm Job.
 func QueueSendGcmRequest(m *gcm.Message) error {
 	r := SendGcmRequest{Message: m}
 	enc, err := json.Marshal(r)

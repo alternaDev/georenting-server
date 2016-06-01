@@ -10,15 +10,18 @@ import (
 )
 
 const (
+	// RecordVisitJobName is the name of a RecordVisit Job.
 	RecordVisitJobName = "RecordVisit"
 )
 
+// RecordVisitRequest holds the data for a RecordVisit Job.
 type RecordVisitRequest struct {
 	Lat  float64
 	Lon  float64
 	Time int64
 }
 
+// RecordVisitJob executes a RecordVisit Job.
 func RecordVisitJob(j *que.Job) error {
 	var r RecordVisitRequest
 	err := json.Unmarshal(j.Args, &r)
@@ -38,6 +41,7 @@ func RecordVisitJob(j *que.Job) error {
 	return err
 }
 
+// QueueRecordVisitRequest queues a new RecordVisit Job.
 func QueueRecordVisitRequest(lat float64, lon float64, date time.Time) error {
 	r := RecordVisitRequest{Lat: lat, Lon: lon, Time: date.Unix()}
 	enc, err := json.Marshal(r)
