@@ -24,19 +24,19 @@ import (
 
 type fenceResponse struct {
 	ID             uint      `json:"id"`
-	Lat            float64   `json:"centerLat"`
-	Lon            float64   `json:"centerLon"`
+	Lat            float64   `json:"center_lat"`
+	Lon            float64   `json:"center_lon"`
 	Radius         int       `json:"radius"`
 	Name           string    `json:"name"`
 	Owner          uint      `json:"owner"`
 	TTL            int       `json:"ttl"`
-	RentMultiplier float64   `json:"rentMultiplier"`
-	DiesAt         time.Time `json:"diesAt"`
+	RentMultiplier float64   `json:"rent_multiplier"`
+	DiesAt         time.Time `json:"dies_at"`
 }
 
 type costEstimateResponse struct {
 	Cost      float64 `json:"cost"`
-	CanAfford bool    `json:"canAfford"`
+	CanAfford bool    `json:"can_afford"`
 }
 
 // VisitFenceHandler handles POST /fences/{fenceId}/visit

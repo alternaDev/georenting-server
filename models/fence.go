@@ -19,11 +19,11 @@ var (
 type Fence struct {
 	gorm.Model
 	User           User      `json:"-"`
-	UserID         uint      `json:"ownerId"`
-	Lat            float64   `json:"centerLat"`
-	Lon            float64   `json:"centerLon"`
+	UserID         uint      `json:"owner_id"`
+	Lat            float64   `json:"center_lat"`
+	Lon            float64   `json:"center_lon"`
 	Radius         int       `json:"radius"`
-	RentMultiplier float64   `json:"rentMultiplier"`
+	RentMultiplier float64   `json:"rent_multiplier"`
 	TTL            int       `json:"ttl"`
 	DiesAt         time.Time `json:"diesAt"`
 	Name           string    `json:"name"`
