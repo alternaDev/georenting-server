@@ -34,12 +34,13 @@
 		},
 		{
 			"ImportPath": "github.com/gorilla/handlers",
-			"Comment": "v1.1",
-			"Rev": "ee54c7b44cab12289237fb8631314790076e728b"
+			"Comment": "v1.1-6-g66e6c6f",
+			"Rev": "66e6c6f01d8da976ee113437745ca029c2b585a6"
 		},
 		{
 			"ImportPath": "github.com/gorilla/mux",
-			"Rev": "c9e326e2bdec29039a3761c07bece13133863e1e"
+			"Comment": "v1.1-9-gbd09be0",
+			"Rev": "bd09be08ed4377796d312df0a45314e11b8f5dc1"
 		},
 		{
 			"ImportPath": "github.com/jackc/pgx",
