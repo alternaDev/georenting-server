@@ -1,12 +1,12 @@
 package redis
 
 import (
+	"fmt"
+	"log"
 	"net/url"
 	"os"
-	"fmt"
+	"strconv"
 	"time"
-	"log"
-
 
 	"gopkg.in/redis.v3"
 )
@@ -28,14 +28,14 @@ func initRedis(www string) (*redis.Client, error) {
 	redisURL, _ := url.Parse(www)
 	password := ""
 
-	if(redisURL.User != nil) {
+	if redisURL.User != nil {
 		password, _ = redisURL.User.Password()
 	}
 
 	client := redis.NewClient(&redis.Options{
-		Addr:     redisURL.Host,
-		Password: password,
-		DB:       0,
+		Addr:       redisURL.Host,
+		Password:   password,
+		DB:         0,
 		MaxRetries: 2,
 	})
 
@@ -68,4 +68,36 @@ func AddActivity(userID uint, score float64, data string) error {
 // GetActivities returns the activities of a user in the specified timeframe.
 func GetActivities(userID uint, start int64, end int64) ([]string, error) {
 	return RedisInstance.ZRevRangeByScore(fmt.Sprintf("%v", userID), redis.ZRangeByScore{Min: fmt.Sprintf("%v", start), Max: fmt.Sprintf("%v", end)}).Result()
+}
+
+// AddBalanceRecord adds a balance record to Redis.
+func AddBalanceRecord(id string, value float64) error {
+	now := time.Now().Unix()
+	return RedisInstance.ZAdd(id, redis.Z{Score: float64(now), Member: value}).Err()
+}
+
+// GetBalance returns the Value of the Balance Set
+func GetBalance(id string) (float64, error) {
+	now := time.Now().Unix()
+
+	sevenDaysAgo := time.Now().Add(-7 * 24 * time.Hour).Unix()
+	err := RedisInstance.ZRemRangeByScore(id, "-inf", fmt.Sprintf("%v", sevenDaysAgo)).Err()
+	if err != nil {
+		return 0, err
+	}
+
+	r := RedisInstance.ZRangeByScore(id, redis.ZRangeByScore{Min: "-inf", Max: fmt.Sprintf("%v", now)})
+
+	if r.Err() != nil {
+		return 0, r.Err()
+	}
+
+	sum := 0.0
+
+	for _, v := range r.Val() {
+		value, _ := strconv.ParseFloat(v, 64)
+		sum += value
+	}
+
+	return sum, nil
 }
