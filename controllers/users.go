@@ -29,6 +29,15 @@ type refreshTokenBody struct {
 	Token string `json:"token"`
 }
 
+type cashResponseBody struct {
+	EarningsRentSevenDays     float64 `json:"earnings_rent_7d"`
+	ExpensesRentSevenDays     float64 `json:"expenses_rent_7d"`
+	ExpensesGeoFenceSevenDays float64 `json:"expenses_geofence_7d"`
+	EarningsRentAll           float64 `json:"earnings_rent_all"`
+	ExpensesRentAll           float64 `json:"expenses_rent_all"`
+	ExpensesGeoFenceAll       float64 `json:"expenses_geofence_all"`
+}
+
 // AuthHandler handles POST /users/auth
 func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
