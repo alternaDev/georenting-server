@@ -11,6 +11,15 @@ import (
 	"gopkg.in/redis.v3"
 )
 
+const (
+	// BalanceNameExpenseRent describes the name for the Balance expense rent.
+	BalanceNameExpenseRent = "expense-rent"
+	// BalanceNameExpenseGeoFence describes the name for the Balance expense fence.
+	BalanceNameExpenseGeoFence = "expense-fence"
+	// BalanceNameEarningsRent describes the name for the Balance earning rent.
+	BalanceNameEarningsRent = "earnings-rent"
+)
+
 // RedisInstance is a usable redis instance.
 var RedisInstance *redis.Client
 
