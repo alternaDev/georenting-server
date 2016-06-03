@@ -79,6 +79,11 @@ func GetActivities(userID uint, start int64, end int64) ([]string, error) {
 	return RedisInstance.ZRevRangeByScore(fmt.Sprintf("%v", userID), redis.ZRangeByScore{Min: fmt.Sprintf("%v", start), Max: fmt.Sprintf("%v", end)}).Result()
 }
 
+// GetBalanceRecordName returns the name of a BR for the user.
+func GetBalanceRecordName(id uint, name string) string {
+	return fmt.Sprintf("%d-%v", id, name)
+}
+
 // AddBalanceRecord adds a balance record to Redis.
 func AddBalanceRecord(id string, value float64) error {
 	now := time.Now().Unix()

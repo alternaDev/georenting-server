@@ -17,6 +17,7 @@ import (
 	"github.com/alternaDev/georenting-server/jobs"
 	"github.com/alternaDev/georenting-server/maths"
 	"github.com/alternaDev/georenting-server/models"
+	"github.com/alternaDev/georenting-server/models/redis"
 	"github.com/alternaDev/georenting-server/models/search"
 	"github.com/alternaDev/georenting-server/scores"
 	"github.com/gorilla/mux"
@@ -99,6 +100,10 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Balance Recording
+	redis.AddBalanceRecord(redis.GetBalanceRecordName(user.ID, redis.BalanceNameExpenseRent), rent)
+	redis.AddBalanceRecord(redis.GetBalanceRecordName(fence.User.ID, redis.BalanceNameEarningsRent), rent)
+
 	// Score Calculation
 	err = jobs.QueueRecordVisitRequest(fence.Lat, fence.Lon, time.Now()) //scores.RecordVisit(fence.Lat, fence.Lon)
 
@@ -115,9 +120,13 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 		user.Balance = 0
 	}
 
+	user.ExpensesRentAllTime = user.ExpensesRentAllTime + rent
+
 	models.DB.Save(&user)
 
 	fence.User.Balance = fence.User.Balance + rent
+	fence.User.EarningsRentAllTime = user.ExpensesRentAllTime + rent
+
 	err = models.DB.Save(&fence.User).Error
 
 	if err != nil {
@@ -301,11 +310,14 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 
 	user.LastKnownGeoHash = geomodel.GeoCell(requestFence.Lat, requestFence.Lon, models.LastKnownGeoHashResolution)
 	user.Balance = user.Balance - price
+	user.ExpensesGeoFenceAllTime = user.ExpensesGeoFenceAllTime + price
 
 	err = models.DB.Save(&user).Error
 	if err != nil {
 		log.Printf("Error while saving user: %v", err)
 	}
+
+	redis.AddBalanceRecord(redis.GetBalanceRecordName(user.ID, redis.BalanceNameExpenseGeoFence), price)
 
 	f.User = user
 
