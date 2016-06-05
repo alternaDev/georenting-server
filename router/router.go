@@ -15,6 +15,7 @@ func SetupRouter() *mux.Router {
 	r.HandleFunc("/users/me/gcm", c.GCMAddHandler).Methods("POST")
 	r.HandleFunc("/users/me/gcm", c.GCMRemoveHandler).Methods("DELETE")
 	r.HandleFunc("/users/me/history", c.HistoryHandler).Methods("GET")
+	r.HandleFunc("/users/me/cash", c.CashStatusHandler).Methods("GET")
 	r.HandleFunc("/users/{name}/avatar", c.AvatarHandler).Methods("GET")
 	r.HandleFunc("/users/{name}/avatar&sz=250", c.AvatarHandler).Methods("GET") // TEMPORYRY WORKAROUND!!!
 

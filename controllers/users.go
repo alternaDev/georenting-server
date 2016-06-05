@@ -12,6 +12,7 @@ import (
 	"github.com/alternaDev/georenting-server/auth"
 	"github.com/alternaDev/georenting-server/google"
 	"github.com/alternaDev/georenting-server/models"
+	"github.com/alternaDev/georenting-server/models/redis"
 
 	nameGen "github.com/alternaDev/go-random-name-gen"
 )
@@ -209,4 +210,46 @@ func HistoryHandler(w http.ResponseWriter, r *http.Request) {
 	buffer.WriteString("]")
 
 	w.Write(buffer.Bytes())
+}
+
+// CashStatusHandler GET /users/me/cash
+func CashStatusHandler(w http.ResponseWriter, r *http.Request) {
+	user, err := auth.ValidateSession(r)
+
+	if err != nil {
+		http.Error(w, "Invalid Session token. "+err.Error(), http.StatusForbidden)
+		return
+	}
+
+	earningsRentSevenDays, err := redis.GetBalance(redis.GetBalanceRecordName(user.ID, redis.BalanceNameEarningsRent))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+	expensesRentSevenDays, err := redis.GetBalance(redis.GetBalanceRecordName(user.ID, redis.BalanceNameExpenseRent))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+	expensesGeoFenceSevenDays, err := redis.GetBalance(redis.GetBalanceRecordName(user.ID, redis.BalanceNameExpenseGeoFence))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusForbidden)
+		return
+	}
+
+	bytes, err := json.Marshal(cashResponseBody{
+		EarningsRentAll: user.EarningsRentAllTime,
+		ExpensesRentAll: user.ExpensesRentAllTime,
+		ExpensesGeoFenceAll: user.ExpensesGeoFenceAllTime,
+		EarningsRentSevenDays: earningsRentSevenDays,
+		ExpensesRentSevenDays: expensesRentSevenDays,
+		ExpensesGeoFenceSevenDays: expensesGeoFenceSevenDays,
+	})
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(bytes)
 }
