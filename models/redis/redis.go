@@ -100,7 +100,7 @@ func GetBalance(id string) (float64, error) {
 		return 0, err
 	}
 
-	r := RedisInstance.ZRangeByScore(id, redis.ZRangeByScore{Min: "-inf", Max: fmt.Sprintf("%v", now)})
+	r := RedisInstance.ZRangeByScore(id, redis.ZRangeByScore{Min: "-inf", Max: strconv.FormatInt(now, 10)})
 
 	if r.Err() != nil {
 		return 0, r.Err()
