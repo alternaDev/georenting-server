@@ -94,8 +94,8 @@ func AddBalanceRecord(id string, value float64) error {
 func GetBalance(id string) (float64, error) {
 	now := time.Now().Unix()
 
-	sevenDaysAgo := time.Now().Add(-7 * 24 * time.Hour).Unix()
-	err := RedisInstance.ZRemRangeByScore(id, "-inf", fmt.Sprintf("%v", sevenDaysAgo)).Err()
+	sevenDaysAgo := time.Now().AddDate(0, 0, -7).Unix()
+	err := RedisInstance.ZRemRangeByScore(id, "-inf", strconv.FormatInt(sevenDaysAgo, 10)).Err()
 	if err != nil {
 		return 0, err
 	}
