@@ -18,6 +18,9 @@ const (
 	BalanceNameExpenseGeoFence = "expense-fence"
 	// BalanceNameEarningsRent describes the name for the Balance earning rent.
 	BalanceNameEarningsRent = "earnings-rent"
+	// OldestActivityAgeDays specifies the maximum time activities should be saved.
+	// everything after this gets deleted.
+	OldestActivityAgeDays = 30
 )
 
 // RedisInstance is a usable redis instance.
@@ -76,7 +79,15 @@ func AddActivity(userID uint, score float64, data string) error {
 
 // GetActivities returns the activities of a user in the specified timeframe.
 func GetActivities(userID uint, start int64, end int64) ([]string, error) {
-	return RedisInstance.ZRevRangeByScore(fmt.Sprintf("%v", userID), redis.ZRangeByScore{Min: fmt.Sprintf("%v", start), Max: fmt.Sprintf("%v", end)}).Result()
+	id := fmt.Sprintf("%v", userID)
+
+	oldest := time.Now().AddDate(0, 0, -OldestActivityAgeDays).Unix()
+	err := RedisInstance.ZRemRangeByScore(id, "-inf", strconv.FormatInt(oldest, 10)).Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return RedisInstance.ZRevRangeByScore(id, redis.ZRangeByScore{Min: fmt.Sprintf("%v", start), Max: fmt.Sprintf("%v", end)}).Result()
 }
 
 // GetBalanceRecordName returns the name of a BR for the user.
