@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/url"
@@ -22,6 +23,11 @@ const (
 	// everything after this gets deleted.
 	OldestActivityAgeDays = 30
 )
+
+type balanceRecord struct {
+	Time  int64
+	Value float64
+}
 
 // RedisInstance is a usable redis instance.
 var RedisInstance *redis.Client
@@ -98,13 +104,20 @@ func GetBalanceRecordName(id uint, name string) string {
 // AddBalanceRecord adds a balance record to Redis.
 func AddBalanceRecord(id string, value float64) error {
 	now := time.Now().Unix()
-	return RedisInstance.ZAdd(id, redis.Z{Score: float64(now), Member: value}).Err()
+
+	bytes, err := json.Marshal(balanceRecord{
+		Time:  now,
+		Value: value})
+
+	if err != nil {
+		return err
+	}
+	return RedisInstance.ZAdd(id, redis.Z{Score: float64(now), Member: string(bytes[:])}).Err()
 }
 
 // GetBalance returns the Value of the Balance Set
 func GetBalance(id string) (float64, error) {
 	sevenDaysAgo := time.Now().AddDate(0, 0, -7).Unix()
-	log.Printf("Now: %d, sevenDaysAgo: %d", time.Now().Unix(), sevenDaysAgo)
 
 	err := RedisInstance.ZRemRangeByScore(id, "-inf", strconv.FormatInt(sevenDaysAgo, 10)).Err()
 	if err != nil {
@@ -120,8 +133,12 @@ func GetBalance(id string) (float64, error) {
 	sum := 0.0
 
 	for _, v := range r.Val() {
-		value, _ := strconv.ParseFloat(v, 64)
-		sum += value
+		var record balanceRecord
+		err := json.Unmarshal([]byte(v), &record)
+		if err != nil {
+			return 0, err
+		}
+		sum += record.Value
 	}
 
 	return sum, nil
