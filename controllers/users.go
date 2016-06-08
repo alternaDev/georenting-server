@@ -10,7 +10,7 @@ import (
 
 	"github.com/alternaDev/georenting-server/activity"
 	"github.com/alternaDev/georenting-server/auth"
-	"github.com/alternaDev/georenting-server/google"
+	"github.com/alternaDev/georenting-server/google/firebase"
 	"github.com/alternaDev/georenting-server/models"
 	"github.com/alternaDev/georenting-server/models/redis"
 
@@ -50,7 +50,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	googleUser, err := google.VerifyToken(b.GoogleToken)
+	googleID, err := firebase.VerifyIDToken(b.GoogleToken)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
@@ -58,11 +58,11 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var user models.User
-	models.DB.Where(models.User{GoogleID: googleUser.GoogleID}).FirstOrInit(&user)
+	models.DB.Where(models.User{GoogleID: googleID}).FirstOrInit(&user)
 
 	if user.Name == "" {
 		var id int64
-		id, err = strconv.ParseInt(googleUser.GoogleID[:7], 10, 64)
+		id, err = strconv.ParseInt(googleID[:7], 10, 64)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusForbidden)
 			return
@@ -238,11 +238,11 @@ func CashStatusHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	bytes, err := json.Marshal(cashResponseBody{
-		EarningsRentAll: user.EarningsRentAllTime,
-		ExpensesRentAll: user.ExpensesRentAllTime,
-		ExpensesGeoFenceAll: user.ExpensesGeoFenceAllTime,
-		EarningsRentSevenDays: earningsRentSevenDays,
-		ExpensesRentSevenDays: expensesRentSevenDays,
+		EarningsRentAll:           user.EarningsRentAllTime,
+		ExpensesRentAll:           user.ExpensesRentAllTime,
+		ExpensesGeoFenceAll:       user.ExpensesGeoFenceAllTime,
+		EarningsRentSevenDays:     earningsRentSevenDays,
+		ExpensesRentSevenDays:     expensesRentSevenDays,
 		ExpensesGeoFenceSevenDays: expensesGeoFenceSevenDays,
 	})
 
