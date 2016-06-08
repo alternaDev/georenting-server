@@ -108,11 +108,11 @@ func VerifyIDToken(idToken string) (string, error) {
 
 	errMessage := ""
 
-	if parsedToken.Claims["aud"] != googleProjectID {
-		errMessage = "Firebase Auth ID token has incorrect 'aud' claim"
-	} else if parsedToken.Claims["iss"] != "https://securetoken.google.com/"+googleProjectID {
+	if string(parsedToken.Claims["aud"]) != googleProjectID {
+		errMessage = "Firebase Auth ID token has incorrect 'aud' claim: " + string(parsedToken.Claims["aud"])
+	} else if string(parsedToken.Claims["iss"]) != "https://securetoken.google.com/"+googleProjectID {
 		errMessage = "Firebase Auth ID token has incorrect 'iss' claim"
-	} else if parsedToken.Claims["sub"] == "" || len(string(parsedToken.Claims["sub"].(string))) > 128 {
+	} else if string(parsedToken.Claims["sub"]) == "" || len(string(parsedToken.Claims["sub"].(string))) > 128 {
 		errMessage = "Firebase Auth ID token has invalid 'sub' claim"
 	}
 
