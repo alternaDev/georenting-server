@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/dgrijalva/jwt-go"
 )
@@ -90,7 +91,9 @@ func VerifyIDToken(idToken string) (string, error) {
 		}
 		kid := token.Header["kid"]
 
-		certPEM := []byte(*keys[kid.(string)])
+		certPEM := string(*keys[kid.(string)])
+		certPEM = strings.Replace(certPEM, "\\n", "\n", -1)
+		certPEM = strings.Replace(certPEM, "\"", "", -1)
 		block, _ := pem.Decode([]byte(certPEM))
 		var cert *x509.Certificate
 		cert, _ = x509.ParseCertificate(block.Bytes)
