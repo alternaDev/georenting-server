@@ -1,7 +1,10 @@
 package firebase
 
 import (
+	"crypto/rsa"
+	"crypto/x509"
 	"encoding/json"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"net/http"
@@ -87,9 +90,13 @@ func VerifyIDToken(idToken string) (string, error) {
 		}
 		kid := token.Signature
 
-		publicKey, err := jwt.ParseRSAPublicKeyFromPEM([]byte(*keys[kid]))
+		certPEM := []byte(*keys[kid])
+		block, _ := pem.Decode([]byte(certPEM))
+		var cert *x509.Certificate
+		cert, _ = x509.ParseCertificate(block.Bytes)
+		rsaPublicKey := cert.PublicKey.(*rsa.PublicKey)
 
-		return publicKey, err
+		return rsaPublicKey, nil
 	})
 
 	if err != nil {
