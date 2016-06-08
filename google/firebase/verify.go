@@ -88,7 +88,7 @@ func VerifyIDToken(idToken string) (string, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
-		kid := token.Claims["kid"]
+		kid := token.Header["kid"]
 
 		certPEM := []byte(*keys[kid.(string)])
 		block, _ := pem.Decode([]byte(certPEM))
