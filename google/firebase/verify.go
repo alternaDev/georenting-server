@@ -19,7 +19,7 @@ const (
 )
 
 var (
-	googleProjectID = os.Getenv("GOOGLE_PROJECT_ID")
+	googleProjectID = os.Getenv("FIREBASE_PROJECT_ID")
 )
 
 /*
