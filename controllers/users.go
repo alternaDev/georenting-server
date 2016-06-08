@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"hash/fnv"
 	"net/http"
 	"os"
 	"strconv"
@@ -39,6 +40,12 @@ type cashResponseBody struct {
 	ExpensesGeoFenceAll       float64 `json:"expenses_geofence_all"`
 }
 
+func hash(s string) uint32 {
+	h := fnv.New32a()
+	h.Write([]byte(s))
+	return h.Sum32()
+}
+
 // AuthHandler handles POST /users/auth
 func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
@@ -61,17 +68,12 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	models.DB.Where(models.User{GoogleID: googleID}).FirstOrInit(&user)
 
 	if user.Name == "" {
-		var id int64
-		id, err = strconv.ParseInt(googleID[:7], 10, 64)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusForbidden)
-			return
-		}
+		id := hash(googleID)
 
 		name := ""
 		i := 0
 		for name == "" {
-			genName, err2 := nameGen.GenerateNameWithSeed(1, 1, 3, id+int64(i))
+			genName, err2 := nameGen.GenerateNameWithSeed(1, 1, 3, int64(id+uint32(i)))
 			if err2 != nil {
 				http.Error(w, err2.Error(), http.StatusForbidden)
 				return
