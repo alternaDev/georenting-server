@@ -84,11 +84,11 @@ func VerifyIDToken(idToken string) (string, error) {
 		return "", err
 	}
 
-	token, err := jwt.Parse(idToken, func(token *jwt.Token) (interface{}, error) {
+	parsedToken, err := jwt.Parse(idToken, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
-		kid := token.Signature
+		kid := token.Claims["kid"]
 
 		certPEM := []byte(*keys[kid])
 		block, _ := pem.Decode([]byte(certPEM))
@@ -105,11 +105,11 @@ func VerifyIDToken(idToken string) (string, error) {
 
 	var errMessage *string
 
-	if token.Claims["aud"] != googleProjectID {
+	if parsedToken.Claims["aud"] != googleProjectID {
 		*errMessage = "Firebase Auth ID token has incorrect 'aud' claim"
-	} else if token.Claims["iss"] != "https://securetoken.google.com/"+googleProjectID {
+	} else if parsedToken.Claims["iss"] != "https://securetoken.google.com/"+googleProjectID {
 		*errMessage = "Firebase Auth ID token has incorrect 'iss' claim"
-	} else if token.Claims["sub"] == "" || len(string(token.Claims["sub"].(string))) > 128 {
+	} else if parsedToken.Claims["sub"] == "" || len(string(token.Claims["sub"].(string))) > 128 {
 		*errMessage = "Firebase Auth ID token has invalid 'sub' claim"
 	}
 
@@ -117,7 +117,7 @@ func VerifyIDToken(idToken string) (string, error) {
 		return "", errors.New(*errMessage)
 	}
 
-	return string(token.Claims["sub"].(string)), nil
+	return string(parsedToken.Claims["sub"].(string)), nil
 }
 
 func fetchPublicKeys() (map[string]*json.RawMessage, error) {
