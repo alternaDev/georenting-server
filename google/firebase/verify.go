@@ -90,7 +90,7 @@ func VerifyIDToken(idToken string) (string, error) {
 		}
 		kid := token.Claims["kid"]
 
-		certPEM := []byte(*keys[kid])
+		certPEM := []byte(*keys[kid.(string)])
 		block, _ := pem.Decode([]byte(certPEM))
 		var cert *x509.Certificate
 		cert, _ = x509.ParseCertificate(block.Bytes)
@@ -109,7 +109,7 @@ func VerifyIDToken(idToken string) (string, error) {
 		*errMessage = "Firebase Auth ID token has incorrect 'aud' claim"
 	} else if parsedToken.Claims["iss"] != "https://securetoken.google.com/"+googleProjectID {
 		*errMessage = "Firebase Auth ID token has incorrect 'iss' claim"
-	} else if parsedToken.Claims["sub"] == "" || len(string(token.Claims["sub"].(string))) > 128 {
+	} else if parsedToken.Claims["sub"] == "" || len(string(parsedToken.Claims["sub"].(string))) > 128 {
 		*errMessage = "Firebase Auth ID token has invalid 'sub' claim"
 	}
 
