@@ -1,14 +1,14 @@
 {
 	"ImportPath": "github.com/alternaDev/georenting-server",
 	"GoVersion": "go1.6.1",
-	"GodepVersion": "v72",
+	"GodepVersion": "v69",
 	"Packages": [
 		"./..."
 	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/alternaDev/geomodel",
-			"Rev": "5db9ed2a99fadcccc259089ee7e98a3a774bd69a"
+			"Rev": "8dc8f72ac0e3bde327c4cc4cb807b06105529719"
 		},
 		{
 			"ImportPath": "github.com/alternaDev/go-avatar-gen",
