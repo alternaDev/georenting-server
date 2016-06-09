@@ -15,8 +15,7 @@ type User struct {
 	PrivateKey              string  `sql:"size:4096" json:"-"`
 	GCMNotificationID       string  `json:"-"`
 	Name                    string  `json:"name"`
-	AvatarURL               string  `json:"avatar_url"`
-	CoverURL                string  `json:"cover_url"`
+	AvatarURL               string  `json:"avatar_url" gorm:"-"`
 	Balance                 float64 `json:"balance"`
 	LastKnownGeoHash        string  `json:"-"`
 	EarningsRentAllTime     float64 `json:"-"`
