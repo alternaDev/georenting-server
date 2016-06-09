@@ -117,7 +117,7 @@ func GeoCell(lat, lon float64, resolution int) string {
 		}
 	}
 
-	cell[i-1] = 0
+	cell = cell[:len(cell)-1]
 
 	return string(cell)
 }
