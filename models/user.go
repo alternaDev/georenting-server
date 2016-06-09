@@ -1,6 +1,6 @@
 package models
 
-import "github.com/jinzhu/gorm"
+import "time"
 
 const (
 	// LastKnownGeoHashResolution is the resolution for the geohash of the last known position.
@@ -9,8 +9,10 @@ const (
 
 // User is a user.
 type User struct {
-	gorm.Model
-	GoogleID                string  `json:"-"`
+	ID                      uint `gorm:"primary_key"`
+	CreatedAt               time.Time
+	UpdatedAt               time.Time
+	GoogleID                string  `json:"-" gorm:"index"`
 	Fences                  []Fence `json:"fences"`
 	PrivateKey              string  `sql:"size:4096" json:"-"`
 	GCMNotificationID       string  `json:"-"`

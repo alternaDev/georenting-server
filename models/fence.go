@@ -4,25 +4,26 @@ import (
 	"time"
 
 	"github.com/alternaDev/georenting-server/maths"
-	"github.com/jinzhu/gorm"
 )
 
 var (
 	// UpgradeTypesRadius holds the possible Upgrade Types for Radius.
 	UpgradeTypesRadius = [...]int{100, 150, 200, 250, 300, 350, 400}
 	// UpgradeTypesRent holds the possible rent multipliers.
-	UpgradeTypesRent   = [...]float64{1, 1.5, 2, 2.5, 3, 3.5, 4}
+	UpgradeTypesRent = [...]float64{1, 1.5, 2, 2.5, 3, 3.5, 4}
 	// FenceMaxTTL holds the maximum possible TTL of a fence.
-	FenceMaxTTL        = 60 * 60 * 24 * 7 // 7 days
+	FenceMaxTTL = 60 * 60 * 24 * 7 // 7 days
 	// FenceMinRadius holds the minimum radius of a fence.
-	FenceMinRadius     = maths.Min(UpgradeTypesRadius[:])
+	FenceMinRadius = maths.Min(UpgradeTypesRadius[:])
 	// FenceMaxRadius holds the maximum radius of a fence.
-	FenceMaxRadius     = maths.Max(UpgradeTypesRadius[:])
+	FenceMaxRadius = maths.Max(UpgradeTypesRadius[:])
 )
 
 // Fence is a fence
 type Fence struct {
-	gorm.Model
+	ID             uint `gorm:"primary_key"`
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
 	User           User      `json:"-"`
 	UserID         uint      `json:"owner_id"`
 	Lat            float64   `json:"center_lat"`
