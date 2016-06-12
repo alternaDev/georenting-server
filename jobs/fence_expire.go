@@ -34,12 +34,15 @@ func FenceExpireJob(j *que.Job) error {
 
 	log.Print("Processing FenceExpireJob")
 
-	var fence models.Fence
-
-	notFound := models.DB.Preload("User").Find(&fence, fer.FenceID).RecordNotFound()
+	fence, err, notFound := models.FindFenceByID(fer.FenceID)
 
 	if notFound {
 		return nil
+	}
+
+	if err != nil {
+		log.Printf("Fence Finiding error: %v", err)
+		return err
 	}
 
 	err = activity.AddFenceExpiredActivity(fence.User.ID, fence.ID, fence.Name)
@@ -55,7 +58,7 @@ func FenceExpireJob(j *que.Job) error {
 		return err
 	}
 
-	err = models.DB.Delete(fence).Error
+	err = fence.Delete()
 
 	if err != nil {
 		return err

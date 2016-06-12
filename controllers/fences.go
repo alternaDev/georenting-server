@@ -57,11 +57,9 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var fence models.Fence
+	fence, err, notFound := models.FindFenceByID(fenceID)
 
-	err = models.DB.Preload("User").Find(&fence, fenceID).Error
-
-	if err != nil {
+	if err != nil || notFound {
 		http.Error(w, "Fence not Found", http.StatusNotFound)
 		return
 	}
@@ -157,8 +155,7 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		result := make([]models.Fence, len(ids))
-		err = models.DB.Where(ids).Find(&result).Error
+		result, err := models.FindFencesByIDs(ids)
 
 		if err != nil {
 			log.Printf("Error while finding users: %s", err.Error())
@@ -329,7 +326,7 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 
 	f.User = user
 
-	err = models.DB.Save(&f).Error
+	err = f.Save()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -366,8 +363,7 @@ func checkFenceOverlap(fence *models.Fence) (bool, error) {
 		return false, err
 	}
 
-	result := make([]models.Fence, len(ids))
-	err = models.DB.Where(ids).Find(&result).Error
+	result, err := models.FindFencesByIDs(ids)
 
 	if err != nil {
 		return false, err
@@ -393,9 +389,7 @@ func GetFenceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var fence models.Fence
-
-	notFound := models.DB.Find(&fence, fenceID).RecordNotFound()
+	fence, err, notFound := models.FindFenceByID(fenceID)
 
 	if notFound {
 		http.Error(w, "GeoFence Not Found.", http.StatusNotFound)
@@ -441,10 +435,15 @@ func RemoveFenceHandler(w http.ResponseWriter, r *http.Request) {
 
 	var fence models.Fence
 
-	notFound := models.DB.Find(&fence, fenceID).RecordNotFound()
+	fence, err, notFound := models.FindFenceByID(fenceID)
 
 	if notFound {
 		http.Error(w, "GeoFence Not Found.", http.StatusNotFound)
+		return
+	}
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -460,7 +459,7 @@ func RemoveFenceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = models.DB.Delete(fence).Error
+	err = fence.Delete()
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
