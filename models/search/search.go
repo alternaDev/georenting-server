@@ -137,7 +137,7 @@ func IndexGeoFence(fence *models.Fence) error {
 }
 
 // FindGeoFences returns all geofences around a lat/lon pair.
-func FindGeoFences(centerLat float64, centerLon float64, radius int64) ([]int64, error) {
+func FindGeoFences(centerLat float64, centerLon float64, radius int64) ([]models.Fence, error) {
 	query := elastic.NewGeoDistanceQuery("center").Distance(fmt.Sprintf("%dm", radius)).Lat(centerLat).Lon(centerLon)
 
 	searchResult, err := ElasticInstance.Search().
@@ -159,11 +159,11 @@ func FindGeoFences(centerLat float64, centerLon float64, radius int64) ([]int64,
 			stringID, _ := strconv.ParseInt(hit.Id, 10, 64)
 			fences[i] = stringID
 		}
-		return fences, nil
+		return models.FindFencesByIDs(fences)
 	}
 
 	fmt.Print("Found no fences\n")
-	return make([]int64, 0), nil
+	return make([]models.Fence, 0), nil
 }
 
 // DeleteGeoFence deletes a geofence from the search index.

@@ -149,13 +149,7 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 	userID, err4 := strconv.ParseUint(r.URL.Query().Get("user"), 10, 8)
 
 	if err1 == nil && err2 == nil && err3 == nil {
-		ids, err := search.FindGeoFences(lat, lon, radius)
-		if err != nil {
-			log.Fatal(err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		result, err := models.FindFencesByIDs(ids)
+		result, err := search.FindGeoFences(lat, lon, radius)
 
 		if err != nil {
 			log.Printf("Error while finding users: %s", err.Error())
@@ -357,13 +351,11 @@ func checkFenceOverlapWithFenceResponse(f *fenceResponse) (bool, error) {
 }
 
 func checkFenceOverlap(fence *models.Fence) (bool, error) {
-	ids, err := search.FindGeoFences(fence.Lat, fence.Lon, int64(fence.Radius+models.FenceMaxRadius))
+	result, err := search.FindGeoFences(fence.Lat, fence.Lon, int64(fence.Radius+models.FenceMaxRadius))
 
 	if err != nil {
 		return false, err
 	}
-
-	result, err := models.FindFencesByIDs(ids)
 
 	if err != nil {
 		return false, err
