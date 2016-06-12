@@ -31,8 +31,11 @@ func NotifyUsersSyncJob(j *que.Job) error {
 
 	log.Print("Processing NotifyUsersSyncJob")
 
-	var users []models.User
-	models.DB.Where(&models.User{LastKnownGeoHash: r.GeoHash}).Find(&users)
+	users, err := models.FindUsersByLastKnownGeoHash(r.GeoHash)
+	if err != nil {
+		log.Fatal("Unable to Find Users")
+		return err
+	}
 
 	for _, user := range users {
 		QueueSendGcmRequest(gcm.NewMessage(map[string]interface{}{"type": "sync"}, user.GCMNotificationID))

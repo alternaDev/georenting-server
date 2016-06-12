@@ -122,12 +122,17 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 
 	user.ExpensesRentAllTime = user.ExpensesRentAllTime + rent
 
-	models.DB.Save(&user)
+	err = user.Save()
+	if err != nil {
+		log.Printf("Error while saving user: %s", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	fence.User.Balance = fence.User.Balance + rent
 	fence.User.EarningsRentAllTime = user.ExpensesRentAllTime + rent
 
-	err = models.DB.Save(&fence.User).Error
+	err = fence.User.Save()
 
 	if err != nil {
 		log.Printf("Error while saving user: %s", err.Error())
@@ -185,7 +190,11 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 
 		if err == nil {
 			user.LastKnownGeoHash = geomodel.GeoCell(lat, lon, models.LastKnownGeoHashResolution)
-			models.DB.Save(&user)
+			err = user.Save()
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 		}
 
 		w.Write(bytes)
@@ -193,8 +202,7 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err4 == nil {
-		var user models.User
-		errA := models.DB.Preload("Fences").First(&user, userID).Error
+		user, errA := models.FindUserByID(userID)
 
 		if errA != nil {
 			log.Printf("Error while finding fences: %s", errA.Error())
@@ -202,7 +210,7 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		result := user.Fences
+		result := user.GetFences()
 
 		fences := make([]fenceResponse, len(result))
 		for i := range result {
@@ -312,7 +320,7 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 	user.Balance = user.Balance - price
 	user.ExpensesGeoFenceAllTime = user.ExpensesGeoFenceAllTime + price
 
-	err = models.DB.Save(&user).Error
+	err = user.Save()
 	if err != nil {
 		log.Printf("Error while saving user: %v", err)
 	}

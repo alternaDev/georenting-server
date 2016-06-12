@@ -15,7 +15,6 @@ import (
 // GenerateJWTToken generates a JWT token for a given UserID and signs it with
 // the given private key. The token will be valid for 3 days.
 func GenerateJWTToken(user models.User) (string, error) {
-
 	if user.PrivateKey == "" {
 		privateKey, err := GenerateNewPrivateKey()
 
@@ -24,7 +23,10 @@ func GenerateJWTToken(user models.User) (string, error) {
 		}
 
 		user.PrivateKey = PrivateKeyToString(privateKey)
-		models.DB.Save(&user)
+		user.Save()
+		if err != nil {
+			return "", err
+		}
 	}
 
 	privateKey, err := StringToPrivateKey(user.PrivateKey)
@@ -64,7 +66,11 @@ func ValidateJWTToken(input string) (models.User, error) {
 		// Get the user ID
 		userID := uint(token.Header["user"].(float64))
 
-		models.DB.First(&user, userID)
+		user, err := models.FindUserByID(userID)
+
+		if err != nil {
+			return nil, err
+		}
 
 		privateKey, err := StringToPrivateKey(user.PrivateKey)
 
@@ -83,8 +89,6 @@ func ValidateJWTToken(input string) (models.User, error) {
 }
 
 func getRemainingTokenValidity(input string) int {
-	var user models.User
-
 	token, err := jwt.Parse(input, func(token *jwt.Token) (interface{}, error) {
 
 		// Check whether the right signing algorithm was used.
@@ -95,7 +99,11 @@ func getRemainingTokenValidity(input string) int {
 		// Get the user ID
 		userID := token.Header["user"]
 
-		models.DB.First(&user, userID)
+		user, err := models.FindUserByID(userID)
+
+		if err != nil {
+			return nil, err
+		}
 
 		privateKey, err := StringToPrivateKey(user.PrivateKey)
 

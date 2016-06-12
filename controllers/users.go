@@ -64,8 +64,12 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var user models.User
-	models.DB.Where(models.User{GoogleID: googleID}).FirstOrInit(&user)
+	user, err := models.FindUserByGoogleIDOrInit(googleID)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	if user.Name == "" {
 		id := hash(googleID)
@@ -78,8 +82,13 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, err2.Error(), http.StatusForbidden)
 				return
 			}
-			count := 0
-			models.DB.Where(models.User{Name: genName}).Count(&count)
+
+			count, err3 := models.CountUsersByName(genName)
+			if err3 != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
 			if count == 0 {
 				name = genName
 			}
@@ -89,7 +98,11 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 		user.Name = name
 	}
 
-	models.DB.Save(&user)
+	err = user.Save()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	token, err := auth.GenerateJWTToken(user)
 
