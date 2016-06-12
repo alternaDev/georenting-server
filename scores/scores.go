@@ -21,14 +21,13 @@ const (
 func RecordVisit(lat float64, lon float64, now int64) error {
 	geoHash := geomodel.GeoCell(lat, lon, geoHashResolution)
 
-	score := &models.Score{}
-	err := models.DB.Where(models.Score{GeoHash: geoHash}).FirstOrInit(&score).Error
+	score, err := models.FindScoreByGeoHashOrInit(geoHash)
 
 	if err != nil {
 		return err
 	}
 
-	err = CalculateScore(score, now)
+	err = CalculateScore(&score, now)
 
 	if err != nil {
 		return err
@@ -36,7 +35,7 @@ func RecordVisit(lat float64, lon float64, now int64) error {
 
 	score.LastVisit = now
 
-	err = models.DB.Save(&score).Error
+	err = score.Save()
 
 	if err != nil {
 		return err
@@ -55,12 +54,12 @@ func CalculateScore(score *models.Score, now int64) error {
 	}
 	log.Printf("Sum: %d", tSum)
 
-	var count int64
-	err = models.DB.Model(&models.Score{}).Count(&count).Error
+	count, err := models.CountScores()
 
 	if err != nil {
 		return err
 	}
+
 	count = int64(math.Max(float64(count), 1))
 	tAvg := float64((1.0 / float64(count)) * float64(tSum))
 	fraction := tAvg / float64(now-score.LastVisit)
@@ -71,15 +70,14 @@ func CalculateScore(score *models.Score, now int64) error {
 		return errors.New("NaN Error!")
 	}
 
-	return models.DB.Save(&score).Error
+	return score.Save()
 }
 
 // GetGeoFencePrice returns the price of a geofence depending on the upgrade status and current score.
 func GetGeoFencePrice(lat float64, lon float64, ttl int, rentMultiplier float64, radiusIndex int) (float64, error) {
 	geoHash := geomodel.GeoCell(lat, lon, geoHashResolution)
 
-	score := &models.Score{}
-	err := models.DB.Where(models.Score{GeoHash: geoHash}).FirstOrInit(&score).Error
+	score, err := models.FindScoreByGeoHashOrInit(geoHash)
 
 	if err != nil {
 		return 0, err
