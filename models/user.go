@@ -1,9 +1,6 @@
 package models
 
-import (
-	"log"
-	"time"
-)
+import "time"
 
 const (
 	// LastKnownGeoHashResolution is the resolution for the geohash of the last known position.
@@ -40,7 +37,7 @@ func (u User) GetFences() *[]Fence {
 	return &fences
 }
 
-func FindUserByID(id interface{}) (*User, error) {
+func FindUserByID(id uint) (*User, error) {
 	var result User
 	err := DB.First(&result, id).Error
 	return &result, err
@@ -54,10 +51,8 @@ func FindUsersByLastKnownGeoHash(hash string) ([]User, error) {
 
 func FindUserByGoogleIDOrInit(id string) (*User, error) {
 	var user User
-	log.Printf("usera: %d", user.ID)
 
 	err := DB.Where(&User{GoogleID: id}).FirstOrInit(&user).Error
-	log.Printf("userb: %d", user.ID)
 	return &user, err
 }
 

@@ -14,7 +14,7 @@ import (
 
 // GenerateJWTToken generates a JWT token for a given UserID and signs it with
 // the given private key. The token will be valid for 3 days.
-func GenerateJWTToken(user *models.User) (string, error) {
+func GenerateJWTToken(user models.User) (string, error) {
 	if user.PrivateKey == "" {
 		privateKey, err := GenerateNewPrivateKey()
 
@@ -48,10 +48,7 @@ func GenerateJWTToken(user *models.User) (string, error) {
 }
 
 // ValidateJWTToken validates a JWT token and returns the user from the DB
-// TODO: Implement Logout via Redis and a blacklist
 func ValidateJWTToken(input string) (*models.User, error) {
-	var user models.User
-
 	if redis.TokenIsInBlacklist(input) {
 		return nil, errors.New("Token is in blacklist.")
 	}
@@ -64,7 +61,7 @@ func ValidateJWTToken(input string) (*models.User, error) {
 		}
 
 		// Get the user ID
-		userID := uint(token.Header["user"].(float64))
+		userID := token.Header["user"].(uint)
 
 		user, err := models.FindUserByID(userID)
 
@@ -85,7 +82,11 @@ func ValidateJWTToken(input string) (*models.User, error) {
 		return nil, errors.New("The token has been tampered with...inside.")
 	}
 
-	return &user, nil
+	userID := token.Claims["user"].(uint)
+
+	user, err := models.FindUserByID(userID)
+
+	return user, err
 }
 
 func getRemainingTokenValidity(input string) int {
@@ -99,7 +100,7 @@ func getRemainingTokenValidity(input string) int {
 		// Get the user ID
 		userID := token.Header["user"]
 
-		user, err := models.FindUserByID(userID)
+		user, err := models.FindUserByID(userID.(uint))
 
 		if err != nil {
 			return nil, err
