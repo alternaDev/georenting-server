@@ -39,7 +39,7 @@ func (u *User) GetFences() *[]Fence {
 
 func FindUserByID(id interface{}) (*User, error) {
 	var result User
-	err := DB.First(result, id).Error
+	err := DB.First(&result, id).Error
 	return &result, err
 }
 
