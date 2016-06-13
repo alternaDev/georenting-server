@@ -30,11 +30,11 @@ func (u *User) Save() error {
 }
 
 func (u *User) GetFences() *[]Fence {
-	var fences *[]Fence
+	var fences []Fence
 
 	DB.Model(&u).Related(&fences)
 
-	return fences
+	return &fences
 }
 
 func FindUserByID(id interface{}) (*User, error) {
@@ -51,7 +51,7 @@ func FindUsersByLastKnownGeoHash(hash string) ([]User, error) {
 
 func FindUserByGoogleIDOrInit(id string) (*User, error) {
 	var result User
-	err := DB.FirstOrInit(result, User{GoogleID: id}).Error
+	err := DB.FirstOrInit(&result, User{GoogleID: id}).Error
 	return &result, err
 }
 
