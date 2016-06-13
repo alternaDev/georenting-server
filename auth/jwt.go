@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/alternaDev/georenting-server/models"
@@ -62,7 +61,7 @@ func ValidateJWTToken(input string) (*models.User, error) {
 		}
 
 		// Get the user ID
-		userID, err := strconv.ParseUint(token.Header["user"].(string), 10, 8)
+		userID := uint(token.Header["user"].(float64))
 
 		user, err := models.FindUserByID(uint(userID))
 
@@ -83,7 +82,7 @@ func ValidateJWTToken(input string) (*models.User, error) {
 		return nil, errors.New("The token has been tampered with...inside.")
 	}
 
-	userID, err := strconv.ParseUint(token.Header["user"].(string), 10, 8)
+	userID := uint(token.Claims["user"].(float64))
 
 	user, err := models.FindUserByID(uint(userID))
 
