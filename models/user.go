@@ -32,30 +32,30 @@ func (u *User) Save() error {
 	return DB.Save(&u).Error
 }
 
-func (u *User) GetFences() []Fence {
-	var fences []Fence
+func (u *User) GetFences() []*Fence {
+	var fences []*Fence
 
-	DB.Model(&u).Related(&fences)
+	DB.Model(&u).Related(fences)
 
 	return fences
 }
 
-func FindUserByID(id interface{}) (User, error) {
-	var result User
-	err := DB.First(&result, id).Error
+func FindUserByID(id interface{}) (*User, error) {
+	var result *User
+	err := DB.First(result, id).Error
 	return result, err
 }
 
-func FindUsersByLastKnownGeoHash(hash string) ([]User, error) {
-	var users []User
-	err := DB.Where(&User{LastKnownGeoHash: hash}).Find(&users).Error
+func FindUsersByLastKnownGeoHash(hash string) ([]*User, error) {
+	var users []*User
+	err := DB.Where(&User{LastKnownGeoHash: hash}).Find(users).Error
 	return users, err
 }
 
-func FindUserByGoogleIDOrInit(id string) (User, error) {
-	var result User
+func FindUserByGoogleIDOrInit(id string) (*User, error) {
+	var result *User
 	log.Printf("Getting user with id: %s", id)
-	err := DB.Where(&User{GoogleID: id}).FirstOrInit(&result).Error
+	err := DB.Where(&User{GoogleID: id}).FirstOrInit(result).Error
 	return result, err
 }
 
