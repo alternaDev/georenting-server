@@ -25,12 +25,12 @@ type User struct {
 	ExpensesGeoFenceAllTime float64 `json:"-"`
 }
 
-func (u User) Save() error {
+func (u *User) Save() error {
 	return DB.Save(&u).Error
 }
 
-func (u User) GetFences() []Fence {
-	var fences []Fence
+func (u *User) GetFences() *[]Fence {
+	var fences *[]Fence
 
 	DB.Model(&u).Related(&fences)
 
@@ -49,9 +49,9 @@ func FindUsersByLastKnownGeoHash(hash string) ([]User, error) {
 	return users, err
 }
 
-func FindUserByGoogleIDOrInit(id string) (User, error) {
-	var result User
-	err := DB.Where(User{GoogleID: id}).FirstOrInit(&result).Error
+func FindUserByGoogleIDOrInit(id string) (*User, error) {
+	var result *User
+	err := DB.FirstOrInit(&result, User{GoogleID: id}).Error
 	return result, err
 }
 

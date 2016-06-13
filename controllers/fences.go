@@ -203,9 +203,9 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 
 		result := user.GetFences()
 
-		fences := make([]fenceResponse, len(result))
-		for i := range result {
-			f := result[i]
+		fences := make([]fenceResponse, len(*result))
+		for i := range *result {
+			f := (*result)[i]
 			fences[i].ID = f.ID
 			fences[i].Lat = f.Lat
 			fences[i].Lon = f.Lon
