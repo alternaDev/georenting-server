@@ -98,9 +98,9 @@ func getRemainingTokenValidity(input string) int {
 		}
 
 		// Get the user ID
-		userID := token.Header["user"]
+		userID := token.Header["user"].(float64)
 
-		user, err := models.FindUserByID(userID.(uint))
+		user, err := models.FindUserByID(uint(userID))
 
 		if err != nil {
 			return nil, err
