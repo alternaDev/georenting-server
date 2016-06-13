@@ -193,7 +193,7 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err4 == nil {
-		user, errA := models.FindUserByID(userID)
+		user, errA := models.FindUserByID(uint(userID))
 
 		if errA != nil {
 			log.Printf("Error while finding fences: %s", errA.Error())

@@ -14,7 +14,7 @@ import (
 
 // GenerateJWTToken generates a JWT token for a given UserID and signs it with
 // the given private key. The token will be valid for 3 days.
-func GenerateJWTToken(user models.User) (string, error) {
+func GenerateJWTToken(user *models.User) (string, error) {
 	if user.PrivateKey == "" {
 		privateKey, err := GenerateNewPrivateKey()
 
