@@ -105,7 +105,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := auth.GenerateJWTToken(user)
+	token, err := auth.GenerateJWTToken(&user)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
