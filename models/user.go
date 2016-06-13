@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/MoinApp/moinapp-server/models"
+)
 
 const (
 	// LastKnownGeoHashResolution is the resolution for the geohash of the last known position.
@@ -25,11 +29,11 @@ type User struct {
 	ExpensesGeoFenceAllTime float64 `json:"-"`
 }
 
-func (u *User) Save() error {
-	return DB.Save(u).Error
+func (u User) Save() error {
+	return DB.Save(&u).Error
 }
 
-func (u *User) GetFences() *[]Fence {
+func (u User) GetFences() *[]Fence {
 	var fences []Fence
 
 	DB.Model(&u).Related(&fences)
@@ -49,10 +53,11 @@ func FindUsersByLastKnownGeoHash(hash string) ([]User, error) {
 	return users, err
 }
 
-func FindUserByGoogleIDOrInit(id string) (*User, error) {
-	var result User
-	err := DB.FirstOrInit(&result, User{GoogleID: id}).Error
-	return &result, err
+func FindUserByGoogleIDOrInit(id string) (User, error) {
+	var user User
+	err := DB.Where(models.User{GoogleID: googleID}).FirstOrInit(&user).Error
+
+	return result, err
 }
 
 func CountUsersByName(name string) (int, error) {
