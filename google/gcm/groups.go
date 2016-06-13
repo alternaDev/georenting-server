@@ -52,7 +52,7 @@ func sendGCMGroupRequest(data gcmGroupRequest) (gcmGroupResponse, error) {
 }
 
 // CreateDeviceGroup creates a new Device group on Google Cloud Messaging
-func CreateDeviceGroup(firstID string, user models.User) error {
+func CreateDeviceGroup(firstID string, user *models.User) error {
 	response, err := sendGCMGroupRequest(gcmGroupRequest{
 		Operation:           "create",
 		NotificationKeyName: "GeoRenting-" + user.Name,
@@ -77,7 +77,7 @@ func CreateDeviceGroup(firstID string, user models.User) error {
 }
 
 // AddDeviceToGroup adds a device to a device group.
-func AddDeviceToGroup(deviceID string, user models.User) error {
+func AddDeviceToGroup(deviceID string, user *models.User) error {
 	response, err := sendGCMGroupRequest(gcmGroupRequest{
 		Operation:           "add",
 		NotificationKeyName: "GeoRenting-" + user.Name,
@@ -97,7 +97,7 @@ func AddDeviceToGroup(deviceID string, user models.User) error {
 }
 
 // RemoveDeviceFromGroup removes a device from a group.
-func RemoveDeviceFromGroup(deviceID string, user models.User) error {
+func RemoveDeviceFromGroup(deviceID string, user *models.User) error {
 	response, err := sendGCMGroupRequest(gcmGroupRequest{
 		Operation:           "remove",
 		NotificationKeyName: "GeoRenting-" + user.Name,

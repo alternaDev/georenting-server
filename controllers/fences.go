@@ -318,7 +318,7 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 
 	redis.AddBalanceRecord(redis.GetBalanceRecordName(user.ID, redis.BalanceNameExpenseGeoFence), price)
 
-	f.User = user
+	f.User = *user
 
 	err = f.Save()
 	if err != nil {

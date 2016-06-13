@@ -14,7 +14,7 @@ import (
 
 // GenerateJWTToken generates a JWT token for a given UserID and signs it with
 // the given private key. The token will be valid for 3 days.
-func GenerateJWTToken(user models.User) (string, error) {
+func GenerateJWTToken(user *models.User) (string, error) {
 	if user.PrivateKey == "" {
 		privateKey, err := GenerateNewPrivateKey()
 
@@ -49,11 +49,11 @@ func GenerateJWTToken(user models.User) (string, error) {
 
 // ValidateJWTToken validates a JWT token and returns the user from the DB
 // TODO: Implement Logout via Redis and a blacklist
-func ValidateJWTToken(input string) (models.User, error) {
+func ValidateJWTToken(input string) (*models.User, error) {
 	var user models.User
 
 	if redis.TokenIsInBlacklist(input) {
-		return models.User{}, errors.New("Token is in blacklist.")
+		return nil, errors.New("Token is in blacklist.")
 	}
 
 	token, err := jwt.Parse(input, func(token *jwt.Token) (interface{}, error) {
@@ -78,14 +78,14 @@ func ValidateJWTToken(input string) (models.User, error) {
 	})
 
 	if err != nil || !token.Valid {
-		return models.User{}, err
+		return nil, err
 	}
 
 	if token.Claims["user"] != token.Header["user"] {
-		return models.User{}, errors.New("The token has been tampered with...inside.")
+		return nil, errors.New("The token has been tampered with...inside.")
 	}
 
-	return user, nil
+	return &user, nil
 }
 
 func getRemainingTokenValidity(input string) int {
@@ -127,11 +127,11 @@ func getRemainingTokenValidity(input string) int {
 }
 
 // ValidateSession validates a session in a HTTP Request
-func ValidateSession(r *http.Request) (models.User, error) {
+func ValidateSession(r *http.Request) (*models.User, error) {
 	token := r.Header.Get("Authorization")
 
 	if token == "" {
-		return models.User{}, errors.New("Auth token missing.")
+		return nil, errors.New("Auth token missing.")
 	}
 
 	return ValidateJWTToken(token)
