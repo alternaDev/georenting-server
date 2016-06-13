@@ -25,12 +25,12 @@ type User struct {
 	ExpensesGeoFenceAllTime float64 `json:"-"`
 }
 
-func (u *User) Save() error {
+func (u User) Save() error {
 	return DB.Save(&u).Error
 }
 
-func (u *User) GetFences() []*Fence {
-	var fences []*Fence
+func (u User) GetFences() []Fence {
+	var fences []Fence
 
 	DB.Model(&u).Related(&fences)
 
@@ -38,25 +38,25 @@ func (u *User) GetFences() []*Fence {
 }
 
 func FindUserByID(id interface{}) (*User, error) {
-	var result *User
+	var result User
 	err := DB.First(&result, id).Error
-	return result, err
+	return &result, err
 }
 
-func FindUsersByLastKnownGeoHash(hash string) ([]*User, error) {
-	var users []*User
-	err := DB.Where(&User{LastKnownGeoHash: hash}).Find(&users).Error
+func FindUsersByLastKnownGeoHash(hash string) ([]User, error) {
+	var users []User
+	err := DB.Where(User{LastKnownGeoHash: hash}).Find(&users).Error
 	return users, err
 }
 
-func FindUserByGoogleIDOrInit(id string) (*User, error) {
+func FindUserByGoogleIDOrInit(id string) (User, error) {
 	var result User
-	err := DB.Where(&User{GoogleID: id}).FirstOrInit(&result).Error
-	return &result, err
+	err := DB.Where(User{GoogleID: id}).FirstOrInit(&result).Error
+	return result, err
 }
 
 func CountUsersByName(name string) (int, error) {
 	count := 0
-	err := DB.Where(&User{Name: name}).Count(&count).Error
+	err := DB.Where(User{Name: name}).Count(&count).Error
 	return count, err
 }

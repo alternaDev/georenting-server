@@ -24,8 +24,8 @@ type authBody struct {
 }
 
 type authResponseBody struct {
-	Token string       `json:"token"`
-	User  *models.User `json:"user"`
+	Token string      `json:"token"`
+	User  models.User `json:"user"`
 }
 
 type refreshTokenBody struct {
@@ -105,7 +105,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := auth.GenerateJWTToken(user)
+	token, err := auth.GenerateJWTToken(&user)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)
@@ -158,7 +158,7 @@ func RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 
 	user.AvatarURL = os.Getenv("BASE_URL") + "/users/" + user.Name + "/avatar"
 
-	bytes, err := json.Marshal(authResponseBody{Token: token, User: user})
+	bytes, err := json.Marshal(authResponseBody{Token: token, User: *user})
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

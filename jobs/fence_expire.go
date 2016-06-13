@@ -52,7 +52,7 @@ func FenceExpireJob(j *que.Job) error {
 
 	QueueSendGcmRequest(gcm.NewMessage(map[string]interface{}{"type": "onFenceExpired", "fenceId": fence.ID, "fenceName": fence.Name}, fence.User.GCMNotificationID))
 
-	err = search.DeleteGeoFence(fence)
+	err = search.DeleteGeoFence(&fence)
 
 	if err != nil {
 		return err
