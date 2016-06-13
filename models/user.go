@@ -39,20 +39,20 @@ func (u *User) GetFences() []*Fence {
 
 func FindUserByID(id interface{}) (*User, error) {
 	var result *User
-	err := DB.First(result, id).Error
+	err := DB.First(&result, id).Error
 	return result, err
 }
 
 func FindUsersByLastKnownGeoHash(hash string) ([]*User, error) {
 	var users []*User
-	err := DB.Where(&User{LastKnownGeoHash: hash}).Find(users).Error
+	err := DB.Where(&User{LastKnownGeoHash: hash}).Find(&users).Error
 	return users, err
 }
 
 func FindUserByGoogleIDOrInit(id string) (*User, error) {
-	var result *User
-	err := DB.Where(&User{GoogleID: id}).FirstOrInit(result).Error
-	return result, err
+	var result User
+	err := DB.Where(&User{GoogleID: id}).FirstOrInit(&result).Error
+	return &result, err
 }
 
 func CountUsersByName(name string) (int, error) {
