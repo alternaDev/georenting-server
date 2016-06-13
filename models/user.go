@@ -1,10 +1,6 @@
 package models
 
-import (
-	"time"
-
-	"github.com/MoinApp/moinapp-server/models"
-)
+import "time"
 
 const (
 	// LastKnownGeoHashResolution is the resolution for the geohash of the last known position.
@@ -55,9 +51,9 @@ func FindUsersByLastKnownGeoHash(hash string) ([]User, error) {
 
 func FindUserByGoogleIDOrInit(id string) (User, error) {
 	var user User
-	err := DB.Where(models.User{GoogleID: googleID}).FirstOrInit(&user).Error
+	err := DB.Where(User{GoogleID: id}).FirstOrInit(&user).Error
 
-	return result, err
+	return user, err
 }
 
 func CountUsersByName(name string) (int, error) {
