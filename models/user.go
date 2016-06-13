@@ -26,13 +26,13 @@ type User struct {
 }
 
 func (u *User) Save() error {
-	return DB.Save(u).Error
+	return DB.Save(&u).Error
 }
 
 func (u *User) GetFences() []Fence {
 	var fences []Fence
 
-	DB.Model(u).Related(&fences)
+	DB.Model(&u).Related(&fences)
 
 	return fences
 }
@@ -51,12 +51,12 @@ func FindUsersByLastKnownGeoHash(hash string) ([]User, error) {
 
 func FindUserByGoogleIDOrInit(id string) (User, error) {
 	var result User
-	err := DB.Where(User{GoogleID: id}).FirstOrInit(&result).Error
+	err := DB.Where(&User{GoogleID: id}).FirstOrInit(&result).Error
 	return result, err
 }
 
 func CountUsersByName(name string) (int, error) {
 	count := 0
-	err := DB.Where(User{Name: name}).Count(&count).Error
+	err := DB.Where(&User{Name: name}).Count(&count).Error
 	return count, err
 }

@@ -40,7 +40,7 @@ func (f *Fence) Save() error {
 }
 
 func (f *Fence) Delete() error {
-	return DB.Delete(f).Error
+	return DB.Delete(&f).Error
 }
 
 func FindFencesByIDs(ids []int64) ([]Fence, error) {
