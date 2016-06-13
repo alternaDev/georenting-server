@@ -27,7 +27,7 @@ func RecordVisit(lat float64, lon float64, now int64) error {
 		return err
 	}
 
-	err = CalculateScore(&score, now)
+	err = CalculateScore(score, now)
 
 	if err != nil {
 		return err

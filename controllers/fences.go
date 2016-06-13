@@ -64,7 +64,7 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rent := scores.GetGeoFenceRent(&fence)
+	rent := scores.GetGeoFenceRent(fence)
 
 	// GCM
 	err = jobs.QueueSendGcmRequest(gcm.NewMessage(
@@ -425,8 +425,6 @@ func RemoveFenceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var fence models.Fence
-
 	fence, err, notFound := models.FindFenceByID(fenceID)
 
 	if notFound {
@@ -444,7 +442,7 @@ func RemoveFenceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = search.DeleteGeoFence(&fence)
+	err = search.DeleteGeoFence(fence)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

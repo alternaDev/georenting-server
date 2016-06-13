@@ -43,14 +43,14 @@ func (f *Fence) Delete() error {
 	return DB.Delete(&f).Error
 }
 
-func FindFencesByIDs(ids []int64) ([]Fence, error) {
-	result := make([]Fence, len(ids))
+func FindFencesByIDs(ids []int64) ([]*Fence, error) {
+	result := make([]*Fence, len(ids))
 	err := DB.Where(ids).Find(&result).Error
 	return result, err
 }
 
-func FindFenceByID(id interface{}) (Fence, error, bool) {
-	var fence Fence
+func FindFenceByID(id interface{}) (*Fence, error, bool) {
+	var fence *Fence
 	req := DB.Preload("User").Find(&fence, id)
 
 	return fence, req.Error, req.RecordNotFound()

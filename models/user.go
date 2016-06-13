@@ -32,7 +32,7 @@ func (u *User) Save() error {
 func (u *User) GetFences() []*Fence {
 	var fences []*Fence
 
-	DB.Model(&u).Related(fences)
+	DB.Model(&u).Related(&fences)
 
 	return fences
 }
