@@ -50,7 +50,7 @@ func CalculateScore(score *models.Score, now int64) error {
 	err := models.DB.Raw("SELECT SUM(? - last_visit) AS tsum FROM scores", now).Row().Scan(&tSum)
 
 	if err != nil {
-		tSum := 0
+		tSum = 0
 		//return err
 	}
 	log.Printf("Sum: %d", tSum)
