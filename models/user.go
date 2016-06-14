@@ -61,6 +61,6 @@ func CountUsersByName(name string) (int64, error) {
 		return 0, nil
 	}
 	var count int64
-	err := DB.Debug().Where(&User{Name: name}).Count(&count).Error
+	err := DB.Debug().Model(&User{}).Where("name = ?", name).Count(&count).Error
 	return count, err
 }
