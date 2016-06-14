@@ -57,7 +57,7 @@ func FindUserByGoogleIDOrInit(id string) (*User, error) {
 }
 
 func CountUsersByName(name string) (int, error) {
-	count := 0
-	err := DB.Where(User{Name: name}).Count(&count).Error
+	var count int64
+	err := DB.Where(&User{Name: name}).Count(&count).Error
 	return count, err
 }
