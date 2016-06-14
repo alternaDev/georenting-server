@@ -8,7 +8,7 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/alternaDev/geomodel",
-			"Rev": "d2dadfe2e4d236ab9bc537ba9c83536d098cae92"
+			"Rev": "dcfed76f7b76d32837a2541f45c28c77f1df940a"
 		},
 		{
 			"ImportPath": "github.com/alternaDev/go-avatar-gen",

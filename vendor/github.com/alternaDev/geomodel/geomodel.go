@@ -19,6 +19,7 @@ package geomodel
 import "math"
 import "sort"
 import "log"
+import "strings"
 
 const (
 	GEOCELL_GRID_SIZE      = 4
@@ -70,6 +71,40 @@ type RepositorySearch func([]string) []LocationCapable
 
 func GeoHash(lat, lon float64, resolution int) string {
 	return GeoCell(lat, lon, resolution)
+}
+
+func DecodeGeoHash(hash string) (float64, float64) {
+	latMin := -90.0
+	latMax := 90.0
+	lonMin := -180.0
+	lonMax := 180.0
+	even := true
+	for i := 0; i < len(hash); i++ {
+		chr := hash[i]
+		index := strings.Index(GEOCELL_ALPHABET, string(chr))
+
+		for n := 4; n >= 0; n-- {
+			bitN := index >> uint(n) & 1;
+			if even {
+				lonMid := (lonMin + lonMax) / 2
+				if bitN == 1 {
+					lonMin = lonMid
+				} else {
+					lonMax = lonMid
+				}
+			} else {
+				latMid := (latMin + latMax) / 2
+				if bitN == 1 {
+					latMin = latMid
+				} else {
+					latMax = latMid
+				}
+			}
+			even = !even
+		}
+	}
+
+	return (latMin + latMax) / 2.0, (lonMin + lonMax) / 2.0
 }
 
 func GeoCell(lat, lon float64, resolution int) string {
