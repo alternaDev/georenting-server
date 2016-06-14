@@ -12,6 +12,26 @@ import (
 	redis "github.com/alternaDev/georenting-server/models/redis"
 )
 
+func extractKeyIDAndLoadKeyFromDB(token *jwt.Token) (interface{}, error) {
+	// Check whether the right signing algorithm was used.
+	if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+		return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+	}
+
+	// Get the user ID
+	userID := uint(token.Header["user"].(float64))
+
+	user, err := models.FindUserByID(uint(userID))
+
+	if err != nil {
+		return nil, err
+	}
+
+	privateKey, err := StringToPrivateKey(user.PrivateKey)
+
+	return privateKey.Public(), err
+}
+
 // GenerateJWTToken generates a JWT token for a given UserID and signs it with
 // the given private key. The token will be valid for 3 days.
 func GenerateJWTToken(user *models.User) (string, error) {
@@ -53,26 +73,7 @@ func ValidateJWTToken(input string) (*models.User, error) {
 		return nil, errors.New("Token is in blacklist.")
 	}
 
-	token, err := jwt.Parse(input, func(token *jwt.Token) (interface{}, error) {
-
-		// Check whether the right signing algorithm was used.
-		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-		}
-
-		// Get the user ID
-		userID := uint(token.Header["user"].(float64))
-
-		user, err := models.FindUserByID(uint(userID))
-
-		if err != nil {
-			return nil, err
-		}
-
-		privateKey, err := StringToPrivateKey(user.PrivateKey)
-
-		return privateKey.Public(), err
-	})
+	token, err := jwt.Parse(input, extractKeyIDAndLoadKeyFromDB)
 
 	if err != nil || !token.Valid {
 		return nil, err
@@ -90,26 +91,7 @@ func ValidateJWTToken(input string) (*models.User, error) {
 }
 
 func getRemainingTokenValidity(input string) int {
-	token, err := jwt.Parse(input, func(token *jwt.Token) (interface{}, error) {
-
-		// Check whether the right signing algorithm was used.
-		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-		}
-
-		// Get the user ID
-		userID := token.Header["user"].(float64)
-
-		user, err := models.FindUserByID(uint(userID))
-
-		if err != nil {
-			return nil, err
-		}
-
-		privateKey, err := StringToPrivateKey(user.PrivateKey)
-
-		return privateKey.Public(), err
-	})
+	token, err := jwt.Parse(input, extractKeyIDAndLoadKeyFromDB)
 
 	if err != nil {
 		return 3600
