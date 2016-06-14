@@ -43,10 +43,10 @@ func (f Fence) Delete() error {
 	return DB.Delete(&f).Error
 }
 
-func FindFencesByIDs(ids []int64) ([]Fence, error) {
+func FindFencesByIDs(ids []int64) (*[]Fence, error) {
 	result := make([]Fence, len(ids))
 	err := DB.Where(ids).Find(&result).Error
-	return result, err
+	return &result, err
 }
 
 func FindFenceByID(id interface{}) (*Fence, error, bool) {

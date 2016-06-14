@@ -157,9 +157,9 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		fences := make([]fenceResponse, len(result))
-		for i := range result {
-			f := result[i]
+		fences := make([]fenceResponse, len(*result))
+		for i := range *result {
+			f := (*result)[i]
 			fences[i].ID = f.ID
 			fences[i].Lat = f.Lat
 			fences[i].Lon = f.Lon
@@ -361,8 +361,8 @@ func checkFenceOverlap(fence *models.Fence) (bool, error) {
 		return false, err
 	}
 
-	for i := range result {
-		fenceB := result[i]
+	for i := range *result {
+		fenceB := (*result)[i]
 		distance := maths.Distance(fence.Lat, fence.Lon, fenceB.Lat, fenceB.Lon)
 		if distance < float64(fence.Radius+fenceB.Radius) {
 			return true, nil

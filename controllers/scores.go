@@ -25,12 +25,12 @@ func GetHeatmapHandler(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  response := make([]heatmapItemResponse, len(scores))
-  for i := range scores {
-    lat, lon := geomodel.DecodeGeoHash(scores[i].GeoHash)
+  response := make([]heatmapItemResponse, len(*scores))
+  for i := range *scores {
+    lat, lon := geomodel.DecodeGeoHash((*scores)[i].GeoHash)
     response[i].Latitude = lat
     response[i].Longitude = lon
-    response[i].Score = scores[i].Score
+    response[i].Score = (*scores)[i].Score
   }
 
 
