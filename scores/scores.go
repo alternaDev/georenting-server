@@ -35,7 +35,7 @@ func RecordVisit(lat float64, lon float64, now int64) error {
 
 	score.LastVisit = now
 
-	err = (*score).Save()
+	err = score.Save()
 
 	if err != nil {
 		return err
