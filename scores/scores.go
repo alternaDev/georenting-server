@@ -35,7 +35,7 @@ func RecordVisit(lat float64, lon float64, now int64) error {
 
 	score.LastVisit = now
 
-	err = score.Save()
+	err = models.DB.Save(&score).Error
 
 	if err != nil {
 		return err
@@ -71,7 +71,7 @@ func CalculateScore(score *models.Score, now int64) error {
 		return errors.New("NaN Error!")
 	}
 
-	return score.Save()
+	return models.DB.Save(&score).Error
 }
 
 // GetGeoFencePrice returns the price of a geofence depending on the upgrade status and current score.
