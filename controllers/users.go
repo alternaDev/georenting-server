@@ -12,7 +12,7 @@ import (
 
 	"github.com/alternaDev/georenting-server/activity"
 	"github.com/alternaDev/georenting-server/auth"
-	"github.com/alternaDev/georenting-server/google/firebase"
+	firebase "github.com/alternaDev/go-firebase-verify"
 	"github.com/alternaDev/georenting-server/models"
 	"github.com/alternaDev/georenting-server/models/redis"
 

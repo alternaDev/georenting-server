@@ -78,6 +78,11 @@ type PreparedStatement struct {
 	ParameterOids     []Oid
 }
 
+// PrepareExOptions is an option struct that can be passed to PrepareEx
+type PrepareExOptions struct {
+	ParameterOids []Oid
+}
+
 // Notification is a message received from the PostgreSQL LISTEN/NOTIFY system
 type Notification struct {
 	Pid     int32  // backend pid that sent the notification
@@ -583,6 +588,17 @@ func configSSL(sslmode string, cc *ConnConfig) error {
 // name and sql arguments. This allows a code path to Prepare and Query/Exec without
 // concern for if the statement has already been prepared.
 func (c *Conn) Prepare(name, sql string) (ps *PreparedStatement, err error) {
+	return c.PrepareEx(name, sql, nil)
+}
+
+// PrepareEx creates a prepared statement with name and sql. sql can contain placeholders
+// for bound parameters. These placeholders are referenced positional as $1, $2, etc.
+// It defers from Prepare as it allows additional options (such as parameter OIDs) to be passed via struct
+//
+// PrepareEx is idempotent; i.e. it is safe to call PrepareEx multiple times with the same
+// name and sql arguments. This allows a code path to PrepareEx and Query/Exec without
+// concern for if the statement has already been prepared.
+func (c *Conn) PrepareEx(name, sql string, opts *PrepareExOptions) (ps *PreparedStatement, err error) {
 	if name != "" {
 		if ps, ok := c.preparedStatements[name]; ok && ps.SQL == sql {
 			return ps, nil
@@ -601,7 +617,18 @@ func (c *Conn) Prepare(name, sql string) (ps *PreparedStatement, err error) {
 	wbuf := newWriteBuf(c, 'P')
 	wbuf.WriteCString(name)
 	wbuf.WriteCString(sql)
-	wbuf.WriteInt16(0)
+
+	if opts != nil {
+		if len(opts.ParameterOids) > 65535 {
+			return nil, errors.New(fmt.Sprintf("Number of PrepareExOptions ParameterOids must be between 0 and 65535, received %d", len(opts.ParameterOids)))
+		}
+		wbuf.WriteInt16(int16(len(opts.ParameterOids)))
+		for _, oid := range opts.ParameterOids {
+			wbuf.WriteInt32(int32(oid))
+		}
+	} else {
+		wbuf.WriteInt16(0)
+	}
 
 	// describe
 	wbuf.startMsg('D')
@@ -634,6 +661,7 @@ func (c *Conn) Prepare(name, sql string) (ps *PreparedStatement, err error) {
 		case parseComplete:
 		case parameterDescription:
 			ps.ParameterOids = c.rxParameterDescription(r)
+
 			if len(ps.ParameterOids) > 65535 && softErr == nil {
 				softErr = fmt.Errorf("PostgreSQL supports maximum of 65535 parameters, received %d", len(ps.ParameterOids))
 			}
@@ -840,6 +868,7 @@ func (c *Conn) sendQuery(sql string, arguments ...interface{}) (err error) {
 }
 
 func (c *Conn) sendSimpleQuery(sql string, args ...interface{}) error {
+
 	if len(args) == 0 {
 		wbuf := newWriteBuf(c, 'Q')
 		wbuf.WriteCString(sql)

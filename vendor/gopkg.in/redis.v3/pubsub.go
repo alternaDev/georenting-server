@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"net"
 	"time"
+
+	"gopkg.in/redis.v3/internal"
+	"gopkg.in/redis.v3/internal/pool"
 )
 
 // Posts a message to the given channel.
@@ -30,7 +33,7 @@ func (c *Client) PubSub() *PubSub {
 	return &PubSub{
 		base: &baseClient{
 			opt:      c.opt,
-			connPool: newStickyConnPool(c.connPool, false),
+			connPool: pool.NewStickyConnPool(c.connPool.(*pool.ConnPool), false),
 		},
 	}
 }
@@ -47,19 +50,21 @@ func (c *Client) PSubscribe(channels ...string) (*PubSub, error) {
 	return pubsub, pubsub.PSubscribe(channels...)
 }
 
-func (c *PubSub) subscribe(cmd string, channels ...string) error {
-	cn, _, err := c.base.conn()
+func (c *PubSub) subscribe(redisCmd string, channels ...string) error {
+	cn, err := c.base.conn()
 	if err != nil {
 		return err
 	}
+	c.putConn(cn, err)
 
 	args := make([]interface{}, 1+len(channels))
-	args[0] = cmd
+	args[0] = redisCmd
 	for i, channel := range channels {
 		args[1+i] = channel
 	}
-	req := NewSliceCmd(args...)
-	return cn.writeCmds(req)
+	cmd := NewSliceCmd(args...)
+
+	return writeCmd(cn, cmd)
 }
 
 // Subscribes the client to the specified channels.
@@ -122,7 +127,7 @@ func (c *PubSub) Close() error {
 }
 
 func (c *PubSub) Ping(payload string) error {
-	cn, _, err := c.base.conn()
+	cn, err := c.base.conn()
 	if err != nil {
 		return err
 	}
@@ -132,7 +137,7 @@ func (c *PubSub) Ping(payload string) error {
 		args = append(args, payload)
 	}
 	cmd := NewCmd(args...)
-	return cn.writeCmds(cmd)
+	return writeCmd(cn, cmd)
 }
 
 // Message received after a successful subscription to channel.
@@ -222,7 +227,7 @@ func (c *PubSub) ReceiveTimeout(timeout time.Duration) (interface{}, error) {
 		c.resubscribe()
 	}
 
-	cn, _, err := c.base.conn()
+	cn, err := c.base.conn()
 	if err != nil {
 		return nil, err
 	}
@@ -245,12 +250,17 @@ func (c *PubSub) Receive() (interface{}, error) {
 	return c.ReceiveTimeout(0)
 }
 
-// ReceiveMessage returns a message or error. It automatically
-// reconnects to Redis in case of network errors.
+// ReceiveMessage returns a Message or error ignoring Subscription or Pong
+// messages. It automatically reconnects to Redis Server and resubscribes
+// to channels in case of network errors.
 func (c *PubSub) ReceiveMessage() (*Message, error) {
-	var errNum int
+	return c.receiveMessage(5 * time.Second)
+}
+
+func (c *PubSub) receiveMessage(timeout time.Duration) (*Message, error) {
+	var errNum uint
 	for {
-		msgi, err := c.ReceiveTimeout(5 * time.Second)
+		msgi, err := c.ReceiveTimeout(timeout)
 		if err != nil {
 			if !isNetworkError(err) {
 				return nil, err
@@ -260,10 +270,9 @@ func (c *PubSub) ReceiveMessage() (*Message, error) {
 			if errNum < 3 {
 				if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
 					err := c.Ping("")
-					if err == nil {
-						continue
+					if err != nil {
+						internal.Logf("PubSub.Ping failed: %s", err)
 					}
-					Logger.Printf("PubSub.Ping failed: %s", err)
 				}
 			} else {
 				// 3 consequent errors - connection is bad
@@ -296,21 +305,24 @@ func (c *PubSub) ReceiveMessage() (*Message, error) {
 	}
 }
 
-func (c *PubSub) putConn(cn *conn, err error) {
-	if !c.base.putConn(cn, err) {
+func (c *PubSub) putConn(cn *pool.Conn, err error) {
+	if !c.base.putConn(cn, err, true) {
 		c.nsub = 0
 	}
 }
 
 func (c *PubSub) resubscribe() {
+	if c.base.closed() {
+		return
+	}
 	if len(c.channels) > 0 {
 		if err := c.Subscribe(c.channels...); err != nil {
-			Logger.Printf("Subscribe failed: %s", err)
+			internal.Logf("Subscribe failed: %s", err)
 		}
 	}
 	if len(c.patterns) > 0 {
 		if err := c.PSubscribe(c.patterns...); err != nil {
-			Logger.Printf("PSubscribe failed: %s", err)
+			internal.Logf("PSubscribe failed: %s", err)
 		}
 	}
 }
