@@ -27,7 +27,7 @@ func RecordVisit(lat float64, lon float64, now int64) error {
 		return err
 	}
 
-	err = CalculateScore(&score, now)
+	err = CalculateScore(score, now)
 
 	if err != nil {
 		return err
@@ -50,7 +50,8 @@ func CalculateScore(score *models.Score, now int64) error {
 	err := models.DB.Raw("SELECT SUM(? - last_visit) AS tsum FROM scores", now).Row().Scan(&tSum)
 
 	if err != nil {
-		return err
+		tSum := 0
+		//return err
 	}
 	log.Printf("Sum: %d", tSum)
 
