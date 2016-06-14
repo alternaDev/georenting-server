@@ -13,25 +13,25 @@ type Score struct {
 }
 
 func (s Score) Save() error {
-	return DB.Save(&s).Error
+	return DB.Debug().Save(&s).Error
 }
 
 func FindScoreByGeoHashOrInit(geoHash string) (*Score, error) {
 	var result Score
 
-	err := DB.Where(&Score{GeoHash: geoHash}).FirstOrInit(&result).Error
+	err := DB.Debug().Where(&Score{GeoHash: geoHash}).FirstOrInit(&result).Error
 	return &result, err
 }
 
 func FindAllScores() (*[]Score, error) {
 	var result []Score
-	err := DB.Find(&result).Error
+	err := DB.Debug().Find(&result).Error
 	log.Printf("Found %d scores.", len(result))
 	return &result, err
 }
 
 func CountScores() (int64, error) {
 	var count int64
-	err := DB.Model(&Score{}).Count(&count).Error
+	err := DB.Debug().Model(&Score{}).Count(&count).Error
 	return count, err
 }

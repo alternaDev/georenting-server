@@ -24,21 +24,21 @@ func RecordVisit(lat float64, lon float64, now int64) error {
 	score, err := models.FindScoreByGeoHashOrInit(geoHash)
 
 	if err != nil {
-		return err
+		return errors.New("Failed to find score: " + err.Error())
 	}
 
 	err = CalculateScore(score, now)
 
 	if err != nil {
-		return err
+		return errors.New("Failed to Save while calclating score: " + err.Error())
 	}
 
 	score.LastVisit = now
 
-	err = models.DB.Save(&score).Error
+	err = score.Save()
 
 	if err != nil {
-		return err
+		return errors.New("Failed to save: " + err.Error())
 	}
 
 	return nil
@@ -58,7 +58,7 @@ func CalculateScore(score *models.Score, now int64) error {
 	count, err := models.CountScores()
 
 	if err != nil {
-		return err
+		return errors.New("Failed to count scores: " + err.Error())
 	}
 
 	count = int64(math.Max(float64(count), 1))
@@ -71,7 +71,7 @@ func CalculateScore(score *models.Score, now int64) error {
 		return errors.New("NaN Error!")
 	}
 
-	return models.DB.Save(&score).Error
+	return score.Save()
 }
 
 // GetGeoFencePrice returns the price of a geofence depending on the upgrade status and current score.
