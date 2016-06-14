@@ -12,9 +12,9 @@ import (
 
 	"github.com/alternaDev/georenting-server/activity"
 	"github.com/alternaDev/georenting-server/auth"
-	firebase "github.com/alternaDev/go-firebase-verify"
 	"github.com/alternaDev/georenting-server/models"
 	"github.com/alternaDev/georenting-server/models/redis"
+	firebase "github.com/alternaDev/go-firebase-verify"
 
 	nameGen "github.com/alternaDev/go-random-name-gen"
 )
@@ -66,7 +66,6 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err := models.FindUserByGoogleIDOrInit(googleID)
-	log.Printf("userc: %d", user.ID)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
