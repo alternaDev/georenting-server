@@ -21,6 +21,12 @@ func FindScoreByGeoHashOrInit(geoHash string) (Score, error) {
 	return result, err
 }
 
+func FindAllScores() ([]Score, error) {
+	var result []Score
+	err := DB.Find(&result).Error
+	return result, err
+}
+
 func CountScores() (int64, error) {
 	var count int64
 	err := DB.Model(&Score{}).Count(&count).Error

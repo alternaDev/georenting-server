@@ -26,6 +26,8 @@ func SetupRouter() *mux.Router {
 	r.HandleFunc("/fences/{fenceId}/visit", c.VisitFenceHandler).Methods("POST")
 	r.HandleFunc("/fences/estimateCost", c.EstimateFenceCostHandler).Methods("POST")
 
+	r.HandleFunc("/scores/heatmap", c.GetHeatmapHandler).Methods("GET")
+
 	r.HandleFunc("/application/upgrades", c.UpgradesHandler).Methods("GET")
 
 	r.HandleFunc("/{name}", c.IndexHandler)
