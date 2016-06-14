@@ -1,6 +1,7 @@
 package models
 
 import "time"
+import "log"
 
 // Score is a score for a geohash
 type Score struct {
@@ -24,6 +25,7 @@ func FindScoreByGeoHashOrInit(geoHash string) (Score, error) {
 func FindAllScores() (*[]Score, error) {
 	var result []Score
 	err := DB.Find(&result).Error
+	log.Printf("Found %d scores.", len(result))
 	return &result, err
 }
 
