@@ -19,19 +19,19 @@ func (s Score) Save() error {
 func FindScoreByGeoHashOrInit(geoHash string) (*Score, error) {
 	var result Score
 
-	err := DB.Debug().Where(&Score{GeoHash: geoHash}).FirstOrInit(&result).Error
+	err := DB.Debug().Where(&Score{GeoHash: geoHash}).FirstOrCreate(&result).Error
 	return &result, err
 }
 
 func FindAllScores() (*[]Score, error) {
 	var result []Score
-	err := DB.Debug().Find(&result).Error
+	err := DB.Find(&result).Error
 	log.Printf("Found %d scores.", len(result))
 	return &result, err
 }
 
 func CountScores() (int64, error) {
 	var count int64
-	err := DB.Debug().Model(&Score{}).Count(&count).Error
+	err := DB.Model(&Score{}).Count(&count).Error
 	return count, err
 }
