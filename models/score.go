@@ -11,7 +11,7 @@ type Score struct {
 	Score     float64
 }
 
-func (s *Score) Save() error {
+func (s Score) Save() error {
 	return DB.Save(&s).Error
 }
 
