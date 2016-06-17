@@ -1,6 +1,8 @@
 package router
 
 import (
+	"net/http"
+
 	c "github.com/alternaDev/georenting-server/controllers"
 	"github.com/gorilla/mux"
 )
@@ -31,6 +33,9 @@ func SetupRouter() *mux.Router {
 	r.HandleFunc("/application/upgrades", c.UpgradesHandler).Methods("GET")
 
 	r.HandleFunc("/{name}", c.IndexHandler)
+
+	fs := http.FileServer(http.Dir("static"))
+	r.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	//r.HandleFunc("/fences/{fenceId}", c.GetFenceHandler).Methods("GET")
 	//r.HandleFunc("/fences/{fenceId}", c.UpdateFenceHandler).Methods("PUT")
