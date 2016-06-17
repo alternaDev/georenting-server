@@ -2,7 +2,7 @@
 <html>
 <head>
   <script type="text/javascript"
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBNiHEb3-4Rk7mKaeI-Wi4FpbLtD2n8NuY&libraries=visualization&sensor=false">
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBNiHEb3-4Rk7mKaeI-Wi4FpbLtD2n8NuY&libraries=visualization">
   </script>
   <style>
   body, html {
@@ -50,7 +50,7 @@
             var heatmap = new google.maps.visualization.HeatmapLayer({
               data: heatmapData
             });
-            heatmap.set('radius', 500);
+            heatmap.set('radius', 250);
             heatmap.setMap(map);
           });
         });
