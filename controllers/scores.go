@@ -31,7 +31,13 @@ func GetHeatmapHandler(w http.ResponseWriter, r *http.Request) {
 	for i := range *scores {
 		lat, lon := geomodel.DecodeGeoHash((*scores)[i].GeoHash)
 		response[i].Latitude = lat
+		if response[i].Latitude == math.NaN() {
+			response[i].Latitude = 0
+		}
 		response[i].Longitude = lon
+		if response[i].Longitude == math.NaN() {
+			response[i].Longitude = 0
+		}
 		response[i].Score = (*scores)[i].Score
 		if response[i].Score == math.NaN() {
 			response[i].Score = -1
