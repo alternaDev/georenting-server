@@ -449,12 +449,12 @@ func RemoveFenceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = search.DeleteGeoFence(fence)
+	search.DeleteGeoFence(fence)
 
-	if err != nil {
+	/*if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
-	}
+	}*/
 
 	err = fence.Delete()
 
