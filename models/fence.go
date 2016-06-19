@@ -48,7 +48,7 @@ func (f Fence) Delete() error {
 
 func FindFencesByIDs(ids []int64) (*[]Fence, error) {
 	result := make([]Fence, len(ids))
-	err := DB.Debug().Where(ids).Find(&result).Error
+	err := DB.Preload("User").Where(ids).Find(&result).Error
 	return &result, err
 }
 
