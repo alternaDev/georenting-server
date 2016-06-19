@@ -36,6 +36,7 @@ type fenceResponse struct {
 	TotalVisitors  uint      `json:"total_visitors"`
 	TotalEarnings  float64   `json:"total_earnings"`
 	Cost           float64   `json:"cost"`
+	OwnerName      string    `json:"owner_name"`
 }
 
 type costEstimateResponse struct {
@@ -191,6 +192,7 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 			fences[i].Owner = f.UserID
 			fences[i].DiesAt = f.DiesAt
 			fences[i].RentMultiplier = f.RentMultiplier
+			fences[i].OwnerName = f.User.Name
 			if user != nil && f.UserID == user.ID {
 				fences[i].Cost = f.Cost
 				fences[i].TotalEarnings = f.TotalEarnings
@@ -242,6 +244,7 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 			fences[i].Owner = f.UserID
 			fences[i].DiesAt = f.DiesAt
 			fences[i].RentMultiplier = f.RentMultiplier
+			fences[i].OwnerName = f.User.Name
 			if user != nil && f.UserID == user.ID {
 				fences[i].Cost = f.Cost
 				fences[i].TotalEarnings = f.TotalEarnings
@@ -434,6 +437,7 @@ func GetFenceHandler(w http.ResponseWriter, r *http.Request) {
 	f.Owner = fence.UserID
 	f.DiesAt = fence.DiesAt
 	f.RentMultiplier = fence.RentMultiplier
+	f.OwnerName = fence.User.Name
 	if user != nil && fence.UserID == user.ID {
 		f.Cost = fence.Cost
 		f.TotalEarnings = fence.TotalEarnings
