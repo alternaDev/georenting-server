@@ -327,7 +327,7 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 
 	f.User = *user
 
-	err = f.Save()
+	err = models.DB.Create(&f).Error
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

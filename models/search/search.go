@@ -124,7 +124,7 @@ func initIndices(client *elastic.Client) error {
 
 // IndexGeoFence indexes a geofence.
 func IndexGeoFence(fence *models.Fence) error {
-	data := fmt.Sprintf(`{"name": "%s", "center": {"lat": %f, "lon": %f}, "radius": %d, "owner": %d}`, fence.Name, fence.Lat, fence.Lon, fence.Radius, fence.UserID)
+	data := fmt.Sprintf(`{"name": "%s", "center": {"lat": %f, "lon": %f}, "radius": %d, "owner": %d}`, fence.Name, fence.Lat, fence.Lon, fence.Radius, fence.User.ID)
 	log.Println("Indexing: " + data)
 	_, err := ElasticInstance.Index().
 		Index(IndexGeoFences).
@@ -151,7 +151,7 @@ func FindGeoFences(centerLat float64, centerLon float64, radius int64) (*[]model
 	}
 
 	if searchResult.Hits != nil {
-		fences := make([]int64, searchResult.TotalHits(), searchResult.TotalHits())
+		fences := make([]int64, searchResult.TotalHits())
 		fmt.Printf("Found a total of %d GeoFences\n", searchResult.Hits.TotalHits)
 
 		// Iterate through results
