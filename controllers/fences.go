@@ -147,9 +147,18 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 	lon, err2 := strconv.ParseFloat(r.URL.Query().Get("longitude"), 64)
 	radius, err3 := strconv.ParseInt(r.URL.Query().Get("radius"), 10, 64)
 	userID, err4 := strconv.ParseUint(r.URL.Query().Get("user"), 10, 8)
+	excludeOwn, err4 := strconv.ParseBool(r.URL.Query().Get("excludeOwn"))
 
 	if err1 == nil && err2 == nil && err3 == nil {
-		result, err := search.FindGeoFences(lat, lon, radius)
+		user, err := auth.ValidateSession(r)
+
+		var result *[]models.Fence
+
+		if err == nil && excludeOwn {
+			result, err = search.FindGeoFencesExceptByUser(lat, lon, radius, user.ID)
+		} else {
+			result, err = search.FindGeoFences(lat, lon, radius)
+		}
 
 		if err != nil {
 			log.Printf("Error while finding users: %s", err.Error())
@@ -176,8 +185,6 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
-		user, err := auth.ValidateSession(r)
 
 		if err == nil {
 			user.LastKnownGeoHash = geomodel.GeoCell(lat, lon, models.LastKnownGeoHashResolution)

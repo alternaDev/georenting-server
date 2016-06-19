@@ -138,7 +138,7 @@ func IndexGeoFence(fence *models.Fence) error {
 
 // FindGeoFences returns all geofences around a lat/lon pair.
 func FindGeoFences(centerLat float64, centerLon float64, radius int64) (*[]models.Fence, error) {
-	query := elastic.NewGeoDistanceQuery("center").Distance(fmt.Sprintf("%dm", radius)).Lat(centerLat).Lon(centerLon)
+	query := elastic.NewGeoDistanceQuery("center").Distance(fmt.Sprintf("%d m", radius)).Lat(centerLat).Lon(centerLon)
 
 	searchResult, err := ElasticInstance.Search().
 		Index(IndexGeoFences).
@@ -163,7 +163,40 @@ func FindGeoFences(centerLat float64, centerLon float64, radius int64) (*[]model
 	}
 
 	fmt.Print("Found no fences\n")
-	empty := make([]models.Fence, 0)
+	var empty []models.Fence
+	return &empty, nil
+}
+
+// FindGeoFencesExceptByUser returns all geofences around a lat/lon pair, excluding ones from the specified user.
+func FindGeoFencesExceptByUser(centerLat float64, centerLon float64, radius int64, excludeBy uint) (*[]models.Fence, error) {
+	query := elastic.NewBoolQuery()
+	query = query.Must(elastic.NewTermQuery("owner", excludeBy))
+	query.Filter(elastic.NewGeoDistanceQuery("center").Distance(fmt.Sprintf("%d m", radius)).Lat(centerLat).Lon(centerLon))
+
+	searchResult, err := ElasticInstance.Search().
+		Index(IndexGeoFences).
+		Query(query).
+		Do()
+
+	// Check whether an error appeared or not.
+	if err != nil {
+		return nil, err
+	}
+
+	if searchResult.Hits != nil {
+		fences := make([]int64, searchResult.TotalHits(), searchResult.TotalHits())
+		fmt.Printf("Found a total of %d GeoFences\n", searchResult.Hits.TotalHits)
+
+		// Iterate through results
+		for i, hit := range searchResult.Hits.Hits {
+			stringID, _ := strconv.ParseInt(hit.Id, 10, 64)
+			fences[i] = stringID
+		}
+		return models.FindFencesByIDs(fences)
+	}
+
+	fmt.Print("Found no fences\n")
+	var empty []models.Fence
 	return &empty, nil
 }
 
