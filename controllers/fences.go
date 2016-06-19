@@ -186,7 +186,7 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if err == nil {
+		if user != nil {
 			user.LastKnownGeoHash = geomodel.GeoCell(lat, lon, models.LastKnownGeoHashResolution)
 			err = user.Save()
 			if err != nil {
