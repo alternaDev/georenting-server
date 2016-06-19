@@ -20,23 +20,24 @@ import (
 	"github.com/alternaDev/georenting-server/models/redis"
 	"github.com/alternaDev/georenting-server/models/search"
 	"github.com/alternaDev/georenting-server/scores"
+	"github.com/alternaDev/georenting-server/util"
 	"github.com/gorilla/mux"
 )
 
 type fenceResponse struct {
-	ID             uint      `json:"id"`
-	Lat            float64   `json:"center_lat"`
-	Lon            float64   `json:"center_lon"`
-	Radius         int       `json:"radius"`
-	Name           string    `json:"name"`
-	Owner          uint      `json:"owner"`
-	TTL            int       `json:"ttl"`
-	RentMultiplier float64   `json:"rent_multiplier"`
-	DiesAt         time.Time `json:"dies_at"`
-	TotalVisitors  uint      `json:"total_visitors"`
-	TotalEarnings  float64   `json:"total_earnings"`
-	Cost           float64   `json:"cost"`
-	OwnerName      string    `json:"owner_name"`
+	ID             uint           `json:"id"`
+	Lat            float64        `json:"center_lat"`
+	Lon            float64        `json:"center_lon"`
+	Radius         int            `json:"radius"`
+	Name           string         `json:"name"`
+	Owner          uint           `json:"owner"`
+	TTL            int            `json:"ttl"`
+	RentMultiplier float64        `json:"rent_multiplier"`
+	DiesAt         util.Timestamp `json:"dies_at"`
+	TotalVisitors  uint           `json:"total_visitors"`
+	TotalEarnings  float64        `json:"total_earnings"`
+	Cost           float64        `json:"cost"`
+	OwnerName      string         `json:"owner_name"`
 }
 
 type costEstimateResponse struct {
@@ -190,7 +191,7 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 			fences[i].Name = f.Name
 			fences[i].Radius = f.Radius
 			fences[i].Owner = f.UserID
-			fences[i].DiesAt = f.DiesAt
+			fences[i].DiesAt = util.Timestamp(f.DiesAt)
 			fences[i].RentMultiplier = f.RentMultiplier
 			fences[i].OwnerName = f.User.Name
 			if user != nil && f.UserID == user.ID {
@@ -242,7 +243,7 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 			fences[i].Name = f.Name
 			fences[i].Radius = f.Radius
 			fences[i].Owner = f.UserID
-			fences[i].DiesAt = f.DiesAt
+			fences[i].DiesAt = util.Timestamp(f.DiesAt)
 			fences[i].RentMultiplier = f.RentMultiplier
 			fences[i].OwnerName = f.User.Name
 			if user != nil && f.UserID == user.ID {
@@ -435,7 +436,7 @@ func GetFenceHandler(w http.ResponseWriter, r *http.Request) {
 	f.Name = fence.Name
 	f.Radius = fence.Radius
 	f.Owner = fence.UserID
-	f.DiesAt = fence.DiesAt
+	f.DiesAt = util.Timestamp(fence.DiesAt)
 	f.RentMultiplier = fence.RentMultiplier
 	f.OwnerName = fence.User.Name
 	if user != nil && fence.UserID == user.ID {
