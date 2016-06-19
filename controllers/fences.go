@@ -147,7 +147,7 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 	lon, err2 := strconv.ParseFloat(r.URL.Query().Get("longitude"), 64)
 	radius, err3 := strconv.ParseInt(r.URL.Query().Get("radius"), 10, 64)
 	userID, err4 := strconv.ParseUint(r.URL.Query().Get("user"), 10, 8)
-	excludeOwn, err4 := strconv.ParseBool(r.URL.Query().Get("excludeOwn"))
+	excludeOwn, _ := strconv.ParseBool(r.URL.Query().Get("excludeOwn"))
 
 	if err1 == nil && err2 == nil && err3 == nil {
 		user, err := auth.ValidateSession(r)
