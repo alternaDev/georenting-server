@@ -33,6 +33,9 @@ type Fence struct {
 	TTL            int       `json:"ttl"`
 	DiesAt         time.Time `json:"diesAt"`
 	Name           string    `json:"name"`
+	TotalVisitors  uint      `json:"total_visitors"`
+	TotalEarnings  float64   `json:"total_earnings"`
+	Cost           float64   `json:"cost"`
 }
 
 func (f Fence) Save() error {

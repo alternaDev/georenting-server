@@ -33,6 +33,9 @@ type fenceResponse struct {
 	TTL            int       `json:"ttl"`
 	RentMultiplier float64   `json:"rent_multiplier"`
 	DiesAt         time.Time `json:"dies_at"`
+	TotalVisitors  uint      `json:"total_visitors"`
+	TotalEarnings  float64   `json:"total_earnings"`
+	Cost           float64   `json:"cost"`
 }
 
 type costEstimateResponse struct {
@@ -138,6 +141,17 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fence.TotalEarnings = fence.TotalEarnings + rent
+	fence.TotalVisitors = fence.TotalVisitors + 1
+
+	err = fence.Save()
+
+	if err != nil {
+		log.Printf("Error while saving fence: %s", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.Write([]byte("{}"))
 }
 
@@ -177,6 +191,11 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 			fences[i].Owner = f.UserID
 			fences[i].DiesAt = f.DiesAt
 			fences[i].RentMultiplier = f.RentMultiplier
+			if user != nil && f.UserID == user.ID {
+				fences[i].Cost = f.Cost
+				fences[i].TotalEarnings = f.TotalEarnings
+				fences[i].TotalVisitors = f.TotalVisitors
+			}
 		}
 
 		bytes, err := json.Marshal(&fences)
@@ -200,6 +219,8 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err4 == nil {
+		user, _ := auth.ValidateSession(r)
+
 		user, errA := models.FindUserByID(uint(userID))
 
 		if errA != nil {
@@ -221,6 +242,11 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 			fences[i].Owner = f.UserID
 			fences[i].DiesAt = f.DiesAt
 			fences[i].RentMultiplier = f.RentMultiplier
+			if user != nil && f.UserID == user.ID {
+				fences[i].Cost = f.Cost
+				fences[i].TotalEarnings = f.TotalEarnings
+				fences[i].TotalVisitors = f.TotalVisitors
+			}
 		}
 
 		bytes, err := json.Marshal(&fences)
@@ -314,6 +340,8 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	f.Cost = price
+
 	user.LastKnownGeoHash = geomodel.GeoCell(requestFence.Lat, requestFence.Lon, models.LastKnownGeoHashResolution)
 	user.Balance = user.Balance - price
 	user.ExpensesGeoFenceAllTime = user.ExpensesGeoFenceAllTime + price
@@ -380,6 +408,8 @@ func checkFenceOverlap(fence *models.Fence) (bool, error) {
 
 // GetFenceHandler GET /fences/{fenceId}
 func GetFenceHandler(w http.ResponseWriter, r *http.Request) {
+	user, _ := auth.ValidateSession(r)
+
 	vars := mux.Vars(r)
 
 	fenceID, err := strconv.ParseUint(vars["fenceId"], 10, 8)
@@ -404,6 +434,11 @@ func GetFenceHandler(w http.ResponseWriter, r *http.Request) {
 	f.Owner = fence.UserID
 	f.DiesAt = fence.DiesAt
 	f.RentMultiplier = fence.RentMultiplier
+	if user != nil && fence.UserID == user.ID {
+		f.Cost = fence.Cost
+		f.TotalEarnings = fence.TotalEarnings
+		f.TotalVisitors = fence.TotalVisitors
+	}
 
 	bytes, err := json.Marshal(&f)
 
