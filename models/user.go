@@ -52,7 +52,7 @@ func FindUsersByLastKnownGeoHash(hash string) ([]User, error) {
 func FindUserByGoogleIDOrInit(id string) (*User, error) {
 	var user User
 
-	err := DB.Where(&User{GoogleID: id}).FirstOrInit(&user).Error
+	err := DB.Where(&User{GoogleID: id}).FirstOrCreate(&user).Error
 	return &user, err
 }
 
