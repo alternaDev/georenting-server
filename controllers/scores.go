@@ -9,7 +9,6 @@ import (
 	"github.com/alternaDev/geomodel"
 	"github.com/alternaDev/georenting-server/models"
 	ourRedis "github.com/alternaDev/georenting-server/models/redis"
-	"gopkg.in/redis.v3"
 
 )
 
