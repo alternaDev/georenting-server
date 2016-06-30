@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"math"
+	"fmt"
 	"net/http"
 
 	"github.com/alternaDev/geomodel"
@@ -66,5 +67,5 @@ func GetHeatmapHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 
-	mt.Fprintf(w, response)
+	fmt.Fprintf(w, response)
 }
