@@ -66,5 +66,5 @@ func GetHeatmapHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 
-	w.Write([]byte(response))
+	mt.Fprintf(w, response)
 }
