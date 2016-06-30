@@ -26,9 +26,10 @@ type heatmapItemResponse struct {
 
 // GetHeatmapHandler GET /scores/heatmap
 func GetHeatmapHandler(w http.ResponseWriter, r *http.Request) {
+	var response = "PEDA"
 	response, err := ourRedis.RedisInstance.Get(redisKeyAllScoreCache).Result()
 
-	if err != nil || response == "" {
+	if err != nil || response == "\"\"" {
 		scores, err := models.FindAllScores()
 
 		if err != nil {
