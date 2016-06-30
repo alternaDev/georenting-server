@@ -29,7 +29,8 @@ func GetHeatmapHandler(w http.ResponseWriter, r *http.Request) {
 	var response string
 
 	response, err := ourRedis.RedisInstance.Get(redisKeyAllScoreCache).Result()
-	if err == redis.Nil {
+
+	if err == redis.Nil || response == "" {
 		scores, err := models.FindAllScores()
 
 		if err != nil {
