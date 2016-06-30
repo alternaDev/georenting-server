@@ -8,6 +8,14 @@ import (
 
 	"github.com/alternaDev/geomodel"
 	"github.com/alternaDev/georenting-server/models"
+	ourRedis "github.com/alternaDev/georenting-server/models/redis"
+	"gopkg.in/redis.v3"
+
+)
+
+const (
+	redisKeyAllScoreCache = "heatmap_scores"
+	redisAllScoreCacheTTL = 60 * 60 * 60
 )
 
 type heatmapItemResponse struct {
@@ -17,39 +25,48 @@ type heatmapItemResponse struct {
 }
 
 // GetHeatmapHandler GET /scores/heatmap
-// TODO: Cache this in redis.
 func GetHeatmapHandler(w http.ResponseWriter, r *http.Request) {
-	scores, err := models.FindAllScores()
+	var response string
 
-	if err != nil {
-		log.Printf("Error while fetching scores: %s", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	response, err := ourRedis.RedisInstance.Get(redisKeyAllScoreCache).Result()
+	if err == redis.Nil {
+		scores, err := models.FindAllScores()
+
+		if err != nil {
+			log.Printf("Error while fetching scores: %s", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		r := make([]heatmapItemResponse, len(*scores))
+		for i := range *scores {
+			lat, lon := geomodel.DecodeGeoHash((*scores)[i].GeoHash)
+			r[i].Latitude = lat
+			if r[i].Latitude == math.NaN() {
+				r[i].Latitude = 0
+			}
+			r[i].Longitude = lon
+			if r[i].Longitude == math.NaN() {
+				r[i].Longitude = 0
+			}
+			r[i].Score = (*scores)[i].Score
+			if r[i].Score == math.NaN() {
+				r[i].Score = -1
+			}
+		}
+
+		bytes, err := json.Marshal(&response)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		response = string(bytes)
+
+		ourRedis.RedisInstance.Set(redisKeyAllScoreCache, response, redisAllScoreCacheTTL)
 	}
 
-	response := make([]heatmapItemResponse, len(*scores))
-	for i := range *scores {
-		lat, lon := geomodel.DecodeGeoHash((*scores)[i].GeoHash)
-		response[i].Latitude = lat
-		if response[i].Latitude == math.NaN() {
-			response[i].Latitude = 0
-		}
-		response[i].Longitude = lon
-		if response[i].Longitude == math.NaN() {
-			response[i].Longitude = 0
-		}
-		response[i].Score = (*scores)[i].Score
-		if response[i].Score == math.NaN() {
-			response[i].Score = -1
-		}
-	}
 
-	bytes, err := json.Marshal(&response)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Write(bytes)
+	w.Write([]byte(response))
 }
