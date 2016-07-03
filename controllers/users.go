@@ -168,6 +168,7 @@ func RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(bytes)
 }
 
+// MeHandler handles GET /users/me
 func MeHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := auth.ValidateSession(r)
 
