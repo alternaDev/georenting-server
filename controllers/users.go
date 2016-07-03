@@ -168,6 +168,26 @@ func RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(bytes)
 }
 
+func MeHandler(w http.ResponseWriter, r *http.Request) {
+	user, err := auth.ValidateSession(r)
+
+	if err != nil {
+		http.Error(w, "Invalid Session token. "+err.Error(), http.StatusForbidden)
+		return
+	}
+
+	user.AvatarURL = os.Getenv("BASE_URL") + "/users/" + user.Name + "/avatar"
+
+	bytes, err := json.Marshal(user)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(bytes)
+}
+
 // LogoutHandler DELETE /user/auth
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	token := r.Header.Get("Authorization")

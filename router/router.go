@@ -14,6 +14,7 @@ func SetupRouter() *mux.Router {
 	r.HandleFunc("/users/auth", c.AuthHandler).Methods("POST")
 	r.HandleFunc("/users/auth", c.LogoutHandler).Methods("DELETE")
 	r.HandleFunc("/users/refreshToken", c.RefreshTokenHandler).Methods("POST")
+	r.HandleFunc("/users/me", c.MeHandler).Methods("GET")
 	r.HandleFunc("/users/me/gcm", c.GCMAddHandler).Methods("POST")
 	r.HandleFunc("/users/me/gcm", c.GCMRemoveHandler).Methods("DELETE")
 	r.HandleFunc("/users/me/history", c.HistoryHandler).Methods("GET")
