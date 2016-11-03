@@ -11,6 +11,7 @@ type upgradesResponse struct {
 	Radius    []int     `json:"radius"`
 	Rent      []float64 `json:"rent"`
 	MaxTTL    int       `json:"max_ttl"`
+	MinTTL	  int       `json:"min_ttl"`
 	MaxRadius int       `json:"max_radius"`
 	MinRadius int       `json:"min_radius"`
 }
@@ -22,6 +23,7 @@ func UpgradesHandler(w http.ResponseWriter, r *http.Request) {
 		Radius:    models.UpgradeTypesRadius[:],
 		Rent:      models.UpgradeTypesRent[:],
 		MaxTTL:    models.FenceMaxTTL,
+		MinTTL:	   models.FenceMinTTL,
 		MaxRadius: models.FenceMaxRadius,
 		MinRadius: models.FenceMinRadius,
 	}
