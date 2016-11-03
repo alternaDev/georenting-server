@@ -15,6 +15,7 @@ const (
 	magicalGeoRentingConstant          = 2
 	secondaryMagicalGeoRentingConstant = 2.0
 	geoFenceRentBasePrice              = 10.0
+	InitialBalance, _ = GetGeoFencePriceForScore(0, models.FenceMinTTL, models.FenceMinRadius, 0)
 )
 
 // RecordVisit calculates the new score of a geofence after a visit.
