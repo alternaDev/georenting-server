@@ -15,8 +15,19 @@ const (
 	magicalGeoRentingConstant          = 2
 	secondaryMagicalGeoRentingConstant = 2.0
 	geoFenceRentBasePrice              = 10.0
-	InitialBalance, _ = GetGeoFencePriceForScore(0, models.FenceMinTTL, models.FenceMinRadius, 0)
 )
+
+var (
+	InitialBalance = 0.0
+)
+
+func init() {
+	balance, err := GetGeoFencePriceForScore(0, models.FenceMinTTL, float64(models.FenceMinRadius), 0)
+	if err != nil {
+		panic(err)
+	}
+	InitialBalance = balance
+}
 
 // RecordVisit calculates the new score of a geofence after a visit.
 func RecordVisit(lat float64, lon float64, now int64) error {
