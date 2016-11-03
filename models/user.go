@@ -1,10 +1,14 @@
 package models
 
-import "time"
+import (
+	"time"
+	"github.com/alternaDev/georenting-server/scores"
+)
 
 const (
 	// LastKnownGeoHashResolution is the resolution for the geohash of the last known position.
 	LastKnownGeoHashResolution = 5
+	InitialBalance, _ = scores.GetGeoFencePriceForScore(0, FenceMinTTL, FenceMinRadius, 0)
 )
 
 // User is a user.
