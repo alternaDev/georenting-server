@@ -83,6 +83,11 @@ func GetGeoFencePrice(lat float64, lon float64, ttl int, rentMultiplier float64,
 		return 0, err
 	}
 
+	return GetGeoFencePriceForScore(score, ttl, rentMultiplier, radiusIndex)
+}
+
+// GetGeoFencePriceForScore returns the price of a geofence depending on the upgrade status and current score.
+func GetGeoFencePriceForScore(score float64, ttl int, rentMultiplier float64, radiusIndex int) (float64, error) {
 	price := math.Pow(score.Score+1.0, 1.0/magicalGeoRentingConstant) * geoFenceBasePrice
 
 	ttlMultiplier := ((float64(ttl) / float64(models.FenceMaxTTL)) + 1.0)
