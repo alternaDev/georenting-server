@@ -26,7 +26,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	InitialBalance = balance // * n
+	InitialBalance = balance * 5 // move this to a constant later.
 }
 
 // RecordVisit calculates the new score of a geofence after a visit.
