@@ -97,6 +97,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		user.Name = name
+		user.Balance = models.InitialBalance
 	}
 
 	err = user.Save()
