@@ -12,6 +12,7 @@ import (
 
 	"github.com/alternaDev/georenting-server/activity"
 	"github.com/alternaDev/georenting-server/auth"
+	"github.com/alternaDev/georenting-server/scores"
 	"github.com/alternaDev/georenting-server/models"
 	"github.com/alternaDev/georenting-server/models/redis"
 	firebase "github.com/alternaDev/go-firebase-verify"
@@ -97,7 +98,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		user.Name = name
-		user.Balance = models.InitialBalance
+		user.Balance = scores.InitialBalance
 	}
 
 	err = user.Save()
