@@ -22,11 +22,11 @@ var (
 )
 
 func init() {
-	balance, err := GetGeoFencePriceForScore(0, models.FenceMinTTL, float64(models.FenceMinRadius), 0)
+	balance, err := GetGeoFencePriceForScore(0, models.FenceMinTTL, 1, 0)
 	if err != nil {
 		panic(err)
 	}
-	InitialBalance = balance
+	InitialBalance = balance // * n
 }
 
 // RecordVisit calculates the new score of a geofence after a visit.
