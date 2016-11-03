@@ -13,6 +13,8 @@ var (
 	UpgradeTypesRent = [...]float64{1, 1.5, 2, 2.5, 3, 3.5, 4}
 	// FenceMaxTTL holds the maximum possible TTL of a fence.
 	FenceMaxTTL = 60 * 60 * 24 * 7 // 7 days
+	// FenceMinTTL holds the minimum possible TTL of a fence.
+	FenceMinTTL = 60 * 60 * 1 // 1 hour
 	// FenceMinRadius holds the minimum radius of a fence.
 	FenceMinRadius = maths.Min(UpgradeTypesRadius[:])
 	// FenceMaxRadius holds the maximum radius of a fence.
