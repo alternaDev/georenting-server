@@ -13,7 +13,7 @@ type Score struct {
 
 func (s Score) Save() error {
 	var count int64
-	err := DB.Get(&count, "SELECT count(*) FROM scores WHERE geo_hash = ?", s.GeoHash)
+	err := DB.Get(&count, "SELECT count(*) FROM scores WHERE geo_hash = $1", s.GeoHash)
 	if err != nil {
 		return err
 	}
@@ -25,7 +25,7 @@ func (s Score) Save() error {
 			updated_at,
 			geo_hash,
 			last_visit,
-			score) VALUES (?, ?, ?, ?, ?)`,
+			score) VALUES ($1, $2, $3, $4, $5)`,
 			s.CreatedAt,
 			s.UpdatedAt,
 			s.GeoHash,
@@ -35,10 +35,10 @@ func (s Score) Save() error {
 	} else {
 		s.UpdatedAt = time.Now()
 		_, err := DB.Exec(`UPDATE scores SET
-			created_at=?,
-			updated_at=?,
-			last_visit=?,
-			score=? WHERE geo_hash = ?`,
+			created_at=$1,
+			updated_at=$2,
+			last_visit=$3,
+			score=$4 WHERE geo_hash = ?`,
 			s.CreatedAt,
 			s.UpdatedAt,
 			s.GeoHash,
@@ -52,7 +52,7 @@ func (s Score) Save() error {
 func FindScoreByGeoHashOrInit(geoHash string) (Score, error) {
 	var score Score
 
-	err := DB.Get(&score, "SELECT * FROM scores WHERE geo_hash = ? LIMIT 1", geoHash)
+	err := DB.Get(&score, "SELECT * FROM scores WHERE geo_hash = $1 LIMIT 1", geoHash)
 
 	if err != nil {
 		score = Score{GeoHash: geoHash}

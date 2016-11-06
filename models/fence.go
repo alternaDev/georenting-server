@@ -57,7 +57,7 @@ func (f Fence) Save() error {
 			name,
 			total_visitors,
 			total_earnings,
-			cost) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			cost) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
 			f.CreatedAt,
 			f.UpdatedAt,
 			f.UserID,
@@ -75,19 +75,19 @@ func (f Fence) Save() error {
 	} else {
 		f.UpdatedAt = time.Now()
 		_, err := DB.Exec(`UPDATE fences SET
-			created_at=?,
-			updated_at=?,
-			user_id=?,
-			lat=?,
-			lon=?,
-			radius=?,
-			rent_multiplier=?,
-			ttl=?,
-			dies_at=?,
-			name=?,
-			total_visitors=?,
-			total_earnings=?,
-			cost=? WHERE id = ?`,
+			created_at=$1,
+			updated_at=$2,
+			user_id=$3,
+			lat=$4,
+			lon=$5,
+			radius=$6,
+			rent_multiplier=$7,
+			ttl=$8,
+			dies_at=$9,
+			name=$10,
+			total_visitors=$11,
+			total_earnings=$12,
+			cost=$13 WHERE id = $14`,
 			f.CreatedAt,
 			f.UpdatedAt,
 			f.UserID,
@@ -107,14 +107,14 @@ func (f Fence) Save() error {
 }
 
 func (f Fence) Delete() error {
-	_, err := DB.Exec("DELETE FROM fences WHERE id = ?", f.ID)
+	_, err := DB.Exec("DELETE FROM fences WHERE id = $1", f.ID)
 	return err
 }
 
 func FindFencesByIDs(ids []int64) ([]Fence, error) {
 	var result []Fence
 
-	rows, err := DB.Query("SELECT * FROM fences WHERE id IN (?);", ids)
+	rows, err := DB.Query("SELECT * FROM fences WHERE id IN ($1);", ids)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +148,7 @@ func FindFenceByID(id interface{}) (Fence, error, bool) {
 	var fence Fence
 	var user User
 
-	err := DB.Get(&fence, "SELECT * FROM fences WHERE id = ? LIMIT 1", id)
+	err := DB.Get(&fence, "SELECT * FROM fences WHERE id = $1 LIMIT 1", id)
 	if err != nil {
 		return fence, err, true
 	}
