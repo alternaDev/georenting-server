@@ -9,7 +9,7 @@ const (
 
 // User is a user.
 type User struct {
-	ID                      uint      `gorm:"primary_key" db:"id"`
+	ID                      int       `gorm:"primary_key" db:"id"`
 	CreatedAt               time.Time `db:"created_at"`
 	UpdatedAt               time.Time `db:"updated_at"`
 	GoogleID                string    `json:"-" gorm:"index" db:"google_id"`
@@ -28,6 +28,7 @@ func (u User) Save() error {
 	if u.ID <= 0 {
 		u.UpdatedAt = time.Now()
 		u.CreatedAt = time.Now()
+		var id int
 		err := DB.QueryRow(`INSERT INTO users (
 			created_at,
 			updated_at,
@@ -50,7 +51,8 @@ func (u User) Save() error {
 			u.LastKnownGeoHash,
 			u.EarningsRentAllTime,
 			u.ExpensesRentAllTime,
-			u.ExpensesGeoFenceAllTime).Scan(&u.ID)
+			u.ExpensesGeoFenceAllTime).Scan(id)
+		u.ID = id
 		return err
 	} else {
 		u.UpdatedAt = time.Now()

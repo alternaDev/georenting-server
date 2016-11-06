@@ -24,7 +24,7 @@ var (
 
 // Fence is a fence
 type Fence struct {
-	ID             uint      `db:"id"`
+	ID             int       `db:"id"`
 	CreatedAt      time.Time `db:"created_at"`
 	UpdatedAt      time.Time `db:"updated_at"`
 	User           User      `json:"-"`
@@ -45,6 +45,7 @@ func (f Fence) Save() error {
 	if f.ID <= 0 {
 		f.UpdatedAt = time.Now()
 		f.CreatedAt = time.Now()
+		var id int
 		err := DB.QueryRow(`INSERT INTO fences (
 			created_at,
 			updated_at,
@@ -71,7 +72,8 @@ func (f Fence) Save() error {
 			f.Name,
 			f.TotalVisitors,
 			f.TotalEarnings,
-			f.Cost).Scan(&f.ID)
+			f.Cost).Scan(&id)
+		f.ID = id
 		return err
 	} else {
 		f.UpdatedAt = time.Now()

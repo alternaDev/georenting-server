@@ -4,7 +4,7 @@ import "time"
 
 // Score is a score for a geohash
 type Score struct {
-	ID        uint      `db:"id"`
+	ID        int       `db:"id"`
 	CreatedAt time.Time `db:"created_at"`
 	UpdatedAt time.Time `db:"updated_at"`
 	GeoHash   string    `gorm:"unique_index;primary_key" db:"geo_hash"`
@@ -21,6 +21,7 @@ func (s Score) Save() error {
 	if count == 0 {
 		s.UpdatedAt = time.Now()
 		s.CreatedAt = time.Now()
+		var id int
 		err := DB.QueryRow(`INSERT INTO scores (
 			created_at,
 			updated_at,
@@ -31,7 +32,8 @@ func (s Score) Save() error {
 			s.UpdatedAt,
 			s.GeoHash,
 			s.LastVisit,
-			s.Score).Scan(&s.ID)
+			s.Score).Scan(id)
+		s.ID = id
 		return err
 	} else {
 		s.UpdatedAt = time.Now()
