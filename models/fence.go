@@ -114,7 +114,7 @@ func (f *Fence) Save() error {
 	}
 }
 
-func (f Fence) Delete() error {
+func (f *Fence) Delete() error {
 	_, err := DB.Exec("DELETE FROM fences WHERE id = $1", f.ID)
 	return err
 }

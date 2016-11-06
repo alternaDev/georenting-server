@@ -24,7 +24,7 @@ type User struct {
 	ExpensesGeoFenceAllTime float64   `json:"-" db:"expenses_geo_fence_all_time"`
 }
 
-func (u User) Save() error {
+func (u *User) Save() error {
 	if u.ID <= 0 {
 		u.UpdatedAt = time.Now()
 		u.CreatedAt = time.Now()

@@ -12,7 +12,7 @@ type Score struct {
 	Score     float64   `db:"score"`
 }
 
-func (s Score) Save() error {
+func (s *Score) Save() error {
 	var count int64
 	err := DB.Get(&count, "SELECT count(*) FROM scores WHERE geo_hash = $1", s.GeoHash)
 	if err != nil {

@@ -366,7 +366,6 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 	f.User = *user
 
 	err = f.Save()
-	log.Printf("id: %d", f.ID)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
