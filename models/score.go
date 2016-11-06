@@ -32,7 +32,7 @@ func (s *Score) Save() error {
 			s.UpdatedAt,
 			s.GeoHash,
 			s.LastVisit,
-			s.Score).Scan(id)
+			s.Score).Scan(&id)
 		s.ID = id
 		return err
 	} else {

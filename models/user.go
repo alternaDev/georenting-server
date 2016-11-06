@@ -51,7 +51,7 @@ func (u *User) Save() error {
 			u.LastKnownGeoHash,
 			u.EarningsRentAllTime,
 			u.ExpensesRentAllTime,
-			u.ExpensesGeoFenceAllTime).Scan(id)
+			u.ExpensesGeoFenceAllTime).Scan(&id)
 		u.ID = id
 		return err
 	} else {
