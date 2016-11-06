@@ -126,7 +126,7 @@ func FindFencesByIDs(ids []int64) ([]Fence, error) {
 		return result, nil
 	}
 
-	rows, err := DB.Query("SELECT * FROM fences WHERE id = ANY($1);", pq.Array(ids))
+	rows, err := DB.Query("SELECT id, created_at, updated_at, user_id, lat, lon, radius, rent_multiplier, ttl, dies_at, name, total_visitors, total_earnings, cost FROM fences WHERE id = ANY($1);", pq.Array(ids))
 	if err != nil {
 		return nil, err
 	}
