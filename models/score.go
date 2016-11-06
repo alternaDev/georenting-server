@@ -4,6 +4,7 @@ import "time"
 
 // Score is a score for a geohash
 type Score struct {
+	ID        uint      `db:"id"`
 	CreatedAt time.Time `db:"created_at"`
 	UpdatedAt time.Time `db:"updated_at"`
 	GeoHash   string    `gorm:"unique_index;primary_key" db:"geo_hash"`
