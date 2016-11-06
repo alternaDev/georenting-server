@@ -495,7 +495,7 @@ func RemoveFenceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = search.DeleteGeoFence(fence)
+	err = search.DeleteGeoFence(int(fence.ID))
 
 	if err != nil {
 		log.Printf("Error while deleting Fence from Search: %s", err.Error())
