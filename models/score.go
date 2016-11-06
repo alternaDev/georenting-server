@@ -46,8 +46,7 @@ func (s *Score) Save() error {
 			s.UpdatedAt,
 			s.GeoHash,
 			s.LastVisit,
-			s.Score,
-			s.GeoHash)
+			s.Score)
 		return err
 	}
 }
