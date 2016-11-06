@@ -59,8 +59,6 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("User Token: %s", b.GoogleToken)
-
 	googleID, err := firebase.VerifyIDToken(b.GoogleToken, os.Getenv("FIREBASE_PROJECT_ID"))
 	log.Printf("User ID: %s", googleID)
 	if err != nil {
