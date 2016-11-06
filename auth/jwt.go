@@ -19,9 +19,9 @@ func extractKeyIDAndLoadKeyFromDB(token *jwt.Token) (interface{}, error) {
 	}
 
 	// Get the user ID
-	userID := uint(token.Header["user"].(float64))
+	userID := (token.Header["user"].(float64))
 
-	user, err := models.FindUserByID(uint(userID))
+	user, err := models.FindUserByID(int(userID))
 
 	if err != nil {
 		return nil, err
@@ -83,9 +83,9 @@ func ValidateJWTToken(input string) (*models.User, error) {
 		return nil, errors.New("The token has been tampered with...inside.")
 	}
 
-	userID := uint(token.Claims["user"].(float64))
+	userID := (token.Claims["user"].(float64))
 
-	user, err := models.FindUserByID(uint(userID))
+	user, err := models.FindUserByID(int(userID))
 
 	return &user, err
 }

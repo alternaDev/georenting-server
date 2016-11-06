@@ -92,7 +92,7 @@ func (u User) GetFences() ([]Fence, error) {
 	return fences, err
 }
 
-func FindUserByID(id uint) (User, error) {
+func FindUserByID(id int) (User, error) {
 	var result User
 	err := DB.Get(&result, "SELECT * FROM users WHERE id = $1 LIMIT 1;", id)
 	return result, err

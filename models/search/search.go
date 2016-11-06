@@ -168,7 +168,7 @@ func FindGeoFences(centerLat float64, centerLon float64, radius int64) ([]models
 }
 
 // FindGeoFencesExceptByUser returns all geofences around a lat/lon pair, excluding ones from the specified user.
-func FindGeoFencesExceptByUser(centerLat float64, centerLon float64, radius int64, excludeBy uint) ([]models.Fence, error) {
+func FindGeoFencesExceptByUser(centerLat float64, centerLon float64, radius int64, excludeBy int) ([]models.Fence, error) {
 	query := elastic.NewBoolQuery()
 	query = query.MustNot(elastic.NewTermQuery("owner", excludeBy))
 	query.Filter(elastic.NewGeoDistanceQuery("center").Distance(fmt.Sprintf("%d m", radius)).Lat(centerLat).Lon(centerLon))

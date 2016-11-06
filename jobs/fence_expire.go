@@ -20,7 +20,7 @@ const (
 
 // FenceExpireRequest holds the Data for a FenceExpireJob.
 type FenceExpireRequest struct {
-	FenceID uint
+	FenceID int
 }
 
 // FenceExpireJob executes a FenceExpireJob.

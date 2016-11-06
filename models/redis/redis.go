@@ -79,12 +79,12 @@ func TokenInvalidate(token string, ttl time.Duration) error {
 }
 
 // AddActivity adds an activity to a user.
-func AddActivity(userID uint, score float64, data string) error {
+func AddActivity(userID int, score float64, data string) error {
 	return RedisInstance.ZAdd(fmt.Sprintf("%v", userID), redis.Z{Score: score, Member: data}).Err()
 }
 
 // GetActivities returns the activities of a user in the specified timeframe.
-func GetActivities(userID uint, start int64, end int64) ([]string, error) {
+func GetActivities(userID int, start int64, end int64) ([]string, error) {
 	id := fmt.Sprintf("%v", userID)
 
 	oldest := time.Now().AddDate(0, 0, -OldestActivityAgeDays).Unix()
@@ -97,7 +97,7 @@ func GetActivities(userID uint, start int64, end int64) ([]string, error) {
 }
 
 // GetBalanceRecordName returns the name of a BR for the user.
-func GetBalanceRecordName(id uint, name string) string {
+func GetBalanceRecordName(id int, name string) string {
 	return fmt.Sprintf("%d-%v", id, name)
 }
 

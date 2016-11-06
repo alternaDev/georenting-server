@@ -10,9 +10,9 @@ import (
 type ownFenceVisitedActivity struct {
 	Verb        string  `json:"verb"`
 	VisitorName string  `json:"visitorName"`
-	VisitorID   uint    `json:"visitorId"`
+	VisitorID   int     `json:"visitorId"`
 	FenceName   string  `json:"fenceName"`
-	FenceID     uint    `json:"fenceId"`
+	FenceID     int     `json:"fenceId"`
 	Rent        float64 `json:"rent"`
 	Time        int32   `json:"time"`
 }
@@ -20,22 +20,22 @@ type ownFenceVisitedActivity struct {
 type foreignFenceVisitedActivity struct {
 	Verb      string  `json:"verb"`
 	OwnerName string  `json:"ownerName"`
-	OwnerID   uint    `json:"ownerId"`
+	OwnerID   int     `json:"ownerId"`
 	FenceName string  `json:"fenceName"`
-	FenceID   uint    `json:"fenceId"`
+	FenceID   int     `json:"fenceId"`
 	Rent      float64 `json:"rent"`
 	Time      int32   `json:"time"`
 }
 
 type fenceExpiredActivity struct {
 	Verb      string `json:"verb"`
-	FenceID   uint   `json:"fenceId"`
+	FenceID   int    `json:"fenceId"`
 	FenceName string `json:"fenceName"`
 	Time      int32  `json:"time"`
 }
 
 // AddOwnFenceVisitedActivity adds the activity to the stream of the owner.
-func AddOwnFenceVisitedActivity(ownerID uint, visitorName string, visitorID uint, fenceName string, fenceID uint, rent float64) error {
+func AddOwnFenceVisitedActivity(ownerID int, visitorName string, visitorID int, fenceName string, fenceID int, rent float64) error {
 	now := int32(time.Now().Unix())
 
 	bytes, err := json.Marshal(ownFenceVisitedActivity{Verb: "ownFenceVisited",
@@ -54,7 +54,7 @@ func AddOwnFenceVisitedActivity(ownerID uint, visitorName string, visitorID uint
 }
 
 // AddForeignVisitedActivity adds the activity to the stream of the owner.
-func AddForeignVisitedActivity(visitorID uint, ownerName string, ownerID uint, fenceName string, fenceID uint, rent float64) error {
+func AddForeignVisitedActivity(visitorID int, ownerName string, ownerID int, fenceName string, fenceID int, rent float64) error {
 	now := int32(time.Now().Unix())
 
 	bytes, err := json.Marshal(foreignFenceVisitedActivity{Verb: "foreignFenceVisited",
@@ -73,7 +73,7 @@ func AddForeignVisitedActivity(visitorID uint, ownerName string, ownerID uint, f
 }
 
 // AddFenceExpiredActivity adds the activity to the stream of the owner.
-func AddFenceExpiredActivity(ownerID uint, fenceID uint, fenceName string) error {
+func AddFenceExpiredActivity(ownerID int, fenceID int, fenceName string) error {
 	now := int32(time.Now().Unix())
 
 	bytes, err := json.Marshal(fenceExpiredActivity{Verb: "fenceExpired",
@@ -89,6 +89,6 @@ func AddFenceExpiredActivity(ownerID uint, fenceID uint, fenceName string) error
 }
 
 // GetActivities returns all activities from the specified user in a timerange.
-func GetActivities(userID uint, start int64, end int64) ([]string, error) {
+func GetActivities(userID int, start int64, end int64) ([]string, error) {
 	return redis.GetActivities(userID, start, end)
 }

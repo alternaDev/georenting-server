@@ -25,12 +25,12 @@ import (
 )
 
 type fenceResponse struct {
-	ID             uint           `json:"id"`
+	ID             int            `json:"id"`
 	Lat            float64        `json:"center_lat"`
 	Lon            float64        `json:"center_lon"`
 	Radius         int            `json:"radius"`
 	Name           string         `json:"name"`
-	Owner          uint           `json:"owner"`
+	Owner          int            `json:"owner"`
 	TTL            int            `json:"ttl"`
 	RentMultiplier float64        `json:"rent_multiplier"`
 	DiesAt         util.Timestamp `json:"dies_at"`
@@ -162,7 +162,7 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 	lat, err1 := strconv.ParseFloat(r.URL.Query().Get("latitude"), 64)
 	lon, err2 := strconv.ParseFloat(r.URL.Query().Get("longitude"), 64)
 	radius, err3 := strconv.ParseInt(r.URL.Query().Get("radius"), 10, 64)
-	userID, err4 := strconv.ParseUint(r.URL.Query().Get("user"), 10, 8)
+	userID, err4 := strconv.ParseInt(r.URL.Query().Get("user"), 10, 8)
 	excludeOwn, _ := strconv.ParseBool(r.URL.Query().Get("excludeOwn"))
 
 	if err1 == nil && err2 == nil && err3 == nil {
@@ -224,7 +224,7 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 	if err4 == nil {
 		user, _ := auth.ValidateSession(r)
 
-		fenceUser, errA := models.FindUserByID(uint(userID))
+		fenceUser, errA := models.FindUserByID(int(userID))
 
 		if errA != nil {
 			log.Printf("Error while finding fences: %s", errA.Error())
@@ -422,7 +422,7 @@ func GetFenceHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 
-	fenceID, err := strconv.ParseUint(vars["fenceId"], 10, 8)
+	fenceID, err := strconv.ParseInt(vars["fenceId"], 10, 8)
 	if err != nil {
 		http.Error(w, "Invalid Fence ID. "+err.Error(), http.StatusUnauthorized)
 		return

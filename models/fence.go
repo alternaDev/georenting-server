@@ -28,7 +28,7 @@ type Fence struct {
 	CreatedAt      time.Time `db:"created_at"`
 	UpdatedAt      time.Time `db:"updated_at"`
 	User           User      `json:"-"`
-	UserID         uint      `json:"owner_id" db:"user_id"`
+	UserID         int       `json:"owner_id" db:"user_id"`
 	Lat            float64   `json:"center_lat" db:"lat"`
 	Lon            float64   `json:"center_lon" db:"lon"`
 	Radius         int       `json:"radius" db:"radius"`
