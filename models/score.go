@@ -44,9 +44,9 @@ func (s *Score) Save() error {
 			score=$4 WHERE geo_hash = $5`,
 			s.CreatedAt,
 			s.UpdatedAt,
-			s.GeoHash,
 			s.LastVisit,
-			s.Score)
+			s.Score,
+			s.GeoHash)
 		return err
 	}
 }
