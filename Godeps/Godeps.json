@@ -52,18 +52,19 @@
 			"Rev": "8db0a774d73a456be5c315197b18c6730f3c0ec5"
 		},
 		{
-			"ImportPath": "github.com/jinzhu/gorm",
-			"Comment": "v1.0-18-g2752245",
-			"Rev": "27522453dea253cf90dcb5345286a5fcf0fbed7c"
-		},
-		{
 			"ImportPath": "github.com/jinzhu/gorm/dialects/postgres",
 			"Comment": "v1.0-18-g2752245",
 			"Rev": "27522453dea253cf90dcb5345286a5fcf0fbed7c"
 		},
 		{
-			"ImportPath": "github.com/jinzhu/inflection",
-			"Rev": "3272df6c21d04180007eb3349844c89a3856bc25"
+			"ImportPath": "github.com/jmoiron/sqlx",
+			"Comment": "sqlx-v1.1-82-g5f97679",
+			"Rev": "5f97679e23f75f42b265fec8d3bdb1c8de90b79d"
+		},
+		{
+			"ImportPath": "github.com/jmoiron/sqlx/reflectx",
+			"Comment": "sqlx-v1.1-82-g5f97679",
+			"Rev": "5f97679e23f75f42b265fec8d3bdb1c8de90b79d"
 		},
 		{
 			"ImportPath": "github.com/lib/pq",
