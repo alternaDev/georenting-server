@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/alternaDev/georenting-server/models"
@@ -56,7 +57,7 @@ func sendGCMGroupRequest(data gcmGroupRequest) (gcmGroupResponse, error) {
 func CreateDeviceGroup(firstID string, user *models.User) error {
 	response, err := sendGCMGroupRequest(gcmGroupRequest{
 		Operation:           "create",
-		NotificationKeyName: os.Getenv("BASE_URL") + "-GeoRenting-" + user.Name,
+		NotificationKeyName: os.Getenv("BASE_URL") + "-GeoRenting-" + strconv.Itoa(user.ID) + "-" + user.Name,
 		RegistrationIDs:     []string{firstID},
 	})
 
@@ -81,7 +82,7 @@ func CreateDeviceGroup(firstID string, user *models.User) error {
 func AddDeviceToGroup(deviceID string, user *models.User) error {
 	response, err := sendGCMGroupRequest(gcmGroupRequest{
 		Operation:           "add",
-		NotificationKeyName: os.Getenv("BASE_URL") + "-GeoRenting-" + user.Name,
+		NotificationKeyName: os.Getenv("BASE_URL") + "-GeoRenting-" + strconv.Itoa(user.ID) + "-" + user.Name,
 		NotificationKey:     user.GCMNotificationID,
 		RegistrationIDs:     []string{deviceID},
 	})
@@ -101,7 +102,7 @@ func AddDeviceToGroup(deviceID string, user *models.User) error {
 func RemoveDeviceFromGroup(deviceID string, user *models.User) error {
 	response, err := sendGCMGroupRequest(gcmGroupRequest{
 		Operation:           "remove",
-		NotificationKeyName: os.Getenv("BASE_URL") + "-GeoRenting-" + user.Name,
+		NotificationKeyName: os.Getenv("BASE_URL") + "-GeoRenting-" + strconv.Itoa(user.ID) + "-" + user.Name,
 		NotificationKey:     user.GCMNotificationID,
 		RegistrationIDs:     []string{deviceID},
 	})
