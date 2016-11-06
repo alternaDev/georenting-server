@@ -201,7 +201,7 @@ func FindGeoFencesExceptByUser(centerLat float64, centerLon float64, radius int6
 }
 
 // DeleteGeoFence deletes a geofence from the search index.
-func DeleteGeoFence(fence models.Fence) error {
-	_, err := ElasticInstance.Delete().Index(IndexGeoFences).Type(TypeGeoFence).Id(strconv.Itoa(int(fence.ID))).Do()
+func DeleteGeoFence(fenceId int) error {
+	_, err := ElasticInstance.Delete().Index(IndexGeoFences).Type(TypeGeoFence).Id(strconv.Itoa(fenceId)).Do()
 	return err
 }
