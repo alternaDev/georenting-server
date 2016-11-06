@@ -59,7 +59,7 @@ func RecordVisit(lat float64, lon float64, now int64) error {
 // CalculateScore calculates a geofence score.
 func CalculateScore(score models.Score, now int64) error {
 	var tSum int64
-	err := models.DB.Get(&tSum, "SELECT SUM(? - last_visit) AS tsum FROM scores", now)
+	err := models.DB.Get(&tSum, "SELECT SUM($1 - last_visit) AS tsum FROM scores", now)
 
 	if err != nil {
 		return err

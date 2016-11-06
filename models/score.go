@@ -38,7 +38,7 @@ func (s Score) Save() error {
 			created_at=$1,
 			updated_at=$2,
 			last_visit=$3,
-			score=$4 WHERE geo_hash = ?`,
+			score=$4 WHERE geo_hash = $5`,
 			s.CreatedAt,
 			s.UpdatedAt,
 			s.GeoHash,
