@@ -28,7 +28,7 @@ func (u User) Save() error {
 	if u.ID <= 0 {
 		u.UpdatedAt = time.Now()
 		u.CreatedAt = time.Now()
-		err := DB.Get(&u, `INSERT INTO users (
+		err := DB.QueryRow(`INSERT INTO users (
 			created_at,
 			updated_at,
 			google_id,
@@ -39,7 +39,7 @@ func (u User) Save() error {
 			last_known_geo_hash,
 			earnings_rent_all_time,
 			expenses_rent_all_time,
-			expenses_geo_fence_all_time) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+			expenses_geo_fence_all_time) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id`,
 			u.CreatedAt,
 			u.UpdatedAt,
 			u.GoogleID,
@@ -50,7 +50,7 @@ func (u User) Save() error {
 			u.LastKnownGeoHash,
 			u.EarningsRentAllTime,
 			u.ExpensesRentAllTime,
-			u.ExpensesGeoFenceAllTime)
+			u.ExpensesGeoFenceAllTime).Scan(&u.ID)
 		return err
 	} else {
 		u.UpdatedAt = time.Now()
