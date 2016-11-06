@@ -21,12 +21,12 @@ func (s Score) Save() error {
 	if count == 0 {
 		s.UpdatedAt = time.Now()
 		s.CreatedAt = time.Now()
-		_, err := DB.Exec(`INSERT INTO scores (
+		err := DB.Get(&s.ID, `INSERT INTO scores (
 			created_at,
 			updated_at,
 			geo_hash,
 			last_visit,
-			score) VALUES ($1, $2, $3, $4, $5)`,
+			score) VALUES ($1, $2, $3, $4, $5) RETURNING id`,
 			s.CreatedAt,
 			s.UpdatedAt,
 			s.GeoHash,

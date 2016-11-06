@@ -45,7 +45,7 @@ func (f Fence) Save() error {
 	if f.ID <= 0 {
 		f.UpdatedAt = time.Now()
 		f.CreatedAt = time.Now()
-		_, err := DB.Exec(`INSERT INTO fences (
+		err := DB.Get(&f.ID, `INSERT INTO fences (
 			created_at,
 			updated_at,
 			user_id,
@@ -58,7 +58,7 @@ func (f Fence) Save() error {
 			name,
 			total_visitors,
 			total_earnings,
-			cost) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+			cost) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id`,
 			f.CreatedAt,
 			f.UpdatedAt,
 			f.UserID,
