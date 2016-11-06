@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/alternaDev/georenting-server/maths"
+	"github.com/lib/pq"
 )
 
 var (
@@ -114,7 +115,7 @@ func (f Fence) Delete() error {
 func FindFencesByIDs(ids []int64) ([]Fence, error) {
 	var result []Fence
 
-	rows, err := DB.Query("SELECT * FROM fences WHERE id IN ($1);", ids)
+	rows, err := DB.Query("SELECT * FROM fences WHERE id IN ($1);", pq.Array(ids))
 	if err != nil {
 		return nil, err
 	}

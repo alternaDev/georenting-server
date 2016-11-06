@@ -6,8 +6,8 @@ import (
 
 	"github.com/bgentry/que-go"
 	"github.com/jackc/pgx"
-	_ "github.com/jinzhu/gorm/dialects/postgres" // For GORM
 	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 )
 
 const (
