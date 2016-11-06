@@ -250,7 +250,7 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 			fences[i].Owner = f.UserID
 			fences[i].DiesAt = util.Timestamp(f.DiesAt)
 			fences[i].RentMultiplier = f.RentMultiplier
-			fences[i].OwnerName = f.User.Name
+			fences[i].OwnerName = fenceUser.Name
 			if user != nil && f.UserID == user.ID {
 				fences[i].Cost = f.Cost
 				fences[i].TotalEarnings = f.TotalEarnings
@@ -330,6 +330,7 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 	f.RentMultiplier = requestFence.RentMultiplier
 	f.TTL = requestFence.TTL
 	f.DiesAt = time.Now().Add(time.Duration(f.TTL) * time.Second)
+	f.UserID = user.ID
 
 	overlap, err := checkFenceOverlap(&f)
 

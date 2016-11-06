@@ -13,7 +13,6 @@ type User struct {
 	CreatedAt               time.Time `db:"created_at"`
 	UpdatedAt               time.Time `db:"updated_at"`
 	GoogleID                string    `json:"-" gorm:"index" db:"google_id"`
-	Fences                  []Fence   `json:"fences"`
 	PrivateKey              string    `sql:"size:4096" json:"-" db:"private_key"`
 	GCMNotificationID       string    `json:"-" db:"gcm_notification_id"`
 	Name                    string    `json:"name" db:"name"`
@@ -86,7 +85,6 @@ func (u User) Save() error {
 func (u User) GetFences() ([]Fence, error) {
 	fences := []Fence{}
 
-	// this will pull places with telcode > 50 into the slice pp
 	err := DB.Select(&fences, "SELECT * FROM fences WHERE user_id = $1;", u.ID)
 
 	return fences, err
