@@ -41,22 +41,123 @@ type Fence struct {
 }
 
 func (f Fence) Save() error {
-	return DB.Save(&f).Error
+	if f.ID <= 0 {
+		f.UpdatedAt = time.Now()
+		f.CreatedAt = time.Now()
+		_, err := DB.Exec(`INSERT INTO fences (
+			created_at,
+			updated_at,
+			user_id,
+			lat,
+			lon,
+			radius,
+			rent_multiplier,
+			ttl,
+			dies_at,
+			name,
+			total_visitors,
+			total_earnings,
+			cost) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			f.CreatedAt,
+			f.UpdatedAt,
+			f.UserID,
+			f.Lat,
+			f.Lon,
+			f.Radius,
+			f.RentMultiplier,
+			f.TTL,
+			f.DiesAt,
+			f.Name,
+			f.TotalVisitors,
+			f.TotalEarnings,
+			f.Cost)
+		return err
+	} else {
+		f.UpdatedAt = time.Now()
+		_, err := DB.Exec(`UPDATE fences SET
+			created_at=?,
+			updated_at=?,
+			user_id=?,
+			lat=?,
+			lon=?,
+			radius=?,
+			rent_multiplier=?,
+			ttl=?,
+			dies_at=?,
+			name=?,
+			total_visitors=?,
+			total_earnings=?,
+			cost=? WHERE id = ?`,
+			f.CreatedAt,
+			f.UpdatedAt,
+			f.UserID,
+			f.Lat,
+			f.Lon,
+			f.Radius,
+			f.RentMultiplier,
+			f.TTL,
+			f.DiesAt,
+			f.Name,
+			f.TotalVisitors,
+			f.TotalEarnings,
+			f.Cost,
+			f.ID)
+		return err
+	}
 }
 
 func (f Fence) Delete() error {
-	return DB.Delete(&f).Error
+	_, err := DB.Exec("DELETE FROM fences WHERE id = ?", f.ID)
+	return err
 }
 
-func FindFencesByIDs(ids []int64) (*[]Fence, error) {
-	result := make([]Fence, len(ids))
-	err := DB.Preload("User").Where(ids).Find(&result).Error
-	return &result, err
+func FindFencesByIDs(ids []int64) ([]Fence, error) {
+	var result []Fence
+
+	rows, err := DB.Query("SELECT * FROM fences WHERE id IN (?);", ids)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var fence Fence
+		var user User
+
+		err = rows.Scan(&fence.ID, &fence.CreatedAt, &fence.UpdatedAt, &fence.UserID,
+			&fence.Lat, &fence.Lon, &fence.Radius, &fence.RentMultiplier, &fence.TTL,
+			&fence.DiesAt, &fence.Name, &fence.TotalVisitors, &fence.TotalEarnings,
+			&fence.Cost)
+		if err != nil {
+			return nil, err
+		}
+
+		user, err = FindUserByID(fence.UserID)
+		if err != nil {
+			return nil, err
+		}
+
+		fence.User = user
+
+		result = append(result, fence)
+	}
+
+	return result, err
 }
 
-func FindFenceByID(id interface{}) (*Fence, error, bool) {
+func FindFenceByID(id interface{}) (Fence, error, bool) {
 	var fence Fence
-	req := DB.Preload("User").Find(&fence, id)
+	var user User
 
-	return &fence, req.Error, req.RecordNotFound()
+	err := DB.Get(&fence, "SELECT * FROM fences WHERE id = ? LIMIT 1", id)
+	if err != nil {
+		return fence, err, true
+	}
+
+	user, err = FindUserByID(fence.UserID)
+	if err != nil {
+		return fence, err, true
+	}
+
+	fence.User = user
+	return fence, err, false
 }

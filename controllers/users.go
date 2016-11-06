@@ -12,9 +12,9 @@ import (
 
 	"github.com/alternaDev/georenting-server/activity"
 	"github.com/alternaDev/georenting-server/auth"
-	"github.com/alternaDev/georenting-server/scores"
 	"github.com/alternaDev/georenting-server/models"
 	"github.com/alternaDev/georenting-server/models/redis"
+	"github.com/alternaDev/georenting-server/scores"
 	firebase "github.com/alternaDev/go-firebase-verify"
 
 	nameGen "github.com/alternaDev/go-random-name-gen"
@@ -116,7 +116,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 
 	user.AvatarURL = os.Getenv("BASE_URL") + "/users/" + user.Name + "/avatar"
 
-	bytes, err := json.Marshal(authResponseBody{Token: token, User: *user})
+	bytes, err := json.Marshal(authResponseBody{Token: token, User: user})
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -144,7 +144,7 @@ func RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := auth.GenerateJWTToken(user)
+	token, err := auth.GenerateJWTToken(*user)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusForbidden)

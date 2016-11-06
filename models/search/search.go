@@ -123,7 +123,7 @@ func initIndices(client *elastic.Client) error {
 }*/
 
 // IndexGeoFence indexes a geofence.
-func IndexGeoFence(fence *models.Fence) error {
+func IndexGeoFence(fence models.Fence) error {
 	data := fmt.Sprintf(`{"name": "%s", "center": {"lat": %f, "lon": %f}, "radius": %d, "owner": %d}`, fence.Name, fence.Lat, fence.Lon, fence.Radius, fence.User.ID)
 	log.Println("Indexing: " + data)
 	_, err := ElasticInstance.Index().
@@ -137,7 +137,7 @@ func IndexGeoFence(fence *models.Fence) error {
 }
 
 // FindGeoFences returns all geofences around a lat/lon pair.
-func FindGeoFences(centerLat float64, centerLon float64, radius int64) (*[]models.Fence, error) {
+func FindGeoFences(centerLat float64, centerLon float64, radius int64) ([]models.Fence, error) {
 	query := elastic.NewGeoDistanceQuery("center").Distance(fmt.Sprintf("%d m", radius)).Lat(centerLat).Lon(centerLon)
 
 	searchResult, err := ElasticInstance.Search().
@@ -164,11 +164,11 @@ func FindGeoFences(centerLat float64, centerLon float64, radius int64) (*[]model
 
 	fmt.Print("Found no fences\n")
 	var empty []models.Fence
-	return &empty, nil
+	return empty, nil
 }
 
 // FindGeoFencesExceptByUser returns all geofences around a lat/lon pair, excluding ones from the specified user.
-func FindGeoFencesExceptByUser(centerLat float64, centerLon float64, radius int64, excludeBy uint) (*[]models.Fence, error) {
+func FindGeoFencesExceptByUser(centerLat float64, centerLon float64, radius int64, excludeBy uint) ([]models.Fence, error) {
 	query := elastic.NewBoolQuery()
 	query = query.MustNot(elastic.NewTermQuery("owner", excludeBy))
 	query.Filter(elastic.NewGeoDistanceQuery("center").Distance(fmt.Sprintf("%d m", radius)).Lat(centerLat).Lon(centerLon))
@@ -197,11 +197,11 @@ func FindGeoFencesExceptByUser(centerLat float64, centerLon float64, radius int6
 
 	fmt.Print("Found no fences\n")
 	var empty []models.Fence
-	return &empty, nil
+	return empty, nil
 }
 
 // DeleteGeoFence deletes a geofence from the search index.
-func DeleteGeoFence(fence *models.Fence) error {
+func DeleteGeoFence(fence models.Fence) error {
 	_, err := ElasticInstance.Delete().Index(IndexGeoFences).Type(TypeGeoFence).Id(strconv.Itoa(int(fence.ID))).Do()
 	return err
 }

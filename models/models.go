@@ -6,8 +6,8 @@ import (
 
 	"github.com/bgentry/que-go"
 	"github.com/jackc/pgx"
-	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres" // For GORM
+	"github.com/jmoiron/sqlx"
 )
 
 const (
@@ -29,7 +29,7 @@ const (
 // DB provides the ability to access the Database.
 var (
 	DBPool *pgx.ConnPool
-	DB     *gorm.DB
+	DB     *sqlx.DB
 )
 
 // prepQue ensures that the que table exists and que's prepared statements are
@@ -78,15 +78,16 @@ func init() {
 	DB = db
 }
 
-func initDB() (*gorm.DB, error) {
-	db, err := gorm.Open("postgres", os.Getenv("DATABASE_URL"))
+func initDB() (*sqlx.DB, error) {
+	db, err := sqlx.Open("postgres", os.Getenv("DATABASE_URL"))
 
 	if err != nil {
 		log.Fatalf("Error while connecting to DB: %s", err)
 		return db, err
 	}
 
-	db.AutoMigrate(&User{}, &Fence{}, &Score{})
+	// TODO: Implement Migrations (or something)
+	//db.AutoMigrate(&User{}, &Fence{}, &Score{})
 
 	return db, nil
 }

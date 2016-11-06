@@ -168,7 +168,7 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 	if err1 == nil && err2 == nil && err3 == nil {
 		user, err := auth.ValidateSession(r)
 
-		var result *[]models.Fence
+		var result []models.Fence
 
 		if err == nil && excludeOwn {
 			result, err = search.FindGeoFencesExceptByUser(lat, lon, radius, user.ID)
@@ -182,9 +182,9 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		fences := make([]fenceResponse, len(*result))
-		for i := range *result {
-			f := (*result)[i]
+		fences := make([]fenceResponse, len(result))
+		for i := range result {
+			f := result[i]
 			fences[i].ID = f.ID
 			fences[i].Lat = f.Lat
 			fences[i].Lon = f.Lon
@@ -224,7 +224,7 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 	if err4 == nil {
 		user, _ := auth.ValidateSession(r)
 
-		user, errA := models.FindUserByID(uint(userID))
+		fenceUser, errA := models.FindUserByID(uint(userID))
 
 		if errA != nil {
 			log.Printf("Error while finding fences: %s", errA.Error())
@@ -232,11 +232,16 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		result := user.GetFences()
+		result, errA := fenceUser.GetFences()
+		if errA != nil {
+			log.Printf("Error while finding fences: %s", errA.Error())
+			http.Error(w, errA.Error(), http.StatusInternalServerError)
+			return
+		}
 
-		fences := make([]fenceResponse, len(*result))
-		for i := range *result {
-			f := (*result)[i]
+		fences := make([]fenceResponse, len(result))
+		for i := range result {
+			f := result[i]
 			fences[i].ID = f.ID
 			fences[i].Lat = f.Lat
 			fences[i].Lon = f.Lon
@@ -359,13 +364,13 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 
 	f.User = *user
 
-	err = models.DB.Create(&f).Error
+	err = f.Save()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	err = search.IndexGeoFence(&f)
+	err = search.IndexGeoFence(f)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -400,8 +405,8 @@ func checkFenceOverlap(fence *models.Fence) (bool, error) {
 		return false, err
 	}
 
-	for i := range *result {
-		fenceB := (*result)[i]
+	for i := range result {
+		fenceB := result[i]
 		distance := maths.Distance(fence.Lat, fence.Lon, fenceB.Lat, fenceB.Lon)
 		if distance < float64(fence.Radius+fenceB.Radius) {
 			return true, nil

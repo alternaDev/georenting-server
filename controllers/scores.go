@@ -2,16 +2,15 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"math"
-	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/alternaDev/geomodel"
 	"github.com/alternaDev/georenting-server/models"
 	ourRedis "github.com/alternaDev/georenting-server/models/redis"
-
 )
 
 const (
@@ -38,10 +37,9 @@ func GetHeatmapHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-
-		r := make([]heatmapItemResponse, len(*scores))
-		for i := range *scores {
-			lat, lon := geomodel.DecodeGeoHash((*scores)[i].GeoHash)
+		r := make([]heatmapItemResponse, len(scores))
+		for i := range scores {
+			lat, lon := geomodel.DecodeGeoHash(scores[i].GeoHash)
 			r[i].Latitude = lat
 			if r[i].Latitude == math.NaN() {
 				r[i].Latitude = 0
@@ -50,7 +48,7 @@ func GetHeatmapHandler(w http.ResponseWriter, r *http.Request) {
 			if r[i].Longitude == math.NaN() {
 				r[i].Longitude = 0
 			}
-			r[i].Score = (*scores)[i].Score
+			r[i].Score = scores[i].Score
 			if r[i].Score == math.NaN() {
 				r[i].Score = -1
 			}
@@ -65,12 +63,11 @@ func GetHeatmapHandler(w http.ResponseWriter, r *http.Request) {
 
 		response = string(bytes)
 
-		ourRedis.RedisInstance.Set(redisKeyAllScoreCache, response, redisAllScoreCacheTTL * time.Second).Err()
+		ourRedis.RedisInstance.Set(redisKeyAllScoreCache, response, redisAllScoreCacheTTL*time.Second).Err()
 		if err != nil {
 			log.Printf("Error while caching scores: %s", err)
 		}
 	}
-
 
 	fmt.Fprintf(w, response)
 }

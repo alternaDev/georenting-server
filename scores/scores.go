@@ -57,9 +57,9 @@ func RecordVisit(lat float64, lon float64, now int64) error {
 }
 
 // CalculateScore calculates a geofence score.
-func CalculateScore(score *models.Score, now int64) error {
+func CalculateScore(score models.Score, now int64) error {
 	var tSum int64
-	err := models.DB.Raw("SELECT SUM(? - last_visit) AS tsum FROM scores", now).Row().Scan(&tSum)
+	err := models.DB.Get(&tSum, "SELECT SUM(? - last_visit) AS tsum FROM scores", now)
 
 	if err != nil {
 		return err
@@ -110,6 +110,6 @@ func GetGeoFencePriceForScore(score float64, ttl int, rentMultiplier float64, ra
 }
 
 // GetGeoFenceRent returns the rent of a geofence.
-func GetGeoFenceRent(f *models.Fence) float64 {
+func GetGeoFenceRent(f models.Fence) float64 {
 	return float64(f.RentMultiplier)*geoFenceRentBasePrice + (((float64(f.RentMultiplier) - 1.0) * (float64(f.RentMultiplier) - 1.0)) / secondaryMagicalGeoRentingConstant)
 }
