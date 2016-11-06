@@ -4,11 +4,11 @@ import "time"
 
 // Score is a score for a geohash
 type Score struct {
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	GeoHash   string `gorm:"unique_index;primary_key"`
-	LastVisit int64
-	Score     float64
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
+	GeoHash   string    `gorm:"unique_index;primary_key" db:"geo_hash"`
+	LastVisit int64     `db:"last_visit"`
+	Score     float64   `db:"score"`
 }
 
 func (s Score) Save() error {

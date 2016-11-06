@@ -23,21 +23,21 @@ var (
 
 // Fence is a fence
 type Fence struct {
-	ID             uint `gorm:"primary_key"`
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
+	ID             uint      `db:"id"`
+	CreatedAt      time.Time `db:"created_at"`
+	UpdatedAt      time.Time `db:"updated_at"`
 	User           User      `json:"-"`
-	UserID         uint      `json:"owner_id"`
-	Lat            float64   `json:"center_lat"`
-	Lon            float64   `json:"center_lon"`
-	Radius         int       `json:"radius"`
-	RentMultiplier float64   `json:"rent_multiplier"`
-	TTL            int       `json:"ttl"`
-	DiesAt         time.Time `json:"diesAt"`
-	Name           string    `json:"name"`
-	TotalVisitors  uint      `json:"total_visitors"`
-	TotalEarnings  float64   `json:"total_earnings"`
-	Cost           float64   `json:"cost"`
+	UserID         uint      `json:"owner_id" db:"user_id"`
+	Lat            float64   `json:"center_lat" db:"lat"`
+	Lon            float64   `json:"center_lon" db:"lon"`
+	Radius         int       `json:"radius" db:"radius"`
+	RentMultiplier float64   `json:"rent_multiplier" db:"rent_multiplier"`
+	TTL            int       `json:"ttl" db:"ttl"`
+	DiesAt         time.Time `json:"diesAt" db:"dies_at"`
+	Name           string    `json:"name" db:"name"`
+	TotalVisitors  uint      `json:"total_visitors" db:"total_visitors"`
+	TotalEarnings  float64   `json:"total_earnings" db:"total_earnings"`
+	Cost           float64   `json:"cost" db:"cost"`
 }
 
 func (f Fence) Save() error {

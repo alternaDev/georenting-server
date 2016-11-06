@@ -9,20 +9,20 @@ const (
 
 // User is a user.
 type User struct {
-	ID                      uint `gorm:"primary_key"`
-	CreatedAt               time.Time
-	UpdatedAt               time.Time
-	GoogleID                string  `json:"-" gorm:"index"`
-	Fences                  []Fence `json:"fences"`
-	PrivateKey              string  `sql:"size:4096" json:"-"`
-	GCMNotificationID       string  `json:"-"`
-	Name                    string  `json:"name"`
-	AvatarURL               string  `json:"avatar_url" gorm:"-"`
-	Balance                 float64 `json:"balance"`
-	LastKnownGeoHash        string  `json:"-"`
-	EarningsRentAllTime     float64 `json:"-"`
-	ExpensesRentAllTime     float64 `json:"-"`
-	ExpensesGeoFenceAllTime float64 `json:"-"`
+	ID                      uint      `gorm:"primary_key" db:"id"`
+	CreatedAt               time.Time `db:"created_at"`
+	UpdatedAt               time.Time `db:"updated_at"`
+	GoogleID                string    `json:"-" gorm:"index" db:"google_id"`
+	Fences                  []Fence   `json:"fences"`
+	PrivateKey              string    `sql:"size:4096" json:"-" db:"private_key"`
+	GCMNotificationID       string    `json:"-" db:"gcm_notification_id"`
+	Name                    string    `json:"name" db:"name"`
+	AvatarURL               string    `json:"avatar_url" gorm:"-"`
+	Balance                 float64   `json:"balance" db:"balance"`
+	LastKnownGeoHash        string    `json:"-" db:"last_known_geo_hash"`
+	EarningsRentAllTime     float64   `json:"-" db:"earnings_rent_all_time"`
+	ExpensesRentAllTime     float64   `json:"-" db:"expenses_rent_all_time"`
+	ExpensesGeoFenceAllTime float64   `json:"-" db:"expenses_geo_fence_all_time"`
 }
 
 func (u User) Save() error {
