@@ -115,6 +115,10 @@ func (f Fence) Delete() error {
 func FindFencesByIDs(ids []int64) ([]Fence, error) {
 	var result []Fence
 
+	if len(ids) == 0 {
+		return result, nil
+	}
+
 	rows, err := DB.Query("SELECT * FROM fences WHERE id IN ($1);", pq.Array(ids))
 	if err != nil {
 		return nil, err
