@@ -126,10 +126,12 @@ func initIndices(client *elastic.Client) error {
 func IndexGeoFence(fence models.Fence) error {
 	data := fmt.Sprintf(`{"name": "%s", "center": {"lat": %f, "lon": %f}, "radius": %d, "owner": %d}`, fence.Name, fence.Lat, fence.Lon, fence.Radius, fence.User.ID)
 	log.Println("Indexing: " + data)
+	var id = strconv.Itoa(fence.ID)
+	log.Printf("real id: %d, String id: %s", fence.ID, id)
 	_, err := ElasticInstance.Index().
 		Index(IndexGeoFences).
 		Type(TypeGeoFence).
-		Id(strconv.Itoa(int(fence.ID))).
+		Id(id).
 		BodyString(data).
 		Do()
 
