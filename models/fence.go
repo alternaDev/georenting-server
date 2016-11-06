@@ -42,7 +42,7 @@ type Fence struct {
 	Cost           float64   `json:"cost" db:"cost"`
 }
 
-func (f Fence) Save() error {
+func (f *Fence) Save() error {
 	if f.ID <= 0 {
 		f.UpdatedAt = time.Now()
 		f.CreatedAt = time.Now()
