@@ -117,6 +117,12 @@ func FindUserByGoogleIDOrInit(id string) (User, error) {
 	return user, err
 }
 
+func FindUsersWithGCLessThan(gc float64) ([]User, error) {
+	var users []User
+	err := DB.Select(&users, "SELECT * FROM users WHERE balance < $1;", gc)
+	return users, err
+}
+
 func CountUsersByName(name string) (int64, error) {
 	if name == "" {
 		return 0, nil
