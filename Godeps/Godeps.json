@@ -7,6 +7,11 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.11.0-2-g1445b7a",
+			"Rev": "1445b7a38228c041834afc69231b7966b9943397"
+		},
+		{
 			"ImportPath": "github.com/alternaDev/geomodel",
 			"Rev": "dcfed76f7b76d32837a2541f45c28c77f1df940a"
 		},
@@ -84,6 +89,10 @@
 			"ImportPath": "github.com/lib/pq/oid",
 			"Comment": "go1.0-cutoff-127-gd8eeeb8",
 			"Rev": "d8eeeb8bae8896dd8e1b7e514ab0d396c4f12a1b"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/unix",
+			"Rev": "9a2e24c3733eddc63871eda99f253e2db29bd3b9"
 		},
 		{
 			"ImportPath": "gopkg.in/bsm/ratelimit.v1",

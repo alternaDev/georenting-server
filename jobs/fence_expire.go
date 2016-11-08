@@ -5,12 +5,12 @@ import (
 
 	//"github.com/alternaDev/georenting-server/models"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/alternaDev/georenting-server/activity"
 	"github.com/alternaDev/georenting-server/google/gcm"
 	"github.com/alternaDev/georenting-server/models"
 	"github.com/alternaDev/georenting-server/models/search"
 	"github.com/bgentry/que-go"
-	"github.com/golang/glog"
 )
 
 const (
@@ -28,11 +28,11 @@ func FenceExpireJob(j *que.Job) error {
 	var fer FenceExpireRequest
 	err := json.Unmarshal(j.Args, &fer)
 	if err != nil {
-		glog.Error("Unable to unmarshal job arguments into FenceExpireRequest")
+		log.Error("Unable to unmarshal job arguments into FenceExpireRequest")
 		return err
 	}
 
-	glog.Info("Processing FenceExpireJob")
+	log.Info("Processing FenceExpireJob")
 
 	fence, err, notFound := models.FindFenceByID(fer.FenceID)
 
@@ -41,13 +41,13 @@ func FenceExpireJob(j *que.Job) error {
 	}
 
 	if err != nil {
-		glog.Errorf("Fence Finiding error: %v", err)
+		log.Errorf("Fence Finiding error: %v", err)
 		return err
 	}
 
 	err = activity.AddFenceExpiredActivity(fence.User.ID, fence.ID, fence.Name)
 	if err != nil {
-		glog.Errorf("Activity creation error: %v", err)
+		log.Errorf("Activity creation error: %v", err)
 	}
 
 	QueueSendGcmRequest(gcm.NewMessage(map[string]interface{}{"type": "onFenceExpired", "fenceId": fence.ID, "fenceName": fence.Name}, fence.User.GCMNotificationID))

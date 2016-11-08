@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/golang/glog"
+	log "github.com/Sirupsen/logrus"
 )
 
 const (
@@ -51,7 +51,7 @@ func SendToGroup(msg *Message) error {
 			return err
 		}
 
-		glog.Errorf("Failed GCM: %s", body)
+		log.Errorf("Failed GCM: %s", body)
 
 		var response sendMessageResponse
 		err = json.Unmarshal(body, &response)

@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/alternaDev/georenting-server/scores"
 	"github.com/bgentry/que-go"
-	"github.com/golang/glog"
 )
 
 const (
@@ -26,16 +26,16 @@ func RecordVisitJob(j *que.Job) error {
 	var r RecordVisitRequest
 	err := json.Unmarshal(j.Args, &r)
 	if err != nil {
-		glog.Errorf("Unable to unmarshal job arguments into RecordVisitRequest")
+		log.Errorf("Unable to unmarshal job arguments into RecordVisitRequest")
 		return err
 	}
 
-	glog.Info("Processing RecordVisitRequest")
+	log.Info("Processing RecordVisitRequest")
 
 	err = scores.RecordVisit(r.Lat, r.Lon, r.Time)
 
 	if err != nil {
-		glog.Errorf("Could not calculate new Score: %s", err)
+		log.Errorf("Could not calculate new Score: %s", err)
 	}
 
 	return err

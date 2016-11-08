@@ -3,9 +3,9 @@ package jobs
 import (
 	"encoding/json"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/alternaDev/georenting-server/google/gcm"
 	"github.com/bgentry/que-go"
-	"github.com/golang/glog"
 )
 
 const (
@@ -23,16 +23,16 @@ func SendGcmJob(j *que.Job) error {
 	var r SendGcmRequest
 	err := json.Unmarshal(j.Args, &r)
 	if err != nil {
-		glog.Errorf("Unable to unmarshal job arguments into SendGcmRequest")
+		log.Errorf("Unable to unmarshal job arguments into SendGcmRequest")
 		return err
 	}
 
-	glog.Info("Processing SendGcmRequest")
+	log.Info("Processing SendGcmRequest")
 
 	err = gcm.SendToGroup(r.Message)
 
 	if err != nil {
-		glog.Errorf("Could not send GCM message: %s", err)
+		log.Errorf("Could not send GCM message: %s", err)
 	}
 
 	return err

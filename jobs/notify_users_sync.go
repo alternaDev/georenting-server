@@ -3,11 +3,11 @@ package jobs
 import (
 	"encoding/json"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/alternaDev/geomodel"
 	"github.com/alternaDev/georenting-server/google/gcm"
 	"github.com/alternaDev/georenting-server/models"
 	"github.com/bgentry/que-go"
-	"github.com/golang/glog"
 )
 
 const (
@@ -25,15 +25,15 @@ func NotifyUsersSyncJob(j *que.Job) error {
 	var r NotifyUsersSyncRequest
 	err := json.Unmarshal(j.Args, &r)
 	if err != nil {
-		glog.Errorf("Unable to unmarshal job arguments into NotifyUsersSyncRequest")
+		log.Errorf("Unable to unmarshal job arguments into NotifyUsersSyncRequest")
 		return err
 	}
 
-	glog.Info("Processing NotifyUsersSyncJob")
+	log.Info("Processing NotifyUsersSyncJob")
 
 	users, err := models.FindUsersByLastKnownGeoHash(r.GeoHash)
 	if err != nil {
-		glog.Errorf("Unable to Find Users")
+		log.Errorf("Unable to Find Users")
 		return err
 	}
 

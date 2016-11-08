@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/alternaDev/geomodel"
 	"github.com/alternaDev/georenting-server/activity"
 	"github.com/alternaDev/georenting-server/auth"
@@ -20,7 +21,6 @@ import (
 	"github.com/alternaDev/georenting-server/models/search"
 	"github.com/alternaDev/georenting-server/scores"
 	"github.com/alternaDev/georenting-server/util"
-	"github.com/golang/glog"
 	"github.com/gorilla/mux"
 )
 
@@ -351,7 +351,7 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = user.Save()
 	if err != nil {
-		glog.Errorf("Error while saving user: %v", err)
+		log.Errorf("Error while saving user: %v", err)
 	}
 
 	redis.AddBalanceRecord(redis.GetBalanceRecordName(user.ID, redis.BalanceNameExpenseGeoFence), price)
@@ -492,7 +492,7 @@ func RemoveFenceHandler(w http.ResponseWriter, r *http.Request) {
 	err = search.DeleteGeoFence(int(fence.ID))
 
 	if err != nil {
-		glog.Errorf("Error while deleting Fence from Search: %s", err.Error())
+		log.Errorf("Error while deleting Fence from Search: %s", err.Error())
 	}
 
 	err = fence.Delete()

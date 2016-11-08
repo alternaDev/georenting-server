@@ -1,19 +1,14 @@
 package main
 
 import (
-	"flag"
 	"os"
 	"os/signal"
 	"syscall"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/alternaDev/georenting-server/jobs"
 	"github.com/bgentry/que-go"
-	"github.com/golang/glog"
 )
-
-func init() {
-	flag.Parse() // Glog needs this
-}
 
 func main() {
 
@@ -37,7 +32,7 @@ func main() {
 
 	// Wait for a signal
 	sig := <-sigCh
-	glog.Infof("Signal '%s' received. Shutting down.", sig)
+	log.Infof("Signal '%s' received. Shutting down.", sig)
 
 	workers.Shutdown()
 }

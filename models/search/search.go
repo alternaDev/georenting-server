@@ -10,8 +10,8 @@ import (
 
 	elastic "gopkg.in/olivere/elastic.v3"
 
+	log "github.com/Sirupsen/logrus"
 	models "github.com/alternaDev/georenting-server/models"
-	"github.com/golang/glog"
 )
 
 const (
@@ -33,7 +33,7 @@ func parseBonsaiURL(url string) (string, string, string) {
 }
 
 func init() {
-	glog.Info("Initializing ElasticSearch.")
+	log.Info("Initializing ElasticSearch.")
 
 	elastic, err := initElastic(os.Getenv("ELASTICSEARCH_URL"))
 	if err != nil {
@@ -45,19 +45,19 @@ func init() {
 func initElastic(www string) (*elastic.Client, error) {
 	username, password, host := parseBonsaiURL(www)
 
-	glog.Infof("Initializing ES: %v.", host)
+	log.Infof("Initializing ES: %v.", host)
 
 	client, err := elastic.NewClient(elastic.SetURL(host), elastic.SetMaxRetries(10), elastic.SetBasicAuth(username, password), elastic.SetSniff(false))
 	if err != nil {
-		glog.Fatalf("Error while connecting to ElasticSearch: %s", err)
+		log.Fatalf("Error while connecting to ElasticSearch: %s", err)
 		return nil, err
 	}
 
-	glog.Info("Initializing Indices.")
+	log.Info("Initializing Indices.")
 
 	err = initIndices(client)
 	if err != nil {
-		glog.Fatalf("Error while creating ElasticSearch Indices: %s", err)
+		log.Fatalf("Error while creating ElasticSearch Indices: %s", err)
 		return nil, err
 	}
 
@@ -70,7 +70,7 @@ func initIndices(client *elastic.Client) error {
 		return err
 	}
 	if !exists {
-		glog.Info("Creating Index for GeoFences.")
+		log.Info("Creating Index for GeoFences.")
 		mapping := `{
         "settings":{
             "number_of_shards":1,

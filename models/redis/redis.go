@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/golang/glog"
+	log "github.com/Sirupsen/logrus"
 
 	"gopkg.in/redis.v3"
 )
@@ -34,7 +34,7 @@ type balanceRecord struct {
 var RedisInstance *redis.Client
 
 func init() {
-	glog.Info("Initializing Redis.")
+	log.Info("Initializing Redis.")
 
 	client, err := initRedis(os.Getenv("REDIS_URL"))
 	if err != nil {
