@@ -7,10 +7,10 @@ import (
 	"net/http"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/alternaDev/geomodel"
 	"github.com/alternaDev/georenting-server/models"
 	ourRedis "github.com/alternaDev/georenting-server/models/redis"
-	"github.com/golang/glog"
 )
 
 const (
@@ -64,7 +64,7 @@ func GetHeatmapHandler(w http.ResponseWriter, r *http.Request) {
 
 		ourRedis.RedisInstance.Set(redisKeyAllScoreCache, response, redisAllScoreCacheTTL*time.Second).Err()
 		if err != nil {
-			glog.Errorf("Error while caching scores: %s", err)
+			log.Errorf("Error while caching scores: %s", err)
 		}
 	}
 
