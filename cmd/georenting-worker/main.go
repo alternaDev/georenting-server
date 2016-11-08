@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"os"
 	"os/signal"
 	"syscall"
@@ -11,6 +12,8 @@ import (
 )
 
 func main() {
+	flag.Parse() // Glog needs this
+
 	qc := jobs.QC
 
 	wm := que.WorkMap{

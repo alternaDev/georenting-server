@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"net/http"
 	"os"
 
@@ -18,6 +19,7 @@ func listen(port string) {
 }
 
 func main() {
+	flag.Parse() // Glog needs this
 	port := os.Getenv("PORT")
 
 	if port == "" {
