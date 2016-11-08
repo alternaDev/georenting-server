@@ -1,10 +1,10 @@
 package models
 
 import (
-	"log"
 	"os"
 
 	"github.com/bgentry/que-go"
+	"github.com/golang/glog"
 	"github.com/jackc/pgx"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -62,7 +62,7 @@ func getPgxPool(dbURL string) (*pgx.ConnPool, error) {
 }
 
 func init() {
-	log.Println("Initializing Models.")
+	glog.Info("Initializing Postgres.")
 
 	pool, err := getPgxPool(os.Getenv("DATABASE_URL"))
 	if err != nil {
@@ -82,7 +82,7 @@ func initDB() (*sqlx.DB, error) {
 	db, err := sqlx.Open("postgres", os.Getenv("DATABASE_URL"))
 
 	if err != nil {
-		log.Fatalf("Error while connecting to DB: %s", err)
+		glog.Fatalf("Error while connecting to DB: %s", err)
 		return db, err
 	}
 

@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"time"
+
+	"github.com/golang/glog"
 )
 
 const (
@@ -50,7 +51,7 @@ func SendToGroup(msg *Message) error {
 			return err
 		}
 
-		log.Printf("Failed GCM: %s", body)
+		glog.Errorf("Failed GCM: %s", body)
 
 		var response sendMessageResponse
 		err = json.Unmarshal(body, &response)

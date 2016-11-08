@@ -3,7 +3,6 @@ package search
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"regexp"
 	"strconv"
@@ -12,6 +11,7 @@ import (
 	elastic "gopkg.in/olivere/elastic.v3"
 
 	models "github.com/alternaDev/georenting-server/models"
+	"github.com/golang/glog"
 )
 
 const (
@@ -33,7 +33,7 @@ func parseBonsaiURL(url string) (string, string, string) {
 }
 
 func init() {
-	log.Println("Initializing ElasticSearch.")
+	glog.Info("Initializing ElasticSearch.")
 
 	elastic, err := initElastic(os.Getenv("ELASTICSEARCH_URL"))
 	if err != nil {
@@ -45,19 +45,19 @@ func init() {
 func initElastic(www string) (*elastic.Client, error) {
 	username, password, host := parseBonsaiURL(www)
 
-	log.Printf("Initializing ES: %v.", host)
+	glog.Infof("Initializing ES: %v.", host)
 
 	client, err := elastic.NewClient(elastic.SetURL(host), elastic.SetMaxRetries(10), elastic.SetBasicAuth(username, password), elastic.SetSniff(false))
 	if err != nil {
-		log.Fatalf("Error while connecting to ElasticSearch: %s", err)
+		glog.Fatalf("Error while connecting to ElasticSearch: %s", err)
 		return nil, err
 	}
 
-	log.Println("Initializing Indices.")
+	glog.Info("Initializing Indices.")
 
 	err = initIndices(client)
 	if err != nil {
-		log.Fatalf("Error while creating ElasticSearch Indices: %s", err)
+		glog.Fatalf("Error while creating ElasticSearch Indices: %s", err)
 		return nil, err
 	}
 
@@ -70,7 +70,7 @@ func initIndices(client *elastic.Client) error {
 		return err
 	}
 	if !exists {
-		log.Println("Creating Index for GeoFences.")
+		glog.Info("Creating Index for GeoFences.")
 		mapping := `{
         "settings":{
             "number_of_shards":1,

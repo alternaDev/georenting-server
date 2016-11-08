@@ -2,7 +2,6 @@ package scores
 
 import (
 	"errors"
-	"log"
 	"math"
 
 	geomodel "github.com/alternaDev/geomodel"
@@ -64,7 +63,6 @@ func CalculateScore(score models.Score, now int64) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Sum: %d", tSum)
 
 	count, err := models.CountScores()
 

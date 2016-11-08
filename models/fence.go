@@ -1,7 +1,6 @@
 package models
 
 import (
-	"log"
 	"time"
 
 	"github.com/alternaDev/georenting-server/maths"
@@ -75,10 +74,7 @@ func (f *Fence) Save() error {
 			f.TotalEarnings,
 			f.Cost).Scan(&id)
 
-		log.Printf("ID1: %d", id)
 		f.ID = id
-		log.Printf("ID2: %d", f.ID)
-
 		return err
 	} else {
 		f.UpdatedAt = time.Now()

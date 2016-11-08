@@ -35,9 +35,7 @@ func SetupRouter() *mux.Router {
 
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./static/")))
 
-	//r.HandleFunc("/fences/{fenceId}", c.GetFenceHandler).Methods("GET")
 	//r.HandleFunc("/fences/{fenceId}", c.UpdateFenceHandler).Methods("PUT")
-	//r.HandleFunc("/fences/{fenceId}", c.DeleteFenceHandler).Methods("DELETE")
 
 	return r
 }

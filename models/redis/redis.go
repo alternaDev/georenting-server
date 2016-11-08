@@ -3,11 +3,12 @@ package redis
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/url"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/golang/glog"
 
 	"gopkg.in/redis.v3"
 )
@@ -33,7 +34,7 @@ type balanceRecord struct {
 var RedisInstance *redis.Client
 
 func init() {
-	log.Println("Initializing Redis.")
+	glog.Info("Initializing Redis.")
 
 	client, err := initRedis(os.Getenv("REDIS_URL"))
 	if err != nil {

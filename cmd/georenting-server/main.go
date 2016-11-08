@@ -1,12 +1,12 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"os"
 
 	router "github.com/alternaDev/georenting-server/router"
 
+	"github.com/golang/glog"
 	"github.com/gorilla/handlers"
 )
 
@@ -21,10 +21,10 @@ func main() {
 	port := os.Getenv("PORT")
 
 	if port == "" {
-		log.Fatal("$PORT must be set")
+		glog.Fatal("$PORT must be set")
 	}
 
-	log.Printf("Listening on port %s.", port)
+	glog.Infof("Listening on port %s.", port)
 
 	listen(port)
 }
