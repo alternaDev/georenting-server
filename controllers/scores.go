@@ -32,8 +32,7 @@ func GetHeatmapHandler(w http.ResponseWriter, r *http.Request) {
 		scores, err := models.FindAllScores()
 
 		if err != nil {
-			log.Printf("Error while fetching scores: %s", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			InternalServerError(err, w)
 			return
 		}
 
@@ -57,7 +56,7 @@ func GetHeatmapHandler(w http.ResponseWriter, r *http.Request) {
 		bytes, err := json.Marshal(&r)
 
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			InternalServerError(err, w)
 			return
 		}
 

@@ -3,7 +3,6 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/alternaDev/georenting-server/auth"
@@ -44,8 +43,7 @@ func GCMAddHandler(w http.ResponseWriter, r *http.Request) {
 			err = gcm.CreateDeviceGroup(b.GCMID, user)
 
 			if err != nil {
-				log.Printf("Error while creating device group: %s", err)
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				InternalServerError(err, w)
 				return
 			}
 		}
@@ -53,8 +51,7 @@ func GCMAddHandler(w http.ResponseWriter, r *http.Request) {
 		err = gcm.CreateDeviceGroup(b.GCMID, user)
 
 		if err != nil {
-			log.Printf("Error while creating device group: %s", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			InternalServerError(err, w)
 			return
 		}
 	}
@@ -62,19 +59,14 @@ func GCMAddHandler(w http.ResponseWriter, r *http.Request) {
 	err = jobs.QueueSendGcmRequest(gcm.NewMessage(map[string]interface{}{"type": "sync"}, user.GCMNotificationID))
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		InternalServerError(err, w)
 		return
 	}
 
 	bytes, err := json.Marshal(gcmNotificationKeyResponse{NotificationKey: user.GCMNotificationID})
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		InternalServerError(err, w)
 		return
 	}
 

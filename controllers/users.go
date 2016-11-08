@@ -69,7 +69,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := models.FindUserByGoogleIDOrInit(googleID)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		InternalServerError(err, w)
 		return
 	}
 
@@ -87,7 +87,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 
 			count, err3 := models.CountUsersByName(genName)
 			if err3 != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				InternalServerError(err, w)
 				return
 			}
 
@@ -103,7 +103,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = user.Save()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		InternalServerError(err, w)
 		return
 	}
 
@@ -119,7 +119,7 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	bytes, err := json.Marshal(authResponseBody{Token: token, User: user})
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		InternalServerError(err, w)
 		return
 	}
 
@@ -154,7 +154,7 @@ func RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 	err = auth.InvalidateToken(b.Token)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		InternalServerError(err, w)
 		return
 	}
 
@@ -163,7 +163,7 @@ func RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 	bytes, err := json.Marshal(authResponseBody{Token: token, User: *user})
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		InternalServerError(err, w)
 		return
 	}
 
@@ -184,7 +184,7 @@ func MeHandler(w http.ResponseWriter, r *http.Request) {
 	bytes, err := json.Marshal(user)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		InternalServerError(err, w)
 		return
 	}
 
@@ -229,7 +229,7 @@ func HistoryHandler(w http.ResponseWriter, r *http.Request) {
 	data, err := activity.GetActivities(user.ID, to, from)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		InternalServerError(err, w)
 		return
 	}
 
@@ -286,7 +286,7 @@ func CashStatusHandler(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		InternalServerError(err, w)
 		return
 	}
 

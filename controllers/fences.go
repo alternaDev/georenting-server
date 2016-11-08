@@ -76,7 +76,7 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 		map[string]interface{}{"type": "onForeignFenceEntered", "fenceId": fence.ID, "fenceName": fence.Name, "ownerName": fence.User.Name}, user.GCMNotificationID))
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		InternalServerError(err, w)
 		return
 	}
 
@@ -84,7 +84,7 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 		map[string]interface{}{"type": "onOwnFenceEntered", "fenceId": fence.ID, "fenceName": fence.Name, "visitorName": user.Name}, fence.User.GCMNotificationID))
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		InternalServerError(err, w)
 		return
 	}
 
@@ -92,14 +92,14 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 	err = activity.AddForeignVisitedActivity(user.ID, fence.User.Name, fence.User.ID, fence.Name, fence.ID, rent)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		InternalServerError(err, w)
 		return
 	}
 
 	err = activity.AddOwnFenceVisitedActivity(fence.User.ID, user.Name, user.ID, fence.Name, fence.ID, rent)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		InternalServerError(err, w)
 		return
 	}
 
@@ -111,8 +111,7 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 	err = jobs.QueueRecordVisitRequest(fence.Lat, fence.Lon, time.Now()) //scores.RecordVisit(fence.Lat, fence.Lon)
 
 	if err != nil {
-		log.Printf("Error while calulating score: %s", err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		InternalServerError(err, w)
 		return
 	}
 
@@ -127,8 +126,7 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = user.Save()
 	if err != nil {
-		log.Printf("Error while saving user: %s", err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		InternalServerError(err, w)
 		return
 	}
 
@@ -138,8 +136,7 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 	err = fence.User.Save()
 
 	if err != nil {
-		log.Printf("Error while saving user: %s", err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		InternalServerError(err, w)
 		return
 	}
 
@@ -149,8 +146,7 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 	err = fence.Save()
 
 	if err != nil {
-		log.Printf("Error while saving fence: %s", err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		InternalServerError(err, w)
 		return
 	}
 
@@ -177,8 +173,7 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if err != nil {
-			log.Printf("Error while finding users: %s", err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			InternalServerError(err, w)
 			return
 		}
 
@@ -204,7 +199,7 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 		bytes, err := json.Marshal(&fences)
 
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			InternalServerError(err, w)
 			return
 		}
 
@@ -212,7 +207,7 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 			user.LastKnownGeoHash = geomodel.GeoCell(lat, lon, models.LastKnownGeoHashResolution)
 			err = user.Save()
 			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				InternalServerError(err, w)
 				return
 			}
 		}
@@ -227,15 +222,13 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 		fenceUser, errA := models.FindUserByID(int(userID))
 
 		if errA != nil {
-			log.Printf("Error while finding fences: %s", errA.Error())
-			http.Error(w, errA.Error(), http.StatusInternalServerError)
+			InternalServerError(errA, w)
 			return
 		}
 
 		result, errA := fenceUser.GetFences()
 		if errA != nil {
-			log.Printf("Error while finding fences: %s", errA.Error())
-			http.Error(w, errA.Error(), http.StatusInternalServerError)
+			InternalServerError(errA, w)
 			return
 		}
 
@@ -261,7 +254,7 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 		bytes, err := json.Marshal(&fences)
 
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			InternalServerError(err, w)
 			return
 		}
 
@@ -283,7 +276,7 @@ func GetFencesHandler(w http.ResponseWriter, r *http.Request) {
 		err = errors.New("Please specify valid query options.")
 	}
 
-	http.Error(w, err.Error(), http.StatusInternalServerError)
+	InternalServerError(err, w)
 }
 
 // CreateFenceHandler POST /fences
@@ -300,7 +293,7 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 	err = decoder.Decode(&requestFence)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		InternalServerError(err, w)
 		return
 	}
 
@@ -335,7 +328,7 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 	overlap, err := checkFenceOverlap(&f)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		InternalServerError(err, w)
 		return
 	}
 
@@ -368,14 +361,14 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 	err = f.Save()
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		InternalServerError(err, w)
 		return
 	}
 
 	err = search.IndexGeoFence(f)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		InternalServerError(err, w)
 		return
 	}
 
@@ -385,7 +378,7 @@ func CreateFenceHandler(w http.ResponseWriter, r *http.Request) {
 	bytes, err := json.Marshal(&f)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		InternalServerError(err, w)
 		return
 	}
 
@@ -455,7 +448,7 @@ func GetFenceHandler(w http.ResponseWriter, r *http.Request) {
 	bytes, err := json.Marshal(&f)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		InternalServerError(err, w)
 		return
 	}
 
@@ -505,7 +498,7 @@ func RemoveFenceHandler(w http.ResponseWriter, r *http.Request) {
 	err = fence.Delete()
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		InternalServerError(err, w)
 		return
 	}
 
@@ -552,14 +545,14 @@ func EstimateFenceCostHandler(w http.ResponseWriter, r *http.Request) {
 	price, err := scores.GetGeoFencePrice(f.Lat, f.Lon, f.TTL, f.RentMultiplier, indexRadius)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		InternalServerError(err, w)
 		return
 	}
 
 	overlap, err := checkFenceOverlapWithFenceResponse(&f)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		InternalServerError(err, w)
 		return
 	}
 
@@ -573,7 +566,7 @@ func EstimateFenceCostHandler(w http.ResponseWriter, r *http.Request) {
 	bytes, err := json.Marshal(&response)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		InternalServerError(err, w)
 		return
 	}
 

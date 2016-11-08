@@ -32,6 +32,10 @@
 			"Rev": "9b486c879bab3fde556ce8c27d9a2bb05d5b2c60"
 		},
 		{
+			"ImportPath": "github.com/golang/glog",
+			"Rev": "23def4e6c14b4da8ac2ed8007337bc5eb5007998"
+		},
+		{
 			"ImportPath": "github.com/gorilla/context",
 			"Comment": "v1.1-4-gaed02d1",
 			"Rev": "aed02d124ae4a0e94fea4541c8effd05bf0c8296"
