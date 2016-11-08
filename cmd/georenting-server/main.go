@@ -18,8 +18,11 @@ func listen(port string) {
 	http.ListenAndServe(":"+port, nil)
 }
 
-func main() {
+func init() {
 	flag.Parse() // Glog needs this
+}
+
+func main() {
 	port := os.Getenv("PORT")
 
 	if port == "" {

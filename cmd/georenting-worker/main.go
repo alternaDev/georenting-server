@@ -11,8 +11,11 @@ import (
 	"github.com/golang/glog"
 )
 
-func main() {
+func init() {
 	flag.Parse() // Glog needs this
+}
+
+func main() {
 
 	qc := jobs.QC
 
