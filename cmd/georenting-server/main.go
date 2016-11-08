@@ -17,6 +17,10 @@ func listen(port string) {
 	http.ListenAndServe(":"+port, nil)
 }
 
+func init() {
+	log.SetFormatter(&log.TextFormatter{ForceColors: true})
+}
+
 func main() {
 	port := os.Getenv("PORT")
 

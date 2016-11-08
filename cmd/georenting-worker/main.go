@@ -10,6 +10,10 @@ import (
 	"github.com/bgentry/que-go"
 )
 
+func init() {
+	log.SetFormatter(&log.TextFormatter{ForceColors: true})
+}
+
 func main() {
 
 	qc := jobs.QC
