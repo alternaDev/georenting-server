@@ -23,6 +23,7 @@ func main() {
 		jobs.SendGcmJobName:         jobs.SendGcmJob,
 		jobs.RecordVisitJobName:     jobs.RecordVisitJob,
 		jobs.NotifyUsersSyncJobName: jobs.NotifyUsersSyncJob,
+		jobs.DeployGCAidJobName:     jobs.DeployGCAidJob,
 	}
 
 	// 2 worker go routines
