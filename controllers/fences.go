@@ -71,6 +71,10 @@ func VisitFenceHandler(w http.ResponseWriter, r *http.Request) {
 
 	rent := scores.GetGeoFenceRent(fence)
 
+	if user.Balance < rent {
+		rent = user.Balance
+	}
+
 	// GCM
 	err = jobs.QueueSendGcmRequest(gcm.NewMessage(
 		map[string]interface{}{"type": "onForeignFenceEntered", "fenceId": fence.ID, "fenceName": fence.Name, "ownerName": fence.User.Name}, user.GCMNotificationID))
